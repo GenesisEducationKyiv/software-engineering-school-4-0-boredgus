@@ -1,0 +1,13 @@
+with-expecter: true
+outpkg: mocks
+dir: "internal/mocks/{{.PackageName}}"
+mockname: "{{.InterfaceName}}"
+packages:
+  subscription-api/internal/services/currency:
+    interfaces:
+      CurrencyService:
+  subscription-api/internal/services/dispatch:
+    interfaces:
+      DispatchService:
+
+
