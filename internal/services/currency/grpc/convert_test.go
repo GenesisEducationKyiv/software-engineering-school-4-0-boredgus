@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"subscription-api/internal/entities"
-	mocks "subscription-api/internal/mocks/services"
+	mocks "subscription-api/internal/mocks/cs"
 	cs "subscription-api/internal/services/currency"
 	pb_cs "subscription-api/pkg/grpc/currency_service"
 	"testing"
