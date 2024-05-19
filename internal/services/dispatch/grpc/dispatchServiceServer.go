@@ -40,7 +40,6 @@ func (s *dispatchServiceServer) SubscribeFor(ctx context.Context, req *pb_ds.Sub
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	fmt.Printf("SubscribeFor worked out. data: %+v\n", req)
-	fmt.Println("service result err:", err)
 	return &pb_ds.SubscribeForResponse{}, nil
 }
 

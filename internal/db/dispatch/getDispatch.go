@@ -26,7 +26,6 @@ func (s *currencyDispatchStore) GetDispatch(ctx context.Context, dispatchId stri
 	}
 	var targetCurrencies string
 	if err := row.Scan(&d.Id, &d.Details.BaseCurrency, &targetCurrencies, &d.SendAt, &d.CountOfSubscribers); err != nil {
-		fmt.Println("failed to scan dispatch data: ", err)
 		return d, fmt.Errorf("%w: dispatch with such id does not exists", services.NotFoundErr)
 	}
 	d.Details.TargetCurrencies = strings.Split(targetCurrencies, ",")

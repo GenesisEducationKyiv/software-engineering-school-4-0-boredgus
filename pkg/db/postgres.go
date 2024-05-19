@@ -3,6 +3,8 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"strings"
+	"subscription-api/config"
 	"subscription-api/internal/db"
 	"sync"
 
@@ -17,7 +19,6 @@ func NewPostrgreSQL(dsn string, handlers ...func(db *sql.DB)) (*sql.DB, error) {
 		db, err := sql.Open("postgres", dsn)
 		if err != nil {
 			panic(fmt.Errorf("failed to connect to postgres db: %w", err))
-			// return nil, err
 		}
 		postgresDB = db
 	})
@@ -40,7 +41,7 @@ var pqErrors = map[db.Error]pq.ErrorCode{
 
 func IsPqError(err error, errCode db.Error) bool {
 	e, ok := err.(*pq.Error)
-	// fmt.Println("> IsPqError: \n", e.Code, strings.Join([]string{e.Message, e.Detail, e.Hint, e.Line}, ";"))
+	config.Log().Debug("> IsPqError: \n", e.Code, strings.Join([]string{e.Message, e.Detail, e.Hint, e.Line}, ";"))
 	if !ok || e.Code != pqErrors[errCode] {
 		return false
 	}
