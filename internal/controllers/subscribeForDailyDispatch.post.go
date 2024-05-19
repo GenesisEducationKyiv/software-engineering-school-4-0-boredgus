@@ -13,7 +13,7 @@ type subscribeParams struct {
 	Email string `json:"email"`
 }
 
-const USD_UAH_DISPATCH_ID = ""
+const USD_UAH_DISPATCH_ID = "f669a90d-d4aa-4285-bbce-6b14c6ff9065"
 
 func SubscribeForDailyDispatch(ctx Context, ds pb_ds.DispatchServiceClient) {
 	var params subscribeParams
