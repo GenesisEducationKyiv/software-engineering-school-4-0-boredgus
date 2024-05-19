@@ -4,7 +4,7 @@ package mocks
 
 import (
 	context "context"
-	services "subscription-api/internal/services/dispatch"
+	ds "subscription-api/internal/services/dispatch"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -22,29 +22,27 @@ func (_m *DispatchService) EXPECT() *DispatchService_Expecter {
 	return &DispatchService_Expecter{mock: &_m.Mock}
 }
 
-// GetAllDispatches provides a mock function with given fields: ctx
-func (_m *DispatchService) GetAllDispatches(ctx context.Context) ([]services.DispatchInfo, error) {
-	ret := _m.Called(ctx)
+// GetDispatch provides a mock function with given fields: ctx, dispatch_id
+func (_m *DispatchService) GetDispatch(ctx context.Context, dispatch_id string) (ds.DispatchInfo, error) {
+	ret := _m.Called(ctx, dispatch_id)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetAllDispatches")
+		panic("no return value specified for GetDispatch")
 	}
 
-	var r0 []services.DispatchInfo
+	var r0 ds.DispatchInfo
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) ([]services.DispatchInfo, error)); ok {
-		return rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, string) (ds.DispatchInfo, error)); ok {
+		return rf(ctx, dispatch_id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) []services.DispatchInfo); ok {
-		r0 = rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, string) ds.DispatchInfo); ok {
+		r0 = rf(ctx, dispatch_id)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]services.DispatchInfo)
-		}
+		r0 = ret.Get(0).(ds.DispatchInfo)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(ctx)
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, dispatch_id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -52,30 +50,31 @@ func (_m *DispatchService) GetAllDispatches(ctx context.Context) ([]services.Dis
 	return r0, r1
 }
 
-// DispatchService_GetAllDispatches_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAllDispatches'
-type DispatchService_GetAllDispatches_Call struct {
+// DispatchService_GetDispatch_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetDispatch'
+type DispatchService_GetDispatch_Call struct {
 	*mock.Call
 }
 
-// GetAllDispatches is a helper method to define mock.On call
+// GetDispatch is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *DispatchService_Expecter) GetAllDispatches(ctx interface{}) *DispatchService_GetAllDispatches_Call {
-	return &DispatchService_GetAllDispatches_Call{Call: _e.mock.On("GetAllDispatches", ctx)}
+//   - dispatch_id string
+func (_e *DispatchService_Expecter) GetDispatch(ctx interface{}, dispatch_id interface{}) *DispatchService_GetDispatch_Call {
+	return &DispatchService_GetDispatch_Call{Call: _e.mock.On("GetDispatch", ctx, dispatch_id)}
 }
 
-func (_c *DispatchService_GetAllDispatches_Call) Run(run func(ctx context.Context)) *DispatchService_GetAllDispatches_Call {
+func (_c *DispatchService_GetDispatch_Call) Run(run func(ctx context.Context, dispatch_id string)) *DispatchService_GetDispatch_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context))
+		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
 
-func (_c *DispatchService_GetAllDispatches_Call) Return(_a0 []services.DispatchInfo, _a1 error) *DispatchService_GetAllDispatches_Call {
+func (_c *DispatchService_GetDispatch_Call) Return(_a0 ds.DispatchInfo, _a1 error) *DispatchService_GetDispatch_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *DispatchService_GetAllDispatches_Call) RunAndReturn(run func(context.Context) ([]services.DispatchInfo, error)) *DispatchService_GetAllDispatches_Call {
+func (_c *DispatchService_GetDispatch_Call) RunAndReturn(run func(context.Context, string) (ds.DispatchInfo, error)) *DispatchService_GetDispatch_Call {
 	_c.Call.Return(run)
 	return _c
 }
