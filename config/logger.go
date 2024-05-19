@@ -1,6 +1,8 @@
 package config
 
 import (
+	"sync"
+
 	"go.uber.org/zap"
 )
 
@@ -14,6 +16,7 @@ type Logger interface {
 }
 
 var logger zap.SugaredLogger
+var onceLogger sync.Once
 
 func InitLogger(mode Mode) *zap.SugaredLogger {
 	l, er := zap.NewDevelopment()
@@ -26,5 +29,8 @@ func InitLogger(mode Mode) *zap.SugaredLogger {
 }
 
 func Log() *zap.SugaredLogger {
+	onceLogger.Do(func() {
+		InitLogger(DevMode)
+	})
 	return &logger
 }
