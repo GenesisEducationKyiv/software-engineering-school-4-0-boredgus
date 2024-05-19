@@ -1,4 +1,4 @@
-package services
+package cs
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"subscription-api/internal/entities"
-	"subscription-api/pkg/tools"
+	"subscription-api/pkg/utils"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -66,7 +66,7 @@ func Test_CurrencyService_Convert(t *testing.T) {
 			name:    "invalid format of thrird-party api response",
 			fields:  fields{APIBasePath: invalidServer.URL},
 			args:    args{ctx: ctx, params: ConvertParams{To: []entities.Currency{"UAH"}}},
-			wantErr: tools.ParseErr,
+			wantErr: utils.ParseErr,
 		},
 		{
 			name:    "unsupported currency provided",

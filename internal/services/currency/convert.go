@@ -1,11 +1,11 @@
-package services
+package cs
 
 import (
 	"context"
 	"fmt"
 	"net/http"
 	"subscription-api/internal/entities"
-	"subscription-api/pkg/tools"
+	"subscription-api/pkg/utils"
 )
 
 type conversionResult struct {
@@ -22,9 +22,8 @@ func (e *currencyService) Convert(ctx context.Context, params ConvertParams) (ma
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", InvalidRequestErr, err)
 	}
-	fmt.Println(resp.StatusCode)
 	var res conversionResult
-	if err = tools.Parse(resp.Body, &res); err != nil {
+	if err = utils.Parse(resp.Body, &res); err != nil {
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK && res.ErrorType == InvalidArgumentErr.Error() {
@@ -37,6 +36,5 @@ func (e *currencyService) Convert(ctx context.Context, params ConvertParams) (ma
 	for _, currency := range params.To {
 		rates[currency] = res.Rates[string(currency)]
 	}
-	fmt.Println("SUCCESS", rates)
 	return rates, nil
 }

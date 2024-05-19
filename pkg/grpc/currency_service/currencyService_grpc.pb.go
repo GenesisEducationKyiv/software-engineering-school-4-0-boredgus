@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v5.26.1
-// source: internal/grpc/currencyService/currencyService.proto
+// source: pkg/grpc/currency_service/currencyService.proto
 
 package __
 
@@ -101,5 +101,5 @@ var CurrencyService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "internal/grpc/currencyService/currencyService.proto",
+	Metadata: "pkg/grpc/currency_service/currencyService.proto",
 }

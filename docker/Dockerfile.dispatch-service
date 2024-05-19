@@ -1,0 +1,7 @@
+FROM golang:1.22-alpine
+
+WORKDIR /app
+
+COPY . /app
+RUN go build -o ./bin/dispatch-service ./cmd/dispatch-service/main.go
+CMD [ "./bin/dispatch-service" ]

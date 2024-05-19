@@ -9,5 +9,11 @@ packages:
   subscription-api/internal/services/dispatch:
     interfaces:
       DispatchService:
+  subscription-api/internal/db:
+    interfaces:
+      Store:
+  subscription-api/internal/db/dispatch:
+    interfaces:
+      DispatchStore:
 
 

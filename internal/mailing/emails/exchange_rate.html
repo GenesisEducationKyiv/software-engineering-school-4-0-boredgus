@@ -1,0 +1,12 @@
+<style>
+  .number {
+    font-size: 30px;
+
+  }
+</style>
+
+<div style="padding: 20px; background-color: cadetblue;">
+  <h2 style="color: rgb(15, 34, 34);">Exchange rate dispatch</h2>
+    <br>
+  <b>1 <i>{{.BaseCurrency}}</i> = {{printf "%.4f" .ExchangeRate}} <i>{{.TargetCurrency}}</i></b>
+</div>

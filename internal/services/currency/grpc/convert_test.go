@@ -15,9 +15,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *CurrencyServiceServerUnitTestSuite) TestConvert() {
-}
-
 func Test_CurrencyServiceServer_Convert(t *testing.T) {
 	type args struct {
 		req *pb_cs.ConvertRequest

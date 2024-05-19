@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"errors"
+	"subscription-api/config"
 	"subscription-api/internal/entities"
 	cs "subscription-api/internal/services/currency"
 	pb_cs "subscription-api/pkg/grpc/currency_service"
@@ -20,7 +21,12 @@ func NewCurrencyServiceServer(s cs.CurrencyService) pb_cs.CurrencyServiceServer 
 	return &currencyServiceServer{s: s}
 }
 
+func (s *currencyServiceServer) log(method string, req any) {
+	config.Log().Infof("CurrencyService.%v(%+v)", method, req)
+}
+
 func (s *currencyServiceServer) Convert(ctx context.Context, req *pb_cs.ConvertRequest) (*pb_cs.ConvertResponse, error) {
+	s.log("Convert", req)
 	rates, err := s.s.Convert(ctx, cs.ConvertParams{
 		From: entities.Currency(req.BaseCurrency),
 		To:   entities.FromString(req.TargetCurrencies),
