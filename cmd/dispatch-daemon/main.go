@@ -45,7 +45,7 @@ func main() {
 		Password: "guze dokh umzh ulvs"}).
 		Send(mailing.Email{
 			From:     from,
-			To:       []string{"kefirchi@ukr.net"},
+			To:       []string{"daha@gmail.com"},
 			ReplyTo:  from,
 			Subject:  "Daily USD-UAH exchange rate",
 			HTMLBody: buffer.String(),
