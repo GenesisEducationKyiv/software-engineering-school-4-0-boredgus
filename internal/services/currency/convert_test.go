@@ -12,25 +12,35 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func fatalOnError(t *testing.T, err error) {
+	if err != nil {
+		t.Fatalf("mocked server failed to write response: %v", err)
+	}
+}
+
 func Test_CurrencyService_Convert(t *testing.T) {
 	invalidCurrency := entities.Currency("invalid-currency")
 	validServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == fmt.Sprintf("/latest/%s", invalidCurrency) {
 			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte(fmt.Sprintf(`{"result":"error","error-type":"%s"}`, InvalidArgumentErr)))
+			_, err := w.Write([]byte(fmt.Sprintf(`{"result":"error","error-type":"%s"}`, InvalidArgumentErr)))
+			fatalOnError(t, err)
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"result":"success","conversion_rates":{"USD":1,"EUR":0.9201,"GBP":0.7883,"PLN":3.9255,"UAH":39.4347}}`))
+		_, err := w.Write([]byte(`{"result":"success","conversion_rates":{"USD":1,"EUR":0.9201,"GBP":0.7883,"PLN":3.9255,"UAH":39.4347}}`))
+		fatalOnError(t, err)
 	}))
 	invalidServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/latest/USD" {
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte(`{"result":"error","error-type":"some-error"}`))
+			_, err := w.Write([]byte(`{"result":"error","error-type":"some-error"}`))
+			fatalOnError(t, err)
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`}`))
+		_, err := w.Write([]byte(`}`))
+		fatalOnError(t, err)
 	}))
 	defer validServer.Close()
 	defer invalidServer.Close()
