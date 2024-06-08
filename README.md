@@ -6,11 +6,11 @@ API allows:
 
 ## Used technologies
 
-- __Go__ as main language.
-- __gin__ as web framework.
-- __PostgreSQL__ as main storage.
-- __gRPC__ for inter-service communication.
-- __[ExchangeRate-API](https://www.exchangerate-api.com/)__ for currency rate info.
+- __[Go](https://go.dev/)__ as main language.
+- __[gin](https://gin-gonic.com/docs/)__ as web framework.
+- __[PostgreSQL](https://www.postgresql.org/)__ as main storage.
+- __[gRPC](https://grpc.io/)__ for inter-service communication.
+- __[ExchangeRate-API](https://www.exchangerate-api.com/)__ as third-party API for currency rate info.
 
 ## Quick start
 
@@ -33,7 +33,7 @@ another type of dispatch.
 I assumed that each user can have multiple subscriptions and multiple users can be subscribed\
 to one dispatch (many-to-many relationship).
 
-There is no information about ability to customize time of dispatch sending \
+There is no information in the task about ability to customize time of dispatch sending \
 (just period - once a day), so I set it default for all subscribers, based on KISS. \
 But it is possible to customize it later if there will be necessity.
 
@@ -43,31 +43,34 @@ But it is possible to customize it later if there will be necessity.
 
 ### Processes
 
-Keeping in mind _12-factor APP_ methodology I decided to split app functionality into \
+Keeping in mind 6th factor __Processes__ of _12-factor App_ I decided to split app functionality into \
 4 separate processes:
 
 
 1. ___API___ is an entry point for external users of `SubscriptionAPI`. It is web server and\
-makes requests to services for required functionality. For now it allows 
-2. ___CurrencyService___ is responsible for fetching currency rates from third-party API. \
-In perspective as business requirements grow it will save rates in some store or \
-calculate/agregate currency-related data.
+makes requests via gRPC to services for required functionality. For now it allows \
+to get exchange rate USD/UAH and subscribe user for daily dispatch of USD/UAH exchange rate.
 
-3. ___DispatchService___ is responsible for subscribing users to dispatches, \
+2. ___Currency Service___ is responsible for fetching currency rates from third-party API. \
+In perspective as business requirements grow it will cache rates in some store or \
+calculate/aggregate currency-related data.
+
+3. ___Dispatch Service___ is responsible for subscribing users to dispatches, \
 sending of dispatches thorough SMTP server to subscribers, and getting info about dispatch.\
 In perspective it would be able to create dispatches, change dispatches, \
 customize subscriptions etc.
 
-4. __DispatchDaemon__ (is not implemented for now) is automatic process that periodically \
+4. __Dispatch Daemon__ (is not implemented for now) is automatic process that periodically \
 gets info about dispatches and invokes dispatch sending.
 
 
 ## Tests
 There are implemented unit tests for some business logic. In perspective I will cover \
-all business logic with unit and sunctional tests.
+all business logic with unit and functional tests.
 
 
 ## TODO
 1. Implement dispatch daemon
 2. Implement sending of dispatches to subscribers.
-3. to be continued...
+3. Cache currency rate results for 24 hours
+4. to be continued...
