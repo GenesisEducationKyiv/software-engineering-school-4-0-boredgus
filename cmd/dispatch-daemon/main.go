@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"flag"
-	"fmt"
 	"html/template"
 	"os"
 	"strconv"
@@ -47,7 +46,7 @@ func main() {
 		Execute(&buffer, data); err != nil {
 		config.Log().Fatal("failed to execute template: ", err.Error())
 	}
-	fmt.Println(mailing.NewMailman(mailing.SMTPParams{
+	logger.Info(mailing.NewMailman(mailing.SMTPParams{
 		Host:     os.Getenv("MAILMAL_HOST"),
 		Port:     port,
 		Username: from,

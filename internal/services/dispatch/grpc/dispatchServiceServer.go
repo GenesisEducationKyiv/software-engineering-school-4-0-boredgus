@@ -3,7 +3,6 @@ package grpc
 import (
 	"context"
 	"errors"
-	"fmt"
 	"subscription-api/config"
 	"subscription-api/internal/services"
 	ds "subscription-api/internal/services/dispatch"
@@ -39,7 +38,6 @@ func (s *dispatchServiceServer) SubscribeFor(ctx context.Context, req *pb_ds.Sub
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	fmt.Printf("SubscribeFor worked out. data: %+v\n", req)
 
 	return &pb_ds.SubscribeForResponse{}, nil
 }
