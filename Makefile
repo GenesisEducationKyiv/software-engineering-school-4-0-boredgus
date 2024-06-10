@@ -1,7 +1,5 @@
-compose_file:=docker/docker-compose.yaml
-
 start:
-	docker compose -f $(compose_file)  --env-file docker/default.env up
+	docker compose -f docker-compose.yaml --env-file .env.example up
 
 generate-mocks:
 	mockery --config=config/.mockery.yaml
