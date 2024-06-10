@@ -5,6 +5,8 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
+	"os"
+	"strconv"
 	"subscription-api/config"
 	"subscription-api/internal/mailing"
 )
@@ -21,8 +23,14 @@ func init() {
 
 func main() {
 	config.InitLogger(config.DevMode)
+	logger := config.InitLogger(config.Mode(os.Getenv("MODE")))
 
-	from := "daha.kyiv@gmail.com"
+	from := os.Getenv("MAILMAL_EMAIL")
+	port, err := strconv.Atoi(os.Getenv("MAILMAL_PORT"))
+	if err != nil {
+		logger.Errorf("invalid smtp server port: %v", err)
+		return
+	}
 	data := struct {
 		BaseCurrency   string
 		TargetCurrency string
@@ -39,10 +47,10 @@ func main() {
 		config.Log().Fatal("failed to execute template: ", err.Error())
 	}
 	fmt.Println(mailing.NewMailman(mailing.SMTPParams{
-		Host:     "smtp.gmail.com",
-		Port:     587,
+		Host:     os.Getenv("MAILMAL_HOST"),
+		Port:     port,
 		Username: from,
-		Password: "guze dokh umzh ulvs"}).
+		Password: os.Getenv("MAILMAL_PASSWORD")}).
 		Send(mailing.Email{
 			From:     from,
 			To:       []string{"daha@gmail.com"},

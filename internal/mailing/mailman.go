@@ -31,7 +31,6 @@ func NewMailman(params SMTPParams) Mailman {
 	}
 }
 
-// d := mail.NewDialer("smtp.gmail.com", 587, "daha.kyiv@gmail.com", "guze dokh umzh ulvs")
 func (m *mailman) Send(e Email) error {
 	msg := mail.NewMessage()
 	msg.SetHeader("From", e.From)

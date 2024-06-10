@@ -1,7 +1,5 @@
 package main
 
-// d := mail.NewDialer("smtp.gmail.com", 587, "daha.kyiv@gmail.com", "guze dokh umzh ulvs")
-
 import (
 	"flag"
 	"fmt"
