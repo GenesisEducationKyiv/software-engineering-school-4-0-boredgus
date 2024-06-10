@@ -20,6 +20,7 @@ func SubscribeForDailyDispatch(ctx Context, ds pb_ds.DispatchServiceClient) {
 	if err := ctx.BindJSON(&params); err != nil {
 		config.Log().Debug("failed to bind subscribe params from json: " + err.Error())
 		ctx.String(http.StatusBadRequest, "invalid data provided")
+
 		return
 	}
 
@@ -29,10 +30,12 @@ func SubscribeForDailyDispatch(ctx Context, ds pb_ds.DispatchServiceClient) {
 	})
 	if status.Code(err) == codes.AlreadyExists {
 		ctx.Status(http.StatusConflict)
+
 		return
 	}
 	if err != nil {
 		ctx.Status(http.StatusInternalServerError)
+
 		return
 	}
 

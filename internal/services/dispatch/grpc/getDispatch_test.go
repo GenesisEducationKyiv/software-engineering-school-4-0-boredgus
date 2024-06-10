@@ -35,6 +35,7 @@ func Test_dispatchServiceServer_GetDispatch(t *testing.T) {
 			got, err := s.GetDispatch(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("dispatchServiceServer.GetDispatch() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {

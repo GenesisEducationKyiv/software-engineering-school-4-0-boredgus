@@ -36,5 +36,6 @@ func (e *currencyService) Convert(ctx context.Context, params ConvertParams) (ma
 	for _, currency := range params.To {
 		rates[currency] = res.Rates[string(currency)]
 	}
+
 	return rates, nil
 }

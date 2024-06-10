@@ -25,6 +25,7 @@ func (s *dispatchService) GetDispatch(ctx context.Context, dispatchId string) (D
 			}
 		}
 		fmt.Printf(" >>> GetDispatch from store: %v %+v\n\n", err, d)
+
 		return err
 	})
 	fmt.Printf(" >>> after tx: GetDispatch from store: %v %+v\n\n", err, dispatch)

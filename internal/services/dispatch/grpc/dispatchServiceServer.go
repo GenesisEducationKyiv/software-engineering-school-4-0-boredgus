@@ -40,6 +40,7 @@ func (s *dispatchServiceServer) SubscribeFor(ctx context.Context, req *pb_ds.Sub
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	fmt.Printf("SubscribeFor worked out. data: %+v\n", req)
+
 	return &pb_ds.SubscribeForResponse{}, nil
 }
 
@@ -52,6 +53,7 @@ func (s *dispatchServiceServer) SendDispatch(ctx context.Context, req *pb_ds.Sen
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+
 	return &pb_ds.SendDispatchResponse{}, nil
 }
 
@@ -67,6 +69,7 @@ func (s *dispatchServiceServer) GetDispatch(ctx context.Context, req *pb_ds.GetD
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+
 	return &pb_ds.GetDispatchResponse{
 		Dispatch: &pb_ds.DispatchData{
 			Id:                 d.Id,

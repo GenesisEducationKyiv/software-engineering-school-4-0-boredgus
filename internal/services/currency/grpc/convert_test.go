@@ -27,6 +27,7 @@ func Test_CurrencyServiceServer_Convert(t *testing.T) {
 	internalError := fmt.Errorf("internal-error")
 	setup := func(res *mockedRes, args cs.ConvertParams) func() {
 		csCall := csMock.EXPECT().Convert(mock.Anything, args).Return(res.convertedRates, res.convertErr).Once()
+
 		return func() {
 			csCall.Unset()
 		}
@@ -92,6 +93,7 @@ func Test_CurrencyServiceServer_Convert(t *testing.T) {
 			assert.Equal(t, got, tt.want)
 			if tt.wantErr != nil {
 				assert.ErrorIs(t, err, tt.wantErr)
+
 				return
 			}
 			assert.Nil(t, err)

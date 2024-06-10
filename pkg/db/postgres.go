@@ -25,6 +25,7 @@ func NewPostrgreSQL(dsn string, handlers ...func(db *sql.DB)) (*sql.DB, error) {
 	for _, handler := range handlers {
 		handler(postgresDB)
 	}
+
 	return postgresDB, nil
 }
 
@@ -45,5 +46,6 @@ func IsPqError(err error, errCode db.Error) bool {
 	if !ok || e.Code != pqErrors[errCode] {
 		return false
 	}
+
 	return true
 }

@@ -35,7 +35,9 @@ func (p htmlTemplateParser) Parse(templateName string, data any) ([]byte, error)
 		Must(template.ParseFiles(filename)).
 		Execute(&buffer, data); err != nil {
 		config.Log().Errorf("failed to execute html template %s: %v", filename, err)
+
 		return []byte{}, err
 	}
+
 	return buffer.Bytes(), nil
 }

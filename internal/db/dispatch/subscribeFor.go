@@ -25,5 +25,6 @@ func (s *currencyDispatchStore) SubscribeFor(ctx context.Context, params Subscri
 	if s.IsError(err, db.UniqueViolation) {
 		return fmt.Errorf("%w: user has already subscribed for this dispatch", services.UniqueViolationErr)
 	}
+
 	return err
 }

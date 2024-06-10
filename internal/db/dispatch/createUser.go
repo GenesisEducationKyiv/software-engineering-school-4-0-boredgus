@@ -17,5 +17,6 @@ func (s *currencyDispatchStore) CreateSubscriber(ctx context.Context, email stri
 	if s.IsError(err, db.UniqueViolation) {
 		return fmt.Errorf("%w: user with such email already exists", services.UniqueViolationErr)
 	}
+
 	return err
 }

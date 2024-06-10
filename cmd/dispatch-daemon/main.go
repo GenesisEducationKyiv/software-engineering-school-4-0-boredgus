@@ -29,6 +29,7 @@ func main() {
 	port, err := strconv.Atoi(os.Getenv("MAILMAL_PORT"))
 	if err != nil {
 		logger.Errorf("invalid smtp server port: %v", err)
+
 		return
 	}
 	data := struct {

@@ -44,5 +44,6 @@ func (s *currencyServiceServer) Convert(ctx context.Context, req *pb_cs.ConvertR
 	for currency, rate := range rates {
 		res[string(currency)] = rate
 	}
+
 	return &pb_cs.ConvertResponse{BaseCurrency: req.BaseCurrency, Rates: res}, nil
 }

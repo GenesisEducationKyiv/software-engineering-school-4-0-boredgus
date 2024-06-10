@@ -39,8 +39,10 @@ func (s *store) WithTx(ctx context.Context, f func(q any) error) error {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return fmt.Errorf("failed to rollback transaction: %w: %w", err, rbErr)
 		}
+
 		return err
 	}
+
 	return tx.Commit()
 }
 

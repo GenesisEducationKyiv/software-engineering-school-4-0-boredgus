@@ -16,6 +16,7 @@ func GetExchangeRate(ctx Context, cs pb_cs.CurrencyServiceClient) {
 			TargetCurrencies: []string{to}})
 	if err != nil {
 		ctx.Status(http.StatusInternalServerError)
+
 		return
 	}
 	ctx.String(http.StatusOK, fmt.Sprint(res.Rates[to]))

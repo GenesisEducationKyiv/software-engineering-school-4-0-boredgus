@@ -17,5 +17,6 @@ func Parse(read io.ReadCloser, target any) error {
 	if err = json.Unmarshal(body, target); err != nil {
 		return fmt.Errorf("%w: %w", ParseErr, err)
 	}
+
 	return nil
 }

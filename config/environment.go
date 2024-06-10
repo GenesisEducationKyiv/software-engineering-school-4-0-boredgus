@@ -21,6 +21,7 @@ func LoadEnvFile(envFiles []string) {
 		_, err := os.Stat(filename)
 		if errors.Is(err, os.ErrNotExist) {
 			Log().Infof("%v file is not provided, skipping loading", filename)
+
 			return
 		}
 	}

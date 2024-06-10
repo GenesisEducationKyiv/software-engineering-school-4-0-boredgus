@@ -17,6 +17,7 @@ func (s *dispatchService) SubscribeForDispatch(ctx context.Context, email, dispa
 		if err != nil && !errors.Is(err, services.UniqueViolationErr) {
 			return err
 		}
+
 		return dq.SubscribeFor(ctx, db.SubscribeForParams{Email: email, Dispatch: dispatchId})
 	})
 }

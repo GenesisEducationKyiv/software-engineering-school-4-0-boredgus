@@ -25,6 +25,7 @@ func InitLogger(mode Mode) *zap.SugaredLogger {
 	}
 	lg := zap.Must(l, er).Sugar()
 	logger = *lg
+
 	return lg
 }
 
@@ -32,5 +33,6 @@ func Log() *zap.SugaredLogger {
 	onceLogger.Do(func() {
 		InitLogger(DevMode)
 	})
+
 	return &logger
 }

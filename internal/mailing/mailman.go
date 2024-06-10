@@ -38,5 +38,6 @@ func (m *mailman) Send(e Email) error {
 	msg.SetHeader("To", e.To...)
 	msg.SetHeader("Subject", e.Subject)
 	msg.SetBody("text/html", e.HTMLBody)
+
 	return m.dialer.DialAndSend(msg)
 }

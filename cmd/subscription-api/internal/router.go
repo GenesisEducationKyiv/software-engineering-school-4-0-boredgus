@@ -55,5 +55,6 @@ func GetRouter(params APIParams) *gin.Engine {
 		defer cancel()
 		controllers.SubscribeForDailyDispatch(NewContext(ctx, c, params.Logger), params.DispatchService)
 	})
+
 	return r
 }

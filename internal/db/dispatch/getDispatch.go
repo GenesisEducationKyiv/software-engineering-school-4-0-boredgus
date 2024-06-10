@@ -29,5 +29,6 @@ func (s *currencyDispatchStore) GetDispatch(ctx context.Context, dispatchId stri
 		return d, fmt.Errorf("%w: dispatch with such id does not exists", services.NotFoundErr)
 	}
 	d.Details.TargetCurrencies = strings.Split(targetCurrencies, ",")
+
 	return d, nil
 }

@@ -25,6 +25,7 @@ func Test_CurrencyService_Convert(t *testing.T) {
 			w.WriteHeader(http.StatusNotFound)
 			_, err := w.Write([]byte(fmt.Sprintf(`{"result":"error","error-type":"%s"}`, InvalidArgumentErr)))
 			fatalOnError(t, err)
+
 			return
 		}
 		w.WriteHeader(http.StatusOK)
@@ -36,6 +37,7 @@ func Test_CurrencyService_Convert(t *testing.T) {
 			w.WriteHeader(http.StatusBadRequest)
 			_, err := w.Write([]byte(`{"result":"error","error-type":"some-error"}`))
 			fatalOnError(t, err)
+
 			return
 		}
 		w.WriteHeader(http.StatusOK)
@@ -106,6 +108,7 @@ func Test_CurrencyService_Convert(t *testing.T) {
 			assert.Equal(t, got, tt.want)
 			if tt.wantErr != nil {
 				assert.ErrorIs(t, err, tt.wantErr)
+
 				return
 			}
 			assert.Nil(t, err)
