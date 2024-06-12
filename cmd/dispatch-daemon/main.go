@@ -21,7 +21,6 @@ func init() {
 }
 
 func main() {
-	config.InitLogger(config.DevMode)
 	logger := config.InitLogger(config.Mode(os.Getenv("MODE")))
 
 	from := os.Getenv("MAILMAL_EMAIL")
