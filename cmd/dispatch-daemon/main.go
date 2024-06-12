@@ -23,8 +23,8 @@ func init() {
 func main() {
 	logger := config.InitLogger(config.Mode(os.Getenv("MODE")))
 
-	from := os.Getenv("MAILMAL_EMAIL")
-	port, err := strconv.Atoi(os.Getenv("MAILMAL_PORT"))
+	from := os.Getenv("MAILMAN_EMAIL")
+	port, err := strconv.Atoi(os.Getenv("MAILMAN_PORT"))
 	if err != nil {
 		logger.Errorf("invalid smtp server port: %v", err)
 
@@ -46,10 +46,10 @@ func main() {
 		config.Log().Fatal("failed to execute template: ", err.Error())
 	}
 	logger.Info(mailing.NewMailman(mailing.SMTPParams{
-		Host:     os.Getenv("MAILMAL_HOST"),
+		Host:     os.Getenv("MAILMAN_HOST"),
 		Port:     port,
 		Username: from,
-		Password: os.Getenv("MAILMAL_PASSWORD")}).
+		Password: os.Getenv("MAILMAN_PASSWORD")}).
 		Send(mailing.Email{
 			From:     from,
 			To:       []string{"daha@gmail.com"},
