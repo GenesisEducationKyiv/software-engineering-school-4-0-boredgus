@@ -10,7 +10,7 @@ services:
     ports:
       - ${API_PORT}:${API_PORT}
     env_file:
-      - .env.example
+      - ${ENV_FILE}
     depends_on:
       currency-service:
         condition: service_started
@@ -25,7 +25,7 @@ services:
     ports:
       - ${CURRENCY_SERVICE_PORT}:${CURRENCY_SERVICE_PORT}
     env_file:
-      - .env.example
+      - ${ENV_FILE}
 
   dispatch-service:
     container_name: ${DISPATCH_SERVICE_ADDRESS}
@@ -35,7 +35,7 @@ services:
     ports:
       - ${DISPATCH_SERVICE_PORT}:${DISPATCH_SERVICE_PORT}
     env_file:
-      - .env.example
+      - ${ENV_FILE}
     depends_on:
       currency-service:
         condition: service_started
