@@ -42,10 +42,10 @@ var pqErrors = map[db.Error]pq.ErrorCode{
 
 func IsPqError(err error, errCode db.Error) bool {
 	e, ok := err.(*pq.Error)
-	config.Log().Debug("> IsPqError: \n", e.Code, strings.Join([]string{e.Message, e.Detail, e.Hint, e.Line}, ";"))
 	if !ok || e.Code != pqErrors[errCode] {
 		return false
 	}
+	config.Log().Debug("> IsPqError: \n", e.Code, strings.Join([]string{e.Message, e.Detail, e.Hint, e.Line}, ";"))
 
 	return true
 }
