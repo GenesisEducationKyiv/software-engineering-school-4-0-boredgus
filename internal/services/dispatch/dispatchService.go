@@ -2,7 +2,7 @@ package ds
 
 import (
 	"context"
-	ds "subscription-api/internal/db/dispatch"
+	db "subscription-api/internal/db"
 	"subscription-api/internal/entities"
 )
 
@@ -17,10 +17,29 @@ type DispatchService interface {
 	GetDispatch(ctx context.Context, dispatch_id string) (DispatchInfo, error)
 }
 
-type dispatchService struct {
-	store ds.DispatchStore
+type UserRepo interface {
+	CreateUser(ctx context.Context, db db.DB, email string) error
 }
 
-func NewDispatchService(s ds.DispatchStore) DispatchService {
-	return &dispatchService{store: s}
+type SubRepo interface {
+	CreateSubscription(ctx context.Context, db db.DB, args db.SubscriptionData) error
+}
+
+type DispatchRepo interface {
+	GetByID(ctx context.Context, db db.DB, dispatchId string) (db.DispatchData, error)
+}
+type dispatchService struct {
+	store        db.Store
+	userRepo     UserRepo
+	subRepo      SubRepo
+	dispatchRepo DispatchRepo
+}
+
+func NewDispatchService(s db.Store) DispatchService {
+	return &dispatchService{
+		store:        s,
+		userRepo:     db.NewUserRepo(),
+		subRepo:      db.NewSubRepo(),
+		dispatchRepo: db.NewDispatchRepo(),
+	}
 }

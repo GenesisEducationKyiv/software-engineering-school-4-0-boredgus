@@ -2,14 +2,14 @@ package ds
 
 import (
 	"context"
-	db "subscription-api/internal/db/dispatch"
+	"subscription-api/internal/db"
 	"subscription-api/internal/entities"
 )
 
 func (s *dispatchService) GetDispatch(ctx context.Context, dispatchId string) (DispatchInfo, error) {
 	var dispatch DispatchInfo
-	err := s.store.WithTx(ctx, func(dq db.DispatchQueries) error {
-		d, err := dq.GetDispatch(ctx, dispatchId)
+	err := s.store.WithTx(ctx, func(db db.DB) error {
+		d, err := s.dispatchRepo.GetByID(ctx, db, dispatchId)
 		if err == nil {
 			dispatch = DispatchInfo{
 				Dispatch: entities.Dispatch[entities.CurrencyDispatchDetails]{

@@ -7,7 +7,6 @@ import (
 	"subscription-api/cmd/dispatch-service/internal"
 	"subscription-api/config"
 	store "subscription-api/internal/db"
-	d_store "subscription-api/internal/db/dispatch"
 	ds "subscription-api/internal/services/dispatch"
 	g "subscription-api/internal/services/dispatch/grpc"
 	"subscription-api/internal/sql"
@@ -36,7 +35,7 @@ func main() {
 	server := grpc.NewServer()
 	pb_ds.RegisterDispatchServiceServer(server,
 		g.NewDispatchServiceServer(
-			ds.NewDispatchService(d_store.NewCurrencyDispatchStore(
+			ds.NewDispatchService(
 				store.NewStore(
 					utils.Must(db.NewPostrgreSQL(
 						env.PostgreSQLConnString,
@@ -44,7 +43,7 @@ func main() {
 					)),
 					db.IsPqError,
 				))),
-		))
+	)
 
 	logger.Info("dispatch service started...")
 	err = server.Serve(lis)

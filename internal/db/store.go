@@ -15,10 +15,13 @@ const (
 
 type ErrorCheckFunc func(error, Error) bool
 
-type Store[Queries any] interface {
-	WithTx(ctx context.Context, f func(Queries) error) error
+type DB interface {
 	IsError(err error, errCode Error) bool
 	DB() *sql.DB
+}
+
+type Store interface {
+	WithTx(ctx context.Context, f func(DB) error) error
 }
 
 type store struct {
@@ -26,11 +29,11 @@ type store struct {
 	checkError ErrorCheckFunc
 }
 
-func NewStore(db *sql.DB, errorF ErrorCheckFunc) Store[any] {
+func NewStore(db *sql.DB, errorF ErrorCheckFunc) Store {
 	return &store{database: db, checkError: errorF}
 }
 
-func (s *store) WithTx(ctx context.Context, f func(q any) error) error {
+func (s *store) WithTx(ctx context.Context, f func(DB) error) error {
 	tx, err := s.database.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelDefault})
 	if err != nil {
 		return err
