@@ -19,6 +19,11 @@ func init() {
 
 }
 
+/*
+This module is not implemented yet.
+The logic written below is redundunt and not worth to pay attention to.
+I'll implement it later.
+*/
 func main() {
 	env := internal.Env()
 	logger := config.InitLogger(env.Mode)
