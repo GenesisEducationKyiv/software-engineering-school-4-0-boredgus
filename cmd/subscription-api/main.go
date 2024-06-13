@@ -2,8 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"os"
 	"strings"
 	"subscription-api/cmd/subscription-api/internal"
 	"subscription-api/config"
@@ -20,30 +18,31 @@ var envFile string
 func init() {
 	flag.StringVar(&envFile, "env", "dev.env", "list of filenames splitted with coma (e.g. '.env,dev.env')")
 	flag.Parse()
-	config.InitEnvVariables(strings.Split(envFile, ",")...)
+	config.LoadEnvFile(strings.Split(envFile, ",")...)
 }
 
 func main() {
-	logger := config.InitLogger(config.Mode(os.Getenv("MODE")))
-	logger.Info("START API at ", os.Getenv("API_PORT"))
+	env := internal.Env()
+	logger := config.InitLogger(env.Mode)
 
 	currencyServiceConn, err := grpc.NewClient(
-		fmt.Sprintf("%v:%v", os.Getenv("CURRENCY_SERVICE_ADDRESS"), os.Getenv("CURRENCY_SERVICE_PORT")),
+		env.CurrencyServiceServer,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	utils.FatalOnError(err, logger, "failed to connect to currency service grpc server")
 
 	dispatchServiceConn, err := grpc.NewClient(
-		fmt.Sprintf("%v:%v", os.Getenv("DISPATCH_SERVICE_ADDRESS"), os.Getenv("DISPATCH_SERVICE_PORT")),
+		env.DispatchServiceServer,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	utils.FatalOnError(err, logger, "failed to connect to dispatch service grpc server")
 
+	logger.Infof("started subscription API at %v port", env.Port)
 	if err := internal.GetRouter(internal.APIParams{
 		CurrencyService: pb_cs.NewCurrencyServiceClient(currencyServiceConn),
 		DispatchService: pb_ds.NewDispatchServiceClient(dispatchServiceConn),
 		Logger:          logger,
-	}).Run(":" + os.Getenv("API_PORT")); err != nil {
+	}).Run(":" + env.Port); err != nil {
 		logger.Fatal("failed to start server: %v", err)
 	}
 }

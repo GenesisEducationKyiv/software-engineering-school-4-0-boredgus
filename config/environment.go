@@ -16,7 +16,7 @@ const (
 	ProdMode Mode = "prod"
 )
 
-func LoadEnvFile(envFiles []string) {
+func LoadEnvFile(envFiles ...string) {
 	for _, filename := range envFiles {
 		_, err := os.Stat(filename)
 		if errors.Is(err, os.ErrNotExist) {
@@ -28,7 +28,4 @@ func LoadEnvFile(envFiles []string) {
 	if err := godotenv.Load(envFiles...); err != nil {
 		Log().Fatalf("failed to load %v file: %v", strings.Join(envFiles, ","), err)
 	}
-}
-func InitEnvVariables(envFiles ...string) {
-	LoadEnvFile(envFiles)
 }

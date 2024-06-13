@@ -4,8 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"html/template"
-	"os"
-	"strconv"
+	"subscription-api/cmd/dispatch-daemon/internal"
 	"subscription-api/config"
 	"subscription-api/internal/mailing"
 )
@@ -16,20 +15,14 @@ var (
 
 func init() {
 	flag.Parse()
-	config.InitEnvVariables(*envFiles)
+	config.LoadEnvFile(*envFiles)
 
 }
 
 func main() {
-	logger := config.InitLogger(config.Mode(os.Getenv("MODE")))
+	env := internal.Env()
+	logger := config.InitLogger(env.Mode)
 
-	from := os.Getenv("MAILMAN_EMAIL")
-	port, err := strconv.Atoi(os.Getenv("MAILMAN_PORT"))
-	if err != nil {
-		logger.Errorf("invalid smtp server port: %v", err)
-
-		return
-	}
 	data := struct {
 		BaseCurrency   string
 		TargetCurrency string
@@ -46,14 +39,14 @@ func main() {
 		config.Log().Fatal("failed to execute template: ", err.Error())
 	}
 	logger.Info(mailing.NewMailman(mailing.SMTPParams{
-		Host:     os.Getenv("MAILMAN_HOST"),
-		Port:     port,
-		Username: from,
-		Password: os.Getenv("MAILMAN_PASSWORD")}).
+		Host:     env.MailmanHost,
+		Port:     env.MailmanPort,
+		Username: env.MailmanEmail,
+		Password: env.MailmanPassword}).
 		Send(mailing.Email{
-			From:     from,
+			From:     env.MailmanEmail,
 			To:       []string{"daha@gmail.com"},
-			ReplyTo:  from,
+			ReplyTo:  env.MailmanEmail,
 			Subject:  "Daily USD-UAH exchange rate",
 			HTMLBody: buffer.String(),
 		}))
