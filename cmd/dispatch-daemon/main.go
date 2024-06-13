@@ -23,6 +23,10 @@ func init() {
 This module is not implemented yet.
 The logic written below is redundunt and not worth to pay attention to.
 I'll implement it later.
+
+In perspective it will:
+- fetch data (id and count of subscribers) of dispatches filtering by time of sending
+- invoke sending of emails through gRPC
 */
 func main() {
 	env := internal.Env()
