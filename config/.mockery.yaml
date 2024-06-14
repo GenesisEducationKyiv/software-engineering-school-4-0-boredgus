@@ -1,7 +1,9 @@
 with-expecter: true
-outpkg: mocks
+outpkg: "{{.PackageName}}_mocks"
 dir: "internal/mocks/{{.PackageName}}"
 mockname: "{{.InterfaceName}}"
+filename: "mock_{{.InterfaceName}}.go"
+
 packages:
   subscription-api/internal/services/currency:
     interfaces:
@@ -9,11 +11,18 @@ packages:
   subscription-api/internal/services/dispatch:
     interfaces:
       DispatchService:
+      UserRepo:
+        config:
+          dir: "internal/mocks/repo"
+          outpkg: "repo_mocks"
+      SubRepo:
+        config:
+          dir: "internal/mocks/repo"
+          outpkg: "repo_mocks"
+      DispatchRepo:
+        config:
+          dir: "internal/mocks/repo"
+          outpkg: "repo_mocks"
   subscription-api/internal/db:
     interfaces:
       Store:
-  subscription-api/internal/db/dispatch:
-    interfaces:
-      DispatchStore:
-
-
