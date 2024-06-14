@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 	"subscription-api/internal/entities"
-	mocks "subscription-api/internal/mocks/cs"
+	cfg_mocks "subscription-api/internal/mocks/config"
+	cs_mocks "subscription-api/internal/mocks/cs"
 	cs "subscription-api/internal/services/currency"
 	pb_cs "subscription-api/pkg/grpc/currency_service"
 	"testing"
@@ -23,13 +24,15 @@ func Test_CurrencyServiceServer_Convert(t *testing.T) {
 		convertedRates map[entities.Currency]float64
 		convertErr     error
 	}
-	csMock := mocks.NewCurrencyService(t)
+	csMock := cs_mocks.NewCurrencyService(t)
+	loggerMock := cfg_mocks.NewLogger(t)
 	internalError := fmt.Errorf("internal-error")
 	setup := func(res *mockedRes, args cs.ConvertParams) func() {
 		csCall := csMock.EXPECT().Convert(mock.Anything, args).Return(res.convertedRates, res.convertErr).Once()
-
+		logCall := loggerMock.EXPECT().Infof(mock.Anything, mock.Anything, mock.Anything)
 		return func() {
 			csCall.Unset()
+			logCall.Unset()
 		}
 	}
 	tests := []struct {
@@ -88,6 +91,7 @@ func Test_CurrencyServiceServer_Convert(t *testing.T) {
 			s := &currencyServiceServer{
 				UnimplementedCurrencyServiceServer: pb_cs.UnimplementedCurrencyServiceServer{},
 				s:                                  csMock,
+				l:                                  loggerMock,
 			}
 			got, err := s.Convert(context.Background(), tt.args.req)
 			assert.Equal(t, got, tt.want)
