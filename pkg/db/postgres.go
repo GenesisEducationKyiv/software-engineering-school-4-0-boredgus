@@ -4,27 +4,21 @@ import (
 	"database/sql"
 	"fmt"
 	"subscription-api/internal/db"
-	"sync"
 
 	"github.com/lib/pq"
 )
 
-var postgresOnce sync.Once
-var postgresDB *sql.DB
-
 func NewPostrgreSQL(dsn string, handlers ...func(db *sql.DB)) (*sql.DB, error) {
-	postgresOnce.Do(func() {
-		db, err := sql.Open("postgres", dsn)
-		if err != nil {
-			panic(fmt.Errorf("failed to connect to postgres db: %w", err))
-		}
-		postgresDB = db
-	})
-	for _, handler := range handlers {
-		handler(postgresDB)
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		panic(fmt.Errorf("failed to connect to postgres db: %w", err))
 	}
 
-	return postgresDB, nil
+	for _, handler := range handlers {
+		handler(db)
+	}
+
+	return db, nil
 }
 
 const (
