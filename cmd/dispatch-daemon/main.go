@@ -32,11 +32,11 @@ func main() {
 		ExchangeRate:   30.1232211,
 	}
 	var buffer bytes.Buffer
-	if err := template.
+	err := template.
 		Must(template.ParseFiles("internal/mailing/emails/exchange_rate.html")).
-		Execute(&buffer, data); err != nil {
-		logger.Fatal("failed to execute template: ", err.Error())
-	}
+		Execute(&buffer, data)
+	utils.PanicOnError(err, "failed to execute template")
+
 	logger.Info(mailing.NewMailman(mailing.SMTPParams{
 		Host:     env.MailmanHost,
 		Port:     env.MailmanPort,
