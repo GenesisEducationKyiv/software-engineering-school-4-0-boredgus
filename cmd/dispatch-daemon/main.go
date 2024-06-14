@@ -22,6 +22,7 @@ func main() {
 	env := utils.Must(internal.Env())
 	logger := config.InitLogger(env.Mode)
 
+	defaultRate := 30.1232211
 	data := struct {
 		BaseCurrency   string
 		TargetCurrency string
@@ -29,7 +30,7 @@ func main() {
 	}{
 		BaseCurrency:   "USD",
 		TargetCurrency: "UAH",
-		ExchangeRate:   30.1232211,
+		ExchangeRate:   defaultRate,
 	}
 	var buffer bytes.Buffer
 	err := template.

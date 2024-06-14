@@ -30,6 +30,7 @@ func Test_CurrencyServiceServer_Convert(t *testing.T) {
 	setup := func(res *mockedRes, args cs.ConvertParams) func() {
 		csCall := csMock.EXPECT().Convert(mock.Anything, args).Return(res.convertedRates, res.convertErr).Once()
 		logCall := loggerMock.EXPECT().Infof(mock.Anything, mock.Anything, mock.Anything)
+
 		return func() {
 			csCall.Unset()
 			logCall.Unset()

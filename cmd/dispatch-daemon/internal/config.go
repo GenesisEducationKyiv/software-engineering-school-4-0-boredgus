@@ -20,5 +20,6 @@ func Env() (*envVars, error) {
 	if err := env.Parse(&vars); err != nil {
 		return nil, fmt.Errorf("failed to parse env variables: %w", err)
 	}
+
 	return &vars, nil
 }

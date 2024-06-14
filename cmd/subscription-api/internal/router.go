@@ -42,15 +42,19 @@ type APIParams struct {
 	Logger          config.Logger
 }
 
+var MaxRequestDuration = 2000 * time.Millisecond
+
 func GetRouter(params APIParams) *gin.Engine {
 	r := gin.Default()
+
 	r.GET("/rate", func(ctx *gin.Context) {
-		c, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		c, cancel := context.WithTimeout(context.Background(), MaxRequestDuration)
 		defer cancel()
 		controllers.GetExchangeRate(NewContext(ctx, c, params.Logger), params.CurrencyService)
 	})
+
 	r.POST("/subscribe", func(ctx *gin.Context) {
-		c, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		c, cancel := context.WithTimeout(context.Background(), MaxRequestDuration)
 		defer cancel()
 		controllers.SubscribeForDailyDispatch(NewContext(ctx, c, params.Logger), params.DispatchService)
 	})
