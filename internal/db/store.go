@@ -29,7 +29,7 @@ type store struct {
 	checkError ErrorCheckFunc
 }
 
-func NewStore(db *sql.DB, errorF ErrorCheckFunc) Store {
+func NewStore(db *sql.DB, errorF ErrorCheckFunc) *store {
 	return &store{database: db, checkError: errorF}
 }
 

@@ -22,7 +22,7 @@ type currencyService struct {
 	currencyAPIClient CurrencyAPIClient
 }
 
-func NewCurrencyService(client CurrencyAPIClient) CurrencyService {
+func NewCurrencyService(client CurrencyAPIClient) *currencyService {
 	return &currencyService{
 		currencyAPIClient: client,
 	}

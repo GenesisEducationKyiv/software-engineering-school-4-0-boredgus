@@ -17,7 +17,7 @@ type ctx struct {
 	logger config.Logger
 }
 
-func NewContext(c *gin.Context, cx context.Context, logger config.Logger) controllers.Context {
+func NewContext(c *gin.Context, cx context.Context, logger config.Logger) *ctx {
 	return &ctx{c: c, ctx: c, logger: logger}
 }
 func (c *ctx) Status(status int) {

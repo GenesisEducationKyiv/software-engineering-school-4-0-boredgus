@@ -19,7 +19,7 @@ type dispatchServiceServer struct {
 	pb_ds.UnimplementedDispatchServiceServer
 }
 
-func NewDispatchServiceServer(s ds.DispatchService, l config.Logger) pb_ds.DispatchServiceServer {
+func NewDispatchServiceServer(s ds.DispatchService, l config.Logger) *dispatchServiceServer {
 	return &dispatchServiceServer{s: s, l: l}
 }
 

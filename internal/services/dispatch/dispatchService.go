@@ -32,7 +32,7 @@ type dispatchService struct {
 	dispatchRepo DispatchRepo
 }
 
-func NewDispatchService(s db.Store) DispatchService {
+func NewDispatchService(s db.Store) *dispatchService {
 	return &dispatchService{
 		store:        s,
 		userRepo:     db.NewUserRepo(),

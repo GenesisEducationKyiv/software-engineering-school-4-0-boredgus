@@ -25,7 +25,7 @@ type SMTPParams struct {
 	Password string
 }
 
-func NewMailman(params SMTPParams) Mailman {
+func NewMailman(params SMTPParams) *mailman {
 	return &mailman{
 		dialer: *mail.NewDialer(params.Host, params.Port, params.Username, params.Password),
 	}

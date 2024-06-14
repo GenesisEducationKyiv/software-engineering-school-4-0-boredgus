@@ -19,7 +19,7 @@ type currencyServiceServer struct {
 	l config.Logger
 }
 
-func NewCurrencyServiceServer(s cs.CurrencyService, l config.Logger) pb_cs.CurrencyServiceServer {
+func NewCurrencyServiceServer(s cs.CurrencyService, l config.Logger) *currencyServiceServer {
 	return &currencyServiceServer{s: s, l: l}
 }
 

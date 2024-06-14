@@ -27,7 +27,7 @@ type htmlTemplateParser struct {
 	l config.Logger
 }
 
-func NewHTMLTemplateParser(l config.Logger) HTMLTemplateParser {
+func NewHTMLTemplateParser(l config.Logger) *htmlTemplateParser {
 	return &htmlTemplateParser{l: l}
 }
 func (p htmlTemplateParser) Parse(templateName string, data any) ([]byte, error) {
