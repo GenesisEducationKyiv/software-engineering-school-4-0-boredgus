@@ -14,14 +14,10 @@ type envVars struct {
 	ExchangeCurrencyAPIKey string      `env:"EXCHANGE_CURRENCY_API_KEY"`
 }
 
-var vars envVars
-
-func init() {
+func Env() *envVars {
+	var vars *envVars
 	if err := env.Parse(&vars); err != nil {
 		config.Log().Errorf("failed to parse env variables: %w", err)
 	}
-}
-
-func Env() envVars {
 	return vars
 }

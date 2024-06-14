@@ -17,14 +17,10 @@ type envVars struct {
 	PostgreSQLConnString   string      `env:"POSTGRESQL_CONN_STRING"`
 }
 
-var vars envVars
-
-func init() {
+func Env() *envVars {
+	var vars *envVars
 	if err := env.Parse(&vars); err != nil {
 		config.Log().Errorf("failed to parse env variables: %w", err)
 	}
-}
-
-func Env() envVars {
 	return vars
 }
