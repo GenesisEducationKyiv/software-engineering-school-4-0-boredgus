@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"subscription-api/config"
 
 	"github.com/caarlos0/env/v9"
@@ -14,10 +15,10 @@ type envVars struct {
 	ExchangeCurrencyAPIKey string      `env:"EXCHANGE_CURRENCY_API_KEY"`
 }
 
-func Env() *envVars {
-	var vars *envVars
+func Env() (*envVars, error) {
+	var vars envVars
 	if err := env.Parse(&vars); err != nil {
-		config.Log().Errorf("failed to parse env variables: %w", err)
+		return nil, fmt.Errorf("failed to parse env variables: %w", err)
 	}
-	return vars
+	return &vars, nil
 }

@@ -1,10 +1,8 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"net"
-	"strings"
 	"subscription-api/cmd/dispatch-service/internal"
 	"subscription-api/config"
 	store "subscription-api/internal/db"
@@ -18,20 +16,13 @@ import (
 	"google.golang.org/grpc"
 )
 
-var envFile string
-
-func init() {
-	flag.StringVar(&envFile, "env", "dev.env", "list of filenames splitted with coma (e.g. '.env,dev.env')")
-	flag.Parse()
-	config.LoadEnvFile(strings.Split(envFile, ",")...)
-}
-
 func main() {
-	env := internal.Env()
+	env := utils.Must(internal.Env())
 	logger := config.InitLogger(env.Mode)
 
-	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%s", env.DispatchServiceAddress, env.DispatchServicePort))
-	utils.FatalOnError(err, logger, "failed to listen: %v")
+	url := fmt.Sprintf("%s:%s", env.DispatchServiceAddress, env.DispatchServicePort)
+	lis, err := net.Listen("tcp", url)
+	utils.PanicOnError(err, fmt.Sprintf("failed to listen %s", url))
 
 	server := grpc.NewServer()
 	pb_ds.RegisterDispatchServiceServer(server,
@@ -40,13 +31,14 @@ func main() {
 				store.NewStore(
 					utils.Must(db.NewPostrgreSQL(
 						env.PostgreSQLConnString,
-						sql.PostgeSQLMigrationsUp("public"),
+						sql.PostgeSQLMigrationsUp("public", logger),
 					)),
 					db.IsPqError,
-				))),
-	)
+				)),
+			logger,
+		))
 
 	logger.Info("dispatch service started...")
-	err = server.Serve(lis)
-	utils.FatalOnError(err, logger, "failed to serve: %v")
+
+	utils.PanicOnError(server.Serve(lis), "failed to serve")
 }

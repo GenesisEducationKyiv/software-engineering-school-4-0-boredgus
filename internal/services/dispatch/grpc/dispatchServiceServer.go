@@ -15,15 +15,16 @@ import (
 
 type dispatchServiceServer struct {
 	s ds.DispatchService
+	l config.Logger
 	pb_ds.UnimplementedDispatchServiceServer
 }
 
-func NewDispatchServiceServer(s ds.DispatchService) pb_ds.DispatchServiceServer {
-	return &dispatchServiceServer{s: s}
+func NewDispatchServiceServer(s ds.DispatchService, l config.Logger) pb_ds.DispatchServiceServer {
+	return &dispatchServiceServer{s: s, l: l}
 }
 
 func (s *dispatchServiceServer) log(method string, req any) {
-	config.Log().Infof("DispatchService.%v(%+v)", method, req)
+	s.l.Infof("DispatchService.%v(%+v)", method, req)
 }
 
 func (s *dispatchServiceServer) SubscribeFor(ctx context.Context, req *pb_ds.SubscribeForRequest) (*pb_ds.SubscribeForResponse, error) {

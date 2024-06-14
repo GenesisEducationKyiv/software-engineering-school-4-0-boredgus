@@ -15,14 +15,15 @@ import (
 type currencyServiceServer struct {
 	pb_cs.UnimplementedCurrencyServiceServer
 	s cs.CurrencyService
+	l config.Logger
 }
 
-func NewCurrencyServiceServer(s cs.CurrencyService) pb_cs.CurrencyServiceServer {
-	return &currencyServiceServer{s: s}
+func NewCurrencyServiceServer(s cs.CurrencyService, l config.Logger) pb_cs.CurrencyServiceServer {
+	return &currencyServiceServer{s: s, l: l}
 }
 
 func (s *currencyServiceServer) log(method string, req any) {
-	config.Log().Infof("CurrencyService.%v(%+v)", method, req)
+	s.l.Infof("CurrencyService.%v(%+v)", method, req)
 }
 
 func (s *currencyServiceServer) Convert(ctx context.Context, req *pb_cs.ConvertRequest) (*pb_cs.ConvertResponse, error) {

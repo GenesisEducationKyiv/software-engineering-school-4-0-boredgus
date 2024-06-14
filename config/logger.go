@@ -1,9 +1,8 @@
 package config
 
 import (
-	"sync"
-
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type Logger interface {
@@ -15,24 +14,20 @@ type Logger interface {
 	Debugf(format string, values ...any)
 }
 
-var logger zap.SugaredLogger
-var onceLogger sync.Once
-
-func InitLogger(mode Mode) *zap.SugaredLogger {
-	l, er := zap.NewDevelopment()
-	if mode == ProdMode {
-		l, er = zap.NewProduction()
-	}
-	lg := zap.Must(l, er).Sugar()
-	logger = *lg
-
-	return lg
+type logger struct {
+	*zap.SugaredLogger
 }
 
-func Log() *zap.SugaredLogger {
-	onceLogger.Do(func() {
-		InitLogger(DevMode)
-	})
+func (l *logger) Printf(format string, v ...interface{}) {
+	l.SugaredLogger.Infof(format, v...)
+}
 
-	return &logger
+func InitLogger(mode Mode) *logger {
+	config := zap.NewDevelopmentConfig()
+	if mode == ProdMode {
+		config = zap.NewProductionConfig()
+	}
+	config.EncoderConfig.EncodeTime = zapcore.RFC3339NanoTimeEncoder
+
+	return &logger{SugaredLogger: zap.Must(config.Build()).Sugar()}
 }
