@@ -3,8 +3,6 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"strings"
-	"subscription-api/config"
 	"subscription-api/internal/db"
 	"sync"
 
@@ -45,7 +43,6 @@ func IsPqError(err error, errCode db.Error) bool {
 	if !ok || e.Code != pqErrors[errCode] {
 		return false
 	}
-	config.Log().Debug("> IsPqError: \n", e.Code, strings.Join([]string{e.Message, e.Detail, e.Hint, e.Line}, ";"))
 
 	return true
 }

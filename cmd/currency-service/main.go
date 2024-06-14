@@ -1,10 +1,8 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"net"
-	"strings"
 	"subscription-api/cmd/currency-service/internal"
 	"subscription-api/config"
 	cs "subscription-api/internal/services/currency"
@@ -15,27 +13,21 @@ import (
 	"google.golang.org/grpc"
 )
 
-var envFile string
-
-func init() {
-	flag.StringVar(&envFile, "env", "dev.env", "list of filenames splitted with coma (e.g. '.env,dev.env')")
-	flag.Parse()
-	config.LoadEnvFile(strings.Split(envFile, ",")...)
-}
-
 func main() {
-	env := internal.Env()
+	env := utils.Must(internal.Env())
 	logger := config.InitLogger(env.Mode)
 
-	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%s", env.CurrencyServiceAddress, env.CurrencyServicePort))
-	utils.FatalOnError(err, logger, "failed to listen: %v")
+	url := fmt.Sprintf("%s:%s", env.CurrencyServiceAddress, env.CurrencyServicePort)
+	lis, err := net.Listen("tcp", url)
+	utils.PanicOnError(err, fmt.Sprintf("failed to listen %s", url))
 
 	server := grpc.NewServer()
 	pb_cs.RegisterCurrencyServiceServer(server,
 		g.NewCurrencyServiceServer(
 			cs.NewCurrencyService(env.ExchangeCurrencyAPIKey),
+			logger,
 		))
 	logger.Info("currency service started...")
-	err = server.Serve(lis)
-	utils.FatalOnError(err, logger, "failed to serve: %v")
+
+	utils.PanicOnError(server.Serve(lis), "failed to serve")
 }

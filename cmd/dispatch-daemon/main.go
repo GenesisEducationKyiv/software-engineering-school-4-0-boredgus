@@ -2,22 +2,12 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"html/template"
 	"subscription-api/cmd/dispatch-daemon/internal"
 	"subscription-api/config"
 	"subscription-api/internal/mailing"
+	"subscription-api/pkg/utils"
 )
-
-var (
-	envFiles = flag.String("env", "dev.env", "list of env files separated with coma (e.g. '.env,prod.env')")
-)
-
-func init() {
-	flag.Parse()
-	config.LoadEnvFile(*envFiles)
-
-}
 
 /*
 This module is not implemented yet.
@@ -29,7 +19,7 @@ In perspective it will:
 - invoke sending of emails through gRPC
 */
 func main() {
-	env := internal.Env()
+	env := utils.Must(internal.Env())
 	logger := config.InitLogger(env.Mode)
 
 	data := struct {
@@ -45,7 +35,7 @@ func main() {
 	if err := template.
 		Must(template.ParseFiles("internal/mailing/emails/exchange_rate.html")).
 		Execute(&buffer, data); err != nil {
-		config.Log().Fatal("failed to execute template: ", err.Error())
+		logger.Fatal("failed to execute template: ", err.Error())
 	}
 	logger.Info(mailing.NewMailman(mailing.SMTPParams{
 		Host:     env.MailmanHost,

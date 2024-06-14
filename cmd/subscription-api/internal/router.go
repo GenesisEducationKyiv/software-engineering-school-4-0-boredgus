@@ -9,16 +9,15 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 type ctx struct {
 	c      *gin.Context
 	ctx    context.Context
-	logger *zap.SugaredLogger
+	logger config.Logger
 }
 
-func NewContext(c *gin.Context, cx context.Context, logger *zap.SugaredLogger) controllers.Context {
+func NewContext(c *gin.Context, cx context.Context, logger config.Logger) controllers.Context {
 	return &ctx{c: c, ctx: c, logger: logger}
 }
 func (c *ctx) Status(status int) {
@@ -40,7 +39,7 @@ func (c *ctx) Logger() config.Logger {
 type APIParams struct {
 	CurrencyService pb_cs.CurrencyServiceClient
 	DispatchService pb_ds.DispatchServiceClient
-	Logger          *zap.SugaredLogger
+	Logger          config.Logger
 }
 
 func GetRouter(params APIParams) *gin.Engine {
