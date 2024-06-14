@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"strings"
 	"subscription-api/cmd/subscription-api/internal"
 	"subscription-api/config"
@@ -26,13 +27,13 @@ func main() {
 	logger := config.InitLogger(env.Mode)
 
 	currencyServiceConn, err := grpc.NewClient(
-		env.CurrencyServiceServer,
+		fmt.Sprintf("%s:%s", env.CurrencyServiceAddress, env.CurrencyServicePort),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	utils.FatalOnError(err, logger, "failed to connect to currency service grpc server")
 
 	dispatchServiceConn, err := grpc.NewClient(
-		env.DispatchServiceServer,
+		fmt.Sprintf("%s:%s", env.DispatchServiceAddress, env.DispatchServicePort),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	utils.FatalOnError(err, logger, "failed to connect to dispatch service grpc server")

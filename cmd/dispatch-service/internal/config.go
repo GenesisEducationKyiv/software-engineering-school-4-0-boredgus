@@ -7,13 +7,14 @@ import (
 )
 
 type envVars struct {
-	Mode                  config.Mode `env:"MODE"`
-	MailmanHost           string      `env:"MAILMAN_HOST"`
-	MailmanPort           int         `env:"MAILMAN_PORT"`
-	MailmanEmail          string      `env:"MAILMAN_EMAIL"`
-	MailmanPassword       string      `env:"MAILMAN_PASSWORD"`
-	DispatchServiceServer string      `env:"DISPATCH_SERVICE_SERVER"`
-	PostgreSQLConnString  string      `env:"POSTGRESQL_CONN_STRING"`
+	Mode                   config.Mode `env:"MODE"`
+	MailmanHost            string      `env:"MAILMAN_HOST"`
+	MailmanPort            int         `env:"MAILMAN_PORT"`
+	MailmanEmail           string      `env:"MAILMAN_EMAIL"`
+	MailmanPassword        string      `env:"MAILMAN_PASSWORD"`
+	DispatchServiceAddress string      `env:"DISPATCH_SERVICE_ADDRESS"`
+	DispatchServicePort    string      `env:"DISPATCH_SERVICE_PORT"`
+	PostgreSQLConnString   string      `env:"POSTGRESQL_CONN_STRING"`
 }
 
 var vars envVars

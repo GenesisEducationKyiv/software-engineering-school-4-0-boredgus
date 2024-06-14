@@ -9,7 +9,8 @@ import (
 type envVars struct {
 	Mode                   config.Mode `env:"MODE"`
 	Port                   string      `env:"CURRENCY_SERVICE_PORT"`
-	CurrencyServiceServer  string      `env:"CURRENCY_SERVICE_SERVER"`
+	CurrencyServiceAddress string      `env:"CURRENCY_SERVICE_ADDRESS"`
+	CurrencyServicePort    string      `env:"CURRENCY_SERVICE_PORT"`
 	ExchangeCurrencyAPIKey string      `env:"EXCHANGE_CURRENCY_API_KEY"`
 }
 
