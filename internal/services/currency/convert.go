@@ -18,7 +18,12 @@ func (e *currencyService) Convert(ctx context.Context, params ConvertParams) (ma
 	if len(params.To) == 0 {
 		return nil, fmt.Errorf("%w: no target currencies provided", InvalidArgumentErr)
 	}
-	resp, err := http.Get(fmt.Sprintf("%s/latest/%s", e.APIBasePath, params.From))
+	url := fmt.Sprintf("%s/latest/%s", e.APIBasePath, params.From)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", InvalidRequestErr, err)
+	}
+	resp, err := e.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", InvalidRequestErr, err)
 	}
@@ -36,5 +41,6 @@ func (e *currencyService) Convert(ctx context.Context, params ConvertParams) (ma
 	for _, currency := range params.To {
 		rates[currency] = res.Rates[string(currency)]
 	}
+
 	return rates, nil
 }

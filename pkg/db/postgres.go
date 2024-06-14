@@ -3,29 +3,22 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"strings"
-	"subscription-api/config"
 	"subscription-api/internal/db"
-	"sync"
 
 	"github.com/lib/pq"
 )
 
-var postgresOnce sync.Once
-var postgresDB *sql.DB
-
 func NewPostrgreSQL(dsn string, handlers ...func(db *sql.DB)) (*sql.DB, error) {
-	postgresOnce.Do(func() {
-		db, err := sql.Open("postgres", dsn)
-		if err != nil {
-			panic(fmt.Errorf("failed to connect to postgres db: %w", err))
-		}
-		postgresDB = db
-	})
-	for _, handler := range handlers {
-		handler(postgresDB)
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		panic(fmt.Errorf("failed to connect to postgres db: %w", err))
 	}
-	return postgresDB, nil
+
+	for _, handler := range handlers {
+		handler(db)
+	}
+
+	return db, nil
 }
 
 const (
@@ -41,9 +34,9 @@ var pqErrors = map[db.Error]pq.ErrorCode{
 
 func IsPqError(err error, errCode db.Error) bool {
 	e, ok := err.(*pq.Error)
-	config.Log().Debug("> IsPqError: \n", e.Code, strings.Join([]string{e.Message, e.Detail, e.Hint, e.Line}, ";"))
 	if !ok || e.Code != pqErrors[errCode] {
 		return false
 	}
+
 	return true
 }

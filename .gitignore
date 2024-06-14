@@ -1,2 +1,6 @@
+# tests
 test-coverage.txt
-/*.env
+
+# env
+*.env*
+!.env.example

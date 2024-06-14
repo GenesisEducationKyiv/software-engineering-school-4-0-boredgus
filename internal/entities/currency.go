@@ -15,6 +15,7 @@ func (c Currency) IsSupported() bool {
 			return true
 		}
 	}
+
 	return false
 }
 func FromString(data []string) []Currency {
@@ -22,5 +23,6 @@ func FromString(data []string) []Currency {
 	for i, v := range data {
 		res[i] = Currency(v)
 	}
+
 	return res
 }

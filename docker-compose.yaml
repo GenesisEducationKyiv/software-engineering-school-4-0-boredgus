@@ -5,12 +5,12 @@ services:
   api:
     container_name: ${API_ADDRESS}
     build:
-      context: ../.
+      context: .
       dockerfile: docker/Dockerfile.subscription-api
     ports:
       - ${API_PORT}:${API_PORT}
     env_file:
-      - default.env
+      - ${ENV_FILE}
     depends_on:
       currency-service:
         condition: service_started
@@ -20,22 +20,22 @@ services:
   currency-service:
     container_name: ${CURRENCY_SERVICE_ADDRESS}
     build:
-      context:  ../.
+      context:  .
       dockerfile: docker/Dockerfile.currency-service
     ports:
       - ${CURRENCY_SERVICE_PORT}:${CURRENCY_SERVICE_PORT}
     env_file:
-      - default.env
+      - ${ENV_FILE}
 
   dispatch-service:
     container_name: ${DISPATCH_SERVICE_ADDRESS}
     build:
-      context:  ../.
+      context:  .
       dockerfile: docker/Dockerfile.dispatch-service
     ports:
       - ${DISPATCH_SERVICE_PORT}:${DISPATCH_SERVICE_PORT}
     env_file:
-      - default.env
+      - ${ENV_FILE}
     depends_on:
       currency-service:
         condition: service_started
@@ -46,7 +46,7 @@ services:
 #   mailimg-daemon:
 #     container_name: ${MAILING_DAEMON_CONTAINER}
 #     build:
-#       context: ../.
+#       context: .
 #       dockerfile: Dockerfile.mailing-daemon
 #     ports:
 #       - ${MAILING_DAEMON_PORT}:${MAILING_DAEMON_PORT}
@@ -71,8 +71,5 @@ services:
 
 volumes:
   postgres-data:
-    
-# secrets:
-#   prod-env:
-#     file: .env
+
   

@@ -3,6 +3,9 @@ outpkg: mocks
 dir: "internal/mocks/{{.PackageName}}"
 mockname: "{{.InterfaceName}}"
 packages:
+  subscription-api/config:
+    interfaces:
+      Logger:
   subscription-api/internal/services/currency:
     interfaces:
       CurrencyService:
@@ -15,5 +18,3 @@ packages:
   subscription-api/internal/db/dispatch:
     interfaces:
       DispatchStore:
-
-

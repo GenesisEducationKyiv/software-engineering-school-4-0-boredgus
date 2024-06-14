@@ -1,10 +1,13 @@
-compose_file:=docker/docker-compose.yaml
+ENV_FILE=.env.example
 
 start:
-	docker compose -f $(compose_file)  --env-file docker/default.env up
+	ENV_FILE=${ENV_FILE} docker compose -f docker-compose.yaml --env-file ${ENV_FILE} up
 
 generate-mocks:
 	mockery --config=config/.mockery.yaml
+
+lint:
+	golangci-lint run -c .golangci.yaml
 
 test:
 	go test ./... -coverprofile="test-coverage.txt" -covermode count

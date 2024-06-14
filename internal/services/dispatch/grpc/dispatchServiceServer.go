@@ -3,7 +3,6 @@ package grpc
 import (
 	"context"
 	"errors"
-	"fmt"
 	"subscription-api/config"
 	"subscription-api/internal/services"
 	ds "subscription-api/internal/services/dispatch"
@@ -16,15 +15,16 @@ import (
 
 type dispatchServiceServer struct {
 	s ds.DispatchService
+	l config.Logger
 	pb_ds.UnimplementedDispatchServiceServer
 }
 
-func NewDispatchServiceServer(s ds.DispatchService) pb_ds.DispatchServiceServer {
-	return &dispatchServiceServer{s: s}
+func NewDispatchServiceServer(s ds.DispatchService, l config.Logger) pb_ds.DispatchServiceServer {
+	return &dispatchServiceServer{s: s, l: l}
 }
 
 func (s *dispatchServiceServer) log(method string, req any) {
-	config.Log().Infof("DispatchService.%v(%+v)", method, req)
+	s.l.Infof("DispatchService.%v(%+v)", method, req)
 }
 
 func (s *dispatchServiceServer) SubscribeFor(ctx context.Context, req *pb_ds.SubscribeForRequest) (*pb_ds.SubscribeForResponse, error) {
@@ -39,7 +39,7 @@ func (s *dispatchServiceServer) SubscribeFor(ctx context.Context, req *pb_ds.Sub
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	fmt.Printf("SubscribeFor worked out. data: %+v\n", req)
+
 	return &pb_ds.SubscribeForResponse{}, nil
 }
 
@@ -52,6 +52,7 @@ func (s *dispatchServiceServer) SendDispatch(ctx context.Context, req *pb_ds.Sen
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+
 	return &pb_ds.SendDispatchResponse{}, nil
 }
 
@@ -67,6 +68,7 @@ func (s *dispatchServiceServer) GetDispatch(ctx context.Context, req *pb_ds.GetD
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+
 	return &pb_ds.GetDispatchResponse{
 		Dispatch: &pb_ds.DispatchData{
 			Id:                 d.Id,

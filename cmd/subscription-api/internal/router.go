@@ -9,16 +9,15 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 type ctx struct {
 	c      *gin.Context
 	ctx    context.Context
-	logger *zap.SugaredLogger
+	logger config.Logger
 }
 
-func NewContext(c *gin.Context, cx context.Context, logger *zap.SugaredLogger) controllers.Context {
+func NewContext(c *gin.Context, cx context.Context, logger config.Logger) controllers.Context {
 	return &ctx{c: c, ctx: c, logger: logger}
 }
 func (c *ctx) Status(status int) {
@@ -40,20 +39,25 @@ func (c *ctx) Logger() config.Logger {
 type APIParams struct {
 	CurrencyService pb_cs.CurrencyServiceClient
 	DispatchService pb_ds.DispatchServiceClient
-	Logger          *zap.SugaredLogger
+	Logger          config.Logger
 }
+
+var MaxRequestDuration = 2000 * time.Millisecond
 
 func GetRouter(params APIParams) *gin.Engine {
 	r := gin.Default()
+
 	r.GET("/rate", func(ctx *gin.Context) {
-		c, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		c, cancel := context.WithTimeout(context.Background(), MaxRequestDuration)
 		defer cancel()
 		controllers.GetExchangeRate(NewContext(ctx, c, params.Logger), params.CurrencyService)
 	})
+
 	r.POST("/subscribe", func(ctx *gin.Context) {
-		c, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		c, cancel := context.WithTimeout(context.Background(), MaxRequestDuration)
 		defer cancel()
 		controllers.SubscribeForDailyDispatch(NewContext(ctx, c, params.Logger), params.DispatchService)
 	})
+
 	return r
 }

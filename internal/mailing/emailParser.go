@@ -23,10 +23,12 @@ type HTMLTemplateParser interface {
 	Parse(templateName string, data any) ([]byte, error)
 }
 
-type htmlTemplateParser struct{}
+type htmlTemplateParser struct {
+	l config.Logger
+}
 
-func NewHTMLTemplateParser() HTMLTemplateParser {
-	return &htmlTemplateParser{}
+func NewHTMLTemplateParser(l config.Logger) HTMLTemplateParser {
+	return &htmlTemplateParser{l: l}
 }
 func (p htmlTemplateParser) Parse(templateName string, data any) ([]byte, error) {
 	var buffer bytes.Buffer
@@ -34,8 +36,10 @@ func (p htmlTemplateParser) Parse(templateName string, data any) ([]byte, error)
 	if err := template.
 		Must(template.ParseFiles(filename)).
 		Execute(&buffer, data); err != nil {
-		config.Log().Errorf("failed to execute html template %s: %v", filename, err)
+		p.l.Errorf("failed to execute html template %s: %v", filename, err)
+
 		return []byte{}, err
 	}
+
 	return buffer.Bytes(), nil
 }

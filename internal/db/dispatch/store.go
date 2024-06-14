@@ -45,8 +45,10 @@ func (s *currencyDispatchStore) WithTx(ctx context.Context, f func(q DispatchQue
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return fmt.Errorf("failed to rollback transaction: %w: %w", err, rbErr)
 		}
+
 		return err
 	}
+
 	return tx.Commit()
 }
 

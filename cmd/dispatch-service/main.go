@@ -1,11 +1,9 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"net"
-	"os"
-	"strings"
+	"subscription-api/cmd/dispatch-service/internal"
 	"subscription-api/config"
 	store "subscription-api/internal/db"
 	d_store "subscription-api/internal/db/dispatch"
@@ -19,37 +17,29 @@ import (
 	"google.golang.org/grpc"
 )
 
-var envFile string
-
-func init() {
-	flag.StringVar(&envFile, "env", "dev.env", "list of filenames splitted with coma (e.g. '.env,dev.env')")
-	flag.Parse()
-	config.InitEnvVariables(strings.Split(envFile, ",")...)
-}
-
 func main() {
-	logger := config.InitLogger(config.DevMode)
+	env := utils.Must(internal.Env())
+	logger := config.InitLogger(env.Mode)
 
-	address := fmt.Sprintf("%v:%v", os.Getenv("DISPATCH_SERVICE_ADDRESS"), os.Getenv("DISPATCH_SERVICE_PORT"))
-	lis, err := net.Listen("tcp", address)
-	utils.FatalOnError(err, logger, "failed to listen: %v")
-
-	dbName := os.Getenv("POSTGRESQL_DB")
-	dsn := fmt.Sprintf("user=%s password=%s host=%s dbname=%s search_path=%s sslmode=disable",
-		os.Getenv("POSTGRESQL_USER"),
-		os.Getenv("POSTGRESQL_PASSWORD"),
-		os.Getenv("POSTGRESQL_ADDRESS"),
-		dbName, dbName)
+	url := fmt.Sprintf("%s:%s", env.DispatchServiceAddress, env.DispatchServicePort)
+	lis, err := net.Listen("tcp", url)
+	utils.PanicOnError(err, fmt.Sprintf("failed to listen %s", url))
 
 	server := grpc.NewServer()
 	pb_ds.RegisterDispatchServiceServer(server,
 		g.NewDispatchServiceServer(
 			ds.NewDispatchService(d_store.NewCurrencyDispatchStore(
-				store.NewStore(utils.Must(db.NewPostrgreSQL(dsn, sql.PostgeSQLMigrationsUp("public"))),
+				store.NewStore(
+					utils.Must(db.NewPostrgreSQL(
+						env.PostgreSQLConnString,
+						sql.PostgeSQLMigrationsUp("public", logger),
+					)),
 					db.IsPqError,
 				))),
+			logger,
 		))
 
-	err = server.Serve(lis)
-	utils.FatalOnError(err, logger, "failed to serve: %v")
+	logger.Info("dispatch service started...")
+
+	utils.PanicOnError(server.Serve(lis), "failed to serve")
 }

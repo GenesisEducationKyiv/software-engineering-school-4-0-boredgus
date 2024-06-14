@@ -2,27 +2,27 @@ package main
 
 import (
 	"bytes"
-	"flag"
-	"fmt"
 	"html/template"
+	"subscription-api/cmd/dispatch-daemon/internal"
 	"subscription-api/config"
 	"subscription-api/internal/mailing"
+	"subscription-api/pkg/utils"
 )
 
-var (
-	envFiles = flag.String("env", "dev.env", "list of env files separated with coma (e.g. '.env,prod.env')")
-)
+/*
+This module is not implemented yet.
+The logic written below is redundunt and not worth to pay attention to.
+I'll implement it later.
 
-func init() {
-	flag.Parse()
-	config.InitEnvVariables(*envFiles)
-
-}
-
+In perspective it will:
+- fetch data (id and count of subscribers) of dispatches filtering by time of sending
+- invoke sending of emails through gRPC
+*/
 func main() {
-	config.InitLogger(config.DevMode)
+	env := utils.Must(internal.Env())
+	logger := config.InitLogger(env.Mode)
 
-	from := "daha.kyiv@gmail.com"
+	defaultRate := 30.1232211
 	data := struct {
 		BaseCurrency   string
 		TargetCurrency string
@@ -30,23 +30,23 @@ func main() {
 	}{
 		BaseCurrency:   "USD",
 		TargetCurrency: "UAH",
-		ExchangeRate:   30.1232211,
+		ExchangeRate:   defaultRate,
 	}
 	var buffer bytes.Buffer
-	if err := template.
+	err := template.
 		Must(template.ParseFiles("internal/mailing/emails/exchange_rate.html")).
-		Execute(&buffer, data); err != nil {
-		config.Log().Fatal("failed to execute template: ", err.Error())
-	}
-	fmt.Println(mailing.NewMailman(mailing.SMTPParams{
-		Host:     "smtp.gmail.com",
-		Port:     587,
-		Username: from,
-		Password: "guze dokh umzh ulvs"}).
+		Execute(&buffer, data)
+	utils.PanicOnError(err, "failed to execute template")
+
+	logger.Info(mailing.NewMailman(mailing.SMTPParams{
+		Host:     env.MailmanHost,
+		Port:     env.MailmanPort,
+		Username: env.MailmanEmail,
+		Password: env.MailmanPassword}).
 		Send(mailing.Email{
-			From:     from,
+			From:     env.MailmanEmail,
 			To:       []string{"daha@gmail.com"},
-			ReplyTo:  from,
+			ReplyTo:  env.MailmanEmail,
 			Subject:  "Daily USD-UAH exchange rate",
 			HTMLBody: buffer.String(),
 		}))

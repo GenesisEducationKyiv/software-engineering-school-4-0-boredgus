@@ -3,6 +3,7 @@ package cs
 import (
 	"context"
 	"errors"
+	"net/http"
 	"subscription-api/internal/entities"
 )
 
@@ -21,6 +22,7 @@ var InvalidRequestErr = errors.New("invalid-request")
 
 type currencyService struct {
 	APIBasePath string
+	client      http.Client
 }
 
 func NewCurrencyService(apiKey string) CurrencyService {
