@@ -11,6 +11,7 @@ packages:
   subscription-api/internal/services/currency:
     interfaces:
       CurrencyService:
+      CurrencyAPIClient:
   subscription-api/internal/services/dispatch:
     interfaces:
       DispatchService:

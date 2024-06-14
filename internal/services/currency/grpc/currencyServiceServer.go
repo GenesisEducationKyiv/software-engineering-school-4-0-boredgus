@@ -5,6 +5,7 @@ import (
 	"errors"
 	"subscription-api/config"
 	"subscription-api/internal/entities"
+	"subscription-api/internal/services"
 	cs "subscription-api/internal/services/currency"
 	pb_cs "subscription-api/pkg/grpc/currency_service"
 
@@ -28,14 +29,14 @@ func (s *currencyServiceServer) log(method string, req any) {
 
 func (s *currencyServiceServer) Convert(ctx context.Context, req *pb_cs.ConvertRequest) (*pb_cs.ConvertResponse, error) {
 	s.log("Convert", req)
-	rates, err := s.s.Convert(ctx, cs.ConvertParams{
-		From: entities.Currency(req.BaseCurrency),
-		To:   entities.FromString(req.TargetCurrencies),
+	rates, err := s.s.Convert(ctx, cs.ConvertCurrencyParams{
+		Base:   entities.Currency(req.BaseCurrency),
+		Target: entities.FromString(req.TargetCurrencies),
 	})
-	if errors.Is(err, cs.InvalidArgumentErr) {
+	if errors.Is(err, services.InvalidArgumentErr) {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	if errors.Is(err, cs.FailedPreconditionErr) {
+	if errors.Is(err, services.FailedPreconditionErr) {
 		return nil, status.Error(codes.FailedPrecondition, err.Error())
 	}
 	if err != nil {

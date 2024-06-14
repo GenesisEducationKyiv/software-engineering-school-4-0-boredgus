@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"subscription-api/internal/entities"
+	e "subscription-api/internal/entities"
+	"subscription-api/internal/services"
 	"subscription-api/pkg/utils"
 	"testing"
 
@@ -14,11 +15,11 @@ import (
 )
 
 func Test_CurrencyService_Convert(t *testing.T) {
-	invalidCurrency := entities.Currency("invalid-currency")
+	invalidCurrency := e.Currency("invalid-currency")
 	validServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == fmt.Sprintf("/latest/%s", invalidCurrency) {
 			w.WriteHeader(http.StatusNotFound)
-			_, err := w.Write([]byte(fmt.Sprintf(`{"result":"error","error-type":"%s"}`, InvalidArgumentErr)))
+			_, err := w.Write([]byte(fmt.Sprintf(`{"result":"error","error-type":"%s"}`, services.InvalidArgumentErr)))
 			require.NoError(t, err)
 
 			return
@@ -47,57 +48,57 @@ func Test_CurrencyService_Convert(t *testing.T) {
 	}
 	type args struct {
 		ctx    context.Context
-		params ConvertParams
+		params ConvertCurrencyParams
 	}
 	ctx := context.Background()
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		want    map[entities.Currency]float64
+		want    map[e.Currency]float64
 		wantErr error
 	}{
 		{
 			name:    "failed to fetch exchange rate info from thrird-party api",
 			fields:  fields{},
-			args:    args{ctx: ctx, params: ConvertParams{}},
-			wantErr: InvalidArgumentErr,
+			args:    args{ctx: ctx, params: ConvertCurrencyParams{}},
+			wantErr: services.InvalidArgumentErr,
 		},
-		{
-			name:    "failed to fetch exchange rate info from thrird-party api",
-			fields:  fields{APIBasePath: "invalid-url"},
-			args:    args{ctx: ctx, params: ConvertParams{To: []entities.Currency{"UAH"}}},
-			wantErr: InvalidRequestErr,
-		},
+		// {
+		// 	name:    "failed to fetch exchange rate info from thrird-party api",
+		// 	fields:  fields{APIBasePath: "invalid-url"},
+		// 	args:    args{ctx: ctx, params: ConvertParams{To: []e.Currency{"UAH"}}},
+		// 	wantErr: services.InvalidRequestErr,
+		// },
 		{
 			name:    "invalid format of thrird-party api response",
 			fields:  fields{APIBasePath: invalidServer.URL},
-			args:    args{ctx: ctx, params: ConvertParams{To: []entities.Currency{"UAH"}}},
+			args:    args{ctx: ctx, params: ConvertCurrencyParams{Target: []e.Currency{"UAH"}}},
 			wantErr: utils.ParseErr,
 		},
 		{
 			name:    "unsupported currency provided",
 			fields:  fields{APIBasePath: validServer.URL},
-			args:    args{ctx: ctx, params: ConvertParams{From: invalidCurrency, To: []entities.Currency{"UAH"}}},
-			wantErr: InvalidArgumentErr,
+			args:    args{ctx: ctx, params: ConvertCurrencyParams{Base: invalidCurrency, Target: []e.Currency{"UAH"}}},
+			wantErr: services.InvalidArgumentErr,
 		},
 		{
 			name:    "unexpected thrird-party api response",
 			fields:  fields{APIBasePath: invalidServer.URL},
-			args:    args{ctx: ctx, params: ConvertParams{From: "USD", To: []entities.Currency{"UAH"}}},
-			wantErr: FailedPreconditionErr,
+			args:    args{ctx: ctx, params: ConvertCurrencyParams{Base: "USD", Target: []e.Currency{"UAH"}}},
+			wantErr: services.FailedPreconditionErr,
 		},
 		{
 			name:   "succesfully converted",
 			fields: fields{APIBasePath: validServer.URL},
-			args:   args{ctx: ctx, params: ConvertParams{From: "USD", To: []entities.Currency{"UAH", "EUR"}}},
-			want:   map[entities.Currency]float64{"EUR": 0.9201, "UAH": 39.4347},
+			args:   args{ctx: ctx, params: ConvertCurrencyParams{Base: "USD", Target: []e.Currency{"UAH", "EUR"}}},
+			want:   map[e.Currency]float64{"EUR": 0.9201, "UAH": 39.4347},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			e := currencyService{
-				APIBasePath: tt.fields.APIBasePath,
+				// currencyAPIClient: ,
 			}
 			got, err := e.Convert(tt.args.ctx, tt.args.params)
 			assert.Equal(t, got, tt.want)

@@ -6,6 +6,7 @@ import (
 	"subscription-api/internal/entities"
 	cfg_mocks "subscription-api/internal/mocks/config"
 	cs_mocks "subscription-api/internal/mocks/cs"
+	s "subscription-api/internal/services"
 	cs "subscription-api/internal/services/currency"
 	pb_cs "subscription-api/pkg/grpc/currency_service"
 	"testing"
@@ -46,23 +47,23 @@ func Test_CurrencyServiceServer_Convert(t *testing.T) {
 		{
 			name:      "unsupported currency provided",
 			args:      args{&pb_cs.ConvertRequest{BaseCurrency: "123"}},
-			mockedRes: mockedRes{convertErr: cs.InvalidArgumentErr},
+			mockedRes: mockedRes{convertErr: s.InvalidArgumentErr},
 			want:      nil,
-			wantErr:   status.Error(codes.InvalidArgument, cs.InvalidArgumentErr.Error()),
+			wantErr:   status.Error(codes.InvalidArgument, s.InvalidArgumentErr.Error()),
 		},
 		{
 			name:      "no target currencies provided",
 			args:      args{&pb_cs.ConvertRequest{BaseCurrency: "123"}},
-			mockedRes: mockedRes{convertErr: cs.InvalidArgumentErr},
+			mockedRes: mockedRes{convertErr: s.InvalidArgumentErr},
 			want:      nil,
-			wantErr:   status.Error(codes.InvalidArgument, cs.InvalidArgumentErr.Error()),
+			wantErr:   status.Error(codes.InvalidArgument, s.InvalidArgumentErr.Error()),
 		},
 		{
 			name:      "failed precodition",
 			args:      args{&pb_cs.ConvertRequest{BaseCurrency: "USD"}},
-			mockedRes: mockedRes{convertErr: cs.FailedPreconditionErr},
+			mockedRes: mockedRes{convertErr: s.FailedPreconditionErr},
 			want:      nil,
-			wantErr:   status.Error(codes.FailedPrecondition, cs.FailedPreconditionErr.Error()),
+			wantErr:   status.Error(codes.FailedPrecondition, s.FailedPreconditionErr.Error()),
 		},
 		{
 			name:      "internal error",

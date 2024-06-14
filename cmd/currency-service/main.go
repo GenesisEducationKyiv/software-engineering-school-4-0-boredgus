@@ -5,6 +5,7 @@ import (
 	"net"
 	"subscription-api/cmd/currency-service/internal"
 	"subscription-api/config"
+	"subscription-api/internal/clients"
 	cs "subscription-api/internal/services/currency"
 	g "subscription-api/internal/services/currency/grpc"
 	pb_cs "subscription-api/pkg/grpc/currency_service"
@@ -24,7 +25,9 @@ func main() {
 	server := grpc.NewServer()
 	pb_cs.RegisterCurrencyServiceServer(server,
 		g.NewCurrencyServiceServer(
-			cs.NewCurrencyService(env.ExchangeCurrencyAPIKey),
+			cs.NewCurrencyService(
+				clients.NewExchangeRateAPIClient(env.ExchangeCurrencyAPIKey),
+			),
 			logger,
 		))
 	logger.Info("currency service started...")

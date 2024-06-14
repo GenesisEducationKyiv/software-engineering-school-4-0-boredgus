@@ -2,9 +2,9 @@ package cs
 
 import (
 	"context"
-	"errors"
-	"net/http"
+	"fmt"
 	"subscription-api/internal/entities"
+	"subscription-api/internal/services"
 )
 
 type ConvertParams struct {
@@ -13,20 +13,30 @@ type ConvertParams struct {
 }
 
 type CurrencyService interface {
-	Convert(ctx context.Context, params ConvertParams) (map[entities.Currency]float64, error)
+	Convert(ctx context.Context, params ConvertCurrencyParams) (map[entities.Currency]float64, error)
 }
 
-var InvalidArgumentErr = errors.New("invalid argument")
-var FailedPreconditionErr = errors.New("failed precondition")
-var InvalidRequestErr = errors.New("invalid-request")
-
+type ConvertCurrencyParams struct {
+	Base   entities.Currency
+	Target []entities.Currency
+}
+type CurrencyAPIClient interface {
+	Convert(ctx context.Context, baseCcy entities.Currency, targetCcies []entities.Currency) (map[entities.Currency]float64, error)
+}
 type currencyService struct {
-	APIBasePath string
-	client      http.Client
+	currencyAPIClient CurrencyAPIClient
 }
 
-func NewCurrencyService(apiKey string) CurrencyService {
+func NewCurrencyService(client CurrencyAPIClient) CurrencyService {
 	return &currencyService{
-		APIBasePath: "https://v6.exchangerate-api.com/v6/" + apiKey,
+		currencyAPIClient: client,
 	}
+}
+
+func (s *currencyService) Convert(ctx context.Context, params ConvertCurrencyParams) (map[entities.Currency]float64, error) {
+	if len(params.Target) == 0 {
+		return nil, fmt.Errorf("%w: no target currencies provided", services.InvalidArgumentErr)
+	}
+
+	return s.currencyAPIClient.Convert(ctx, params.Base, params.Target)
 }
