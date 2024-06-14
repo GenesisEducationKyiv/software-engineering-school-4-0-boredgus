@@ -5,6 +5,9 @@ mockname: "{{.InterfaceName}}"
 filename: "mock_{{.InterfaceName}}.go"
 
 packages:
+  subscription-api/config:
+    interfaces:
+      Logger:
   subscription-api/internal/services/currency:
     interfaces:
       CurrencyService:
