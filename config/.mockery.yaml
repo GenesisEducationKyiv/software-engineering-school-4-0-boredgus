@@ -12,6 +12,10 @@ packages:
     interfaces:
       CurrencyService:
       CurrencyAPIClient:
+        with-expecter: false
+        config:
+          dir: "internal/mocks/clients"
+          outpkg: "client_mocks"
   subscription-api/internal/services/dispatch:
     interfaces:
       DispatchService:

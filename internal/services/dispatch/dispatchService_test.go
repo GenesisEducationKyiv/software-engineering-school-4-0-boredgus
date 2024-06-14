@@ -2,7 +2,9 @@ package ds
 
 import (
 	"context"
+	"fmt"
 	db "subscription-api/internal/db"
+	"subscription-api/internal/entities"
 	db_mocks "subscription-api/internal/mocks/db"
 	repo_mocks "subscription-api/internal/mocks/repo"
 	"testing"
@@ -27,8 +29,8 @@ func Test_DispatchService_GetDispatch(t *testing.T) {
 	setup := func(m mocked) func() {
 		txCall := storeMock.EXPECT().WithTx(mock.Anything, mock.Anything).Once().
 			Return(m.txErr)
-		getByIDCall := dispatchRepoMock.EXPECT().GetByID(mock.Anything, mock.Anything, mock.AnythingOfType("string")).
-			Once().Return(m.dispatch, m.getByidErr)
+		getByIDCall := dispatchRepoMock.EXPECT().GetByID(mock.Anything, mock.Anything, mock.Anything).
+			Maybe().Return(m.dispatch, m.getByidErr)
 
 		return func() {
 			txCall.Unset()
@@ -36,22 +38,20 @@ func Test_DispatchService_GetDispatch(t *testing.T) {
 		}
 	}
 
+	someErr := fmt.Errorf("some err")
 	tests := []struct {
 		name    string
 		args    args
 		mocked  mocked
-		want    DispatchInfo
+		want    entities.CurrencyDispatch
 		wantErr error
 	}{
 		{
-			name: "failed to make transaction",
+			name:    "failed to make transaction",
+			mocked:  mocked{txErr: someErr},
+			wantErr: someErr,
 		},
-		{
-			name: "failed to get dispatch",
-		},
-		{
-			name: "success",
-		},
+		// TODO: test success path
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

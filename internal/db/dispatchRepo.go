@@ -28,6 +28,20 @@ type DispatchData struct {
 	CountOfSubscribers int
 }
 
+func (d DispatchData) ToModel() entities.CurrencyDispatch {
+	return entities.CurrencyDispatch{
+		Dispatch: entities.Dispatch[entities.CurrencyDispatchDetails]{
+			Id:     d.Id,
+			SendAt: d.SendAt,
+			Details: entities.CurrencyDispatchDetails{
+				BaseCurrency:     d.Details.BaseCurrency,
+				TargetCurrencies: d.Details.TargetCurrencies,
+			},
+		},
+		CountOfSubscribers: d.CountOfSubscribers,
+	}
+}
+
 func (s *DispatchRepo) GetByID(ctx context.Context, d DB, dispatchId string) (DispatchData, error) {
 	var data DispatchData
 	row := d.DB().QueryRow(getDispatchQ, dispatchId)

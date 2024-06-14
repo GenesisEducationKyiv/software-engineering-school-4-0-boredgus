@@ -4,7 +4,8 @@ package ds_mocks
 
 import (
 	context "context"
-	ds "subscription-api/internal/services/dispatch"
+
+	entities "subscription-api/internal/entities"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -23,22 +24,22 @@ func (_m *DispatchService) EXPECT() *DispatchService_Expecter {
 }
 
 // GetDispatch provides a mock function with given fields: ctx, dispatch_id
-func (_m *DispatchService) GetDispatch(ctx context.Context, dispatch_id string) (ds.DispatchInfo, error) {
+func (_m *DispatchService) GetDispatch(ctx context.Context, dispatch_id string) (entities.CurrencyDispatch, error) {
 	ret := _m.Called(ctx, dispatch_id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetDispatch")
 	}
 
-	var r0 ds.DispatchInfo
+	var r0 entities.CurrencyDispatch
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (ds.DispatchInfo, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) (entities.CurrencyDispatch, error)); ok {
 		return rf(ctx, dispatch_id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) ds.DispatchInfo); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) entities.CurrencyDispatch); ok {
 		r0 = rf(ctx, dispatch_id)
 	} else {
-		r0 = ret.Get(0).(ds.DispatchInfo)
+		r0 = ret.Get(0).(entities.CurrencyDispatch)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
@@ -69,12 +70,12 @@ func (_c *DispatchService_GetDispatch_Call) Run(run func(ctx context.Context, di
 	return _c
 }
 
-func (_c *DispatchService_GetDispatch_Call) Return(_a0 ds.DispatchInfo, _a1 error) *DispatchService_GetDispatch_Call {
+func (_c *DispatchService_GetDispatch_Call) Return(_a0 entities.CurrencyDispatch, _a1 error) *DispatchService_GetDispatch_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *DispatchService_GetDispatch_Call) RunAndReturn(run func(context.Context, string) (ds.DispatchInfo, error)) *DispatchService_GetDispatch_Call {
+func (_c *DispatchService_GetDispatch_Call) RunAndReturn(run func(context.Context, string) (entities.CurrencyDispatch, error)) *DispatchService_GetDispatch_Call {
 	_c.Call.Return(run)
 	return _c
 }

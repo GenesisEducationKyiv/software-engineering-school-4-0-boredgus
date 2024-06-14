@@ -14,3 +14,8 @@ type Dispatch[T any] struct {
 	SendAt  time.Time
 	Details T
 }
+
+type CurrencyDispatch struct {
+	Dispatch[CurrencyDispatchDetails]
+	CountOfSubscribers int
+}

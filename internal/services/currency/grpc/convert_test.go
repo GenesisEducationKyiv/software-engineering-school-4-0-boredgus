@@ -28,7 +28,7 @@ func Test_CurrencyServiceServer_Convert(t *testing.T) {
 	csMock := cs_mocks.NewCurrencyService(t)
 	loggerMock := cfg_mocks.NewLogger(t)
 	internalError := fmt.Errorf("internal-error")
-	setup := func(res *mockedRes, args cs.ConvertParams) func() {
+	setup := func(res *mockedRes, args cs.ConvertCurrencyParams) func() {
 		csCall := csMock.EXPECT().Convert(mock.Anything, args).Return(res.convertedRates, res.convertErr).Once()
 		logCall := loggerMock.EXPECT().Infof(mock.Anything, mock.Anything, mock.Anything)
 
@@ -85,9 +85,9 @@ func Test_CurrencyServiceServer_Convert(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reset := setup(&tt.mockedRes, cs.ConvertParams{
-				From: entities.Currency(tt.args.req.BaseCurrency),
-				To:   entities.FromString(tt.args.req.TargetCurrencies)})
+			reset := setup(&tt.mockedRes, cs.ConvertCurrencyParams{
+				Base:   entities.Currency(tt.args.req.BaseCurrency),
+				Target: entities.FromString(tt.args.req.TargetCurrencies)})
 			defer reset()
 
 			s := &currencyServiceServer{

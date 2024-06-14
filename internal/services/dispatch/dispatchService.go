@@ -8,15 +8,10 @@ import (
 	"subscription-api/internal/services"
 )
 
-type DispatchInfo struct {
-	entities.Dispatch[entities.CurrencyDispatchDetails]
-	CountOfSubscribers int
-}
-
 type DispatchService interface {
 	SubscribeForDispatch(ctx context.Context, email, dispatch string) error
 	SendDispatch(ctx context.Context, dispatch string) error
-	GetDispatch(ctx context.Context, dispatch_id string) (DispatchInfo, error)
+	GetDispatch(ctx context.Context, dispatch_id string) (entities.CurrencyDispatch, error)
 }
 type UserRepo interface {
 	CreateUser(ctx context.Context, db db.DB, email string) error
@@ -46,22 +41,12 @@ func NewDispatchService(s db.Store) DispatchService {
 	}
 }
 
-func (s *dispatchService) GetDispatch(ctx context.Context, dispatchId string) (DispatchInfo, error) {
-	var dispatch DispatchInfo
+func (s *dispatchService) GetDispatch(ctx context.Context, dispatchId string) (entities.CurrencyDispatch, error) {
+	var dispatch entities.CurrencyDispatch
 	err := s.store.WithTx(ctx, func(db db.DB) error {
 		d, err := s.dispatchRepo.GetByID(ctx, db, dispatchId)
 		if err == nil {
-			dispatch = DispatchInfo{
-				Dispatch: entities.Dispatch[entities.CurrencyDispatchDetails]{
-					Id:     d.Id,
-					SendAt: d.SendAt,
-					Details: entities.CurrencyDispatchDetails{
-						BaseCurrency:     d.Details.BaseCurrency,
-						TargetCurrencies: d.Details.TargetCurrencies,
-					},
-				},
-				CountOfSubscribers: d.CountOfSubscribers,
-			}
+			dispatch = d.ToModel()
 		}
 
 		return err

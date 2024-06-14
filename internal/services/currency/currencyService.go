@@ -7,11 +7,6 @@ import (
 	"subscription-api/internal/services"
 )
 
-type ConvertParams struct {
-	From entities.Currency
-	To   []entities.Currency
-}
-
 type CurrencyService interface {
 	Convert(ctx context.Context, params ConvertCurrencyParams) (map[entities.Currency]float64, error)
 }
