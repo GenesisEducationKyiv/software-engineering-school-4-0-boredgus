@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"net"
 	"strings"
 	"subscription-api/cmd/currency-service/internal"
@@ -26,7 +27,7 @@ func main() {
 	env := internal.Env()
 	logger := config.InitLogger(env.Mode)
 
-	lis, err := net.Listen("tcp", env.CurrencyServiceServer)
+	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%s", env.CurrencyServiceAddress, env.CurrencyServicePort))
 	utils.FatalOnError(err, logger, "failed to listen: %v")
 
 	server := grpc.NewServer()

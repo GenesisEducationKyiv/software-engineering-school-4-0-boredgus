@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"net"
 	"strings"
 	"subscription-api/cmd/dispatch-service/internal"
@@ -30,7 +31,7 @@ func main() {
 	env := internal.Env()
 	logger := config.InitLogger(env.Mode)
 
-	lis, err := net.Listen("tcp", env.DispatchServiceServer)
+	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%s", env.DispatchServiceAddress, env.DispatchServicePort))
 	utils.FatalOnError(err, logger, "failed to listen: %v")
 
 	server := grpc.NewServer()

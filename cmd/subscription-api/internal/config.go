@@ -7,10 +7,12 @@ import (
 )
 
 type envVars struct {
-	Mode                  config.Mode `env:"MODE"`
-	Port                  string      `env:"API_PORT"`
-	CurrencyServiceServer string      `env:"CURRENCY_SERVICE_SERVER"`
-	DispatchServiceServer string      `env:"DISPATCH_SERVICE_SERVER"`
+	Mode                   config.Mode `env:"MODE"`
+	Port                   string      `env:"API_PORT"`
+	CurrencyServiceAddress string      `env:"CURRENCY_SERVICE_ADDRESS"`
+	CurrencyServicePort    string      `env:"CURRENCY_SERVICE_PORT"`
+	DispatchServiceAddress string      `env:"DISPATCH_SERVICE_ADDRESS"`
+	DispatchServicePort    string      `env:"DISPATCH_SERVICE_PORT"`
 }
 
 var vars envVars
