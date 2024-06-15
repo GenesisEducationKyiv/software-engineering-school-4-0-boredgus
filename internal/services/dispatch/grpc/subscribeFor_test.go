@@ -3,13 +3,14 @@ package grpc
 import (
 	"context"
 	"reflect"
+	"subscription-api/internal/services"
 	pb_ds "subscription-api/pkg/grpc/dispatch_service"
 	"testing"
 )
 
 func Test_DispatchServiceServer_SubscribeForDispatch(t *testing.T) {
 	type fields struct {
-		s                                  DispatchService
+		s                                  services.DispatchService
 		UnimplementedDispatchServiceServer pb_ds.UnimplementedDispatchServiceServer
 	}
 	type args struct {

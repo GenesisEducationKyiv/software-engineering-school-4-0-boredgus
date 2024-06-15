@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"subscription-api/internal/entities"
 	cfg_mocks "subscription-api/internal/mocks/config"
-	cs_mocks "subscription-api/internal/mocks/cs"
+	s_mocks "subscription-api/internal/mocks/services"
 	s "subscription-api/internal/services"
-	cs "subscription-api/internal/services/currency"
 	pb_cs "subscription-api/pkg/grpc/currency_service"
 	"testing"
 
@@ -25,10 +24,10 @@ func Test_CurrencyServiceServer_Convert(t *testing.T) {
 		convertedRates map[entities.Currency]float64
 		convertErr     error
 	}
-	csMock := cs_mocks.NewCurrencyService(t)
+	csMock := s_mocks.NewCurrencyService(t)
 	loggerMock := cfg_mocks.NewLogger(t)
 	internalError := fmt.Errorf("internal-error")
-	setup := func(res *mockedRes, args cs.ConvertCurrencyParams) func() {
+	setup := func(res *mockedRes, args s.ConvertCurrencyParams) func() {
 		csCall := csMock.EXPECT().Convert(mock.Anything, args).Return(res.convertedRates, res.convertErr).Once()
 		logCall := loggerMock.EXPECT().Infof(mock.Anything, mock.Anything, mock.Anything)
 
@@ -85,7 +84,7 @@ func Test_CurrencyServiceServer_Convert(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reset := setup(&tt.mockedRes, cs.ConvertCurrencyParams{
+			reset := setup(&tt.mockedRes, s.ConvertCurrencyParams{
 				Base:   entities.Currency(tt.args.req.BaseCurrency),
 				Target: entities.FromString(tt.args.req.TargetCurrencies)})
 			defer reset()

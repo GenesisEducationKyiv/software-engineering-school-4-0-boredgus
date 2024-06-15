@@ -14,7 +14,7 @@ import (
 func Test_CurrencyService_Convert(t *testing.T) {
 	type args struct {
 		ctx    context.Context
-		params ConvertCurrencyParams
+		params s.ConvertCurrencyParams
 	}
 	type mocked struct {
 		rates      map[entities.Currency]float64
@@ -47,7 +47,7 @@ func Test_CurrencyService_Convert(t *testing.T) {
 		},
 		{
 			name:    "success",
-			args:    args{params: ConvertCurrencyParams{Target: []entities.Currency{entities.UkrainianHryvnia}}},
+			args:    args{params: s.ConvertCurrencyParams{Target: []entities.Currency{entities.UkrainianHryvnia}}},
 			mocked:  mocked{rates: rates},
 			want:    rates,
 			wantErr: nil,

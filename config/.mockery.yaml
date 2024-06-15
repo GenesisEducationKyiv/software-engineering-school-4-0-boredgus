@@ -8,9 +8,12 @@ packages:
   subscription-api/config:
     interfaces:
       Logger:
-  subscription-api/internal/services/currency:
+  subscription-api/internal/services:
     interfaces:
       CurrencyService:
+      DispatchService:
+  subscription-api/internal/services/currency:
+    interfaces:
       CurrencyAPIClient:
         with-expecter: false
         config:
@@ -18,7 +21,6 @@ packages:
           outpkg: "client_mocks"
   subscription-api/internal/services/dispatch:
     interfaces:
-      DispatchService:
       UserRepo:
         config:
           dir: "internal/mocks/repo"

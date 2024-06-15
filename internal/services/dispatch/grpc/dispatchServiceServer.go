@@ -4,27 +4,21 @@ import (
 	"context"
 	"errors"
 	"subscription-api/config"
-	e "subscription-api/internal/entities"
 	"subscription-api/internal/services"
+	ss "subscription-api/internal/services"
 	pb_ds "subscription-api/pkg/grpc/dispatch_service"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-type DispatchService interface {
-	SubscribeForDispatch(ctx context.Context, email, dispatch string) error
-	SendDispatch(ctx context.Context, dispatch string) error
-	GetAllDispatches(ctx context.Context) ([]e.CurrencyDispatch, error)
-}
-
 type dispatchServiceServer struct {
-	s DispatchService
+	s ss.DispatchService
 	l config.Logger
 	pb_ds.UnimplementedDispatchServiceServer
 }
 
-func NewDispatchServiceServer(s DispatchService, l config.Logger) *dispatchServiceServer {
+func NewDispatchServiceServer(s ss.DispatchService, l config.Logger) *dispatchServiceServer {
 	return &dispatchServiceServer{s: s, l: l}
 }
 

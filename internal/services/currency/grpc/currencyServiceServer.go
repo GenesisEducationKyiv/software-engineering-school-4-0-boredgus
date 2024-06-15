@@ -5,8 +5,7 @@ import (
 	"errors"
 	"subscription-api/config"
 	"subscription-api/internal/entities"
-	"subscription-api/internal/services"
-	cs "subscription-api/internal/services/currency"
+	ss "subscription-api/internal/services"
 	pb_cs "subscription-api/pkg/grpc/currency_service"
 
 	"google.golang.org/grpc/codes"
@@ -15,11 +14,11 @@ import (
 
 type currencyServiceServer struct {
 	pb_cs.UnimplementedCurrencyServiceServer
-	s cs.CurrencyService
+	s ss.CurrencyService
 	l config.Logger
 }
 
-func NewCurrencyServiceServer(s cs.CurrencyService, l config.Logger) *currencyServiceServer {
+func NewCurrencyServiceServer(s ss.CurrencyService, l config.Logger) *currencyServiceServer {
 	return &currencyServiceServer{s: s, l: l}
 }
 
@@ -29,14 +28,14 @@ func (s *currencyServiceServer) log(method string, req any) {
 
 func (s *currencyServiceServer) Convert(ctx context.Context, req *pb_cs.ConvertRequest) (*pb_cs.ConvertResponse, error) {
 	s.log("Convert", req)
-	rates, err := s.s.Convert(ctx, cs.ConvertCurrencyParams{
+	rates, err := s.s.Convert(ctx, ss.ConvertCurrencyParams{
 		Base:   entities.Currency(req.BaseCurrency),
 		Target: entities.FromString(req.TargetCurrencies),
 	})
-	if errors.Is(err, services.InvalidArgumentErr) {
+	if errors.Is(err, ss.InvalidArgumentErr) {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	if errors.Is(err, services.FailedPreconditionErr) {
+	if errors.Is(err, ss.FailedPreconditionErr) {
 		return nil, status.Error(codes.FailedPrecondition, err.Error())
 	}
 	if err != nil {
