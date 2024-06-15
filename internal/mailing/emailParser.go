@@ -19,10 +19,6 @@ func path(filename string) string {
 	return filepath.Join(basePath, "emails", filename)
 }
 
-type HTMLTemplateParser interface {
-	Parse(templateName string, data any) ([]byte, error)
-}
-
 type htmlTemplateParser struct {
 	l config.Logger
 }
