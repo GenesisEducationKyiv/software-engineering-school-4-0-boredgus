@@ -33,6 +33,7 @@ packages:
         config:
           dir: "internal/mocks/repo"
           outpkg: "repo_mocks"
-  subscription-api/internal/db:
-    interfaces:
       Store:
+        config:
+          dir: "internal/mocks/db"
+          outpkg: "db_mocks"
