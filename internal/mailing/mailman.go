@@ -34,6 +34,7 @@ func NewMailman(params SMTPParams) *mailman {
 
 func (m *mailman) Send(e Email) error {
 	msgs := make([]*mail.Message, 0, len(e.To))
+
 	for _, target := range e.To {
 		msg := mail.NewMessage()
 		msg.SetHeader("From", m.author)

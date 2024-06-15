@@ -23,9 +23,7 @@ type CurrencyDispatch Dispatch[CurrencyDispatchDetails]
 
 func (d CurrencyDispatch) ToProto() *pb_ds.DispatchData {
 	return &pb_ds.DispatchData{
-		Id: d.Id,
-		// BaseCurrency:       d.Details.BaseCurrency,
-		// TargetCurrencies:   d.Details.TargetCurrencies,
+		Id:                 d.Id,
 		Label:              d.Label,
 		SendAt:             d.SendAt.Format(time.TimeOnly),
 		CountOfSubscribers: int64(d.CountOfSubscribers),
