@@ -43,15 +43,19 @@ services:
         condition: service_healthy
       
 
-#   mailimg-daemon:
-#     container_name: ${MAILING_DAEMON_CONTAINER}
-#     build:
-#       context: .
-#       dockerfile: Dockerfile.mailing-daemon
-#     ports:
-#       - ${MAILING_DAEMON_PORT}:${MAILING_DAEMON_PORT}
-#     depends_on:
-#       - serviceName
+  dispatch-daemon:
+    container_name: ${DISPATCH_DAEMON_CONTAINER}
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dispatch-daemon
+    ports:
+      - ${DISPATCH_DAEMON_PORT}:${DISPATCH_DAEMON_PORT}
+    env_file:
+      - ${ENV_FILE}
+    depends_on:
+      dispatch-service:
+        condition: service_started
+
   
   database:
     container_name: ${POSTGRESQL_ADDRESS}
