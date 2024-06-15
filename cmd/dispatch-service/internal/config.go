@@ -9,10 +9,10 @@ import (
 
 type envVars struct {
 	Mode                   config.Mode `env:"MODE"`
-	SMTPHost               string      `env:"MAILMAN_HOST"`
-	SMTPPort               int         `env:"MAILMAN_PORT"`
-	SMTPEmail              string      `env:"MAILMAN_EMAIL"`
-	SMTPPassword           string      `env:"MAILMAN_PASSWORD"`
+	SMTPHost               string      `env:"SMTP_HOST"`
+	SMTPPort               int         `env:"SMTP_PORT"`
+	SMTPEmail              string      `env:"SMTP_EMAIL"`
+	SMTPPassword           string      `env:"SMTP_PASSWORD"`
 	DispatchServiceAddress string      `env:"DISPATCH_SERVICE_ADDRESS"`
 	DispatchServicePort    string      `env:"DISPATCH_SERVICE_PORT"`
 	PostgreSQLConnString   string      `env:"POSTGRESQL_CONN_STRING"`
