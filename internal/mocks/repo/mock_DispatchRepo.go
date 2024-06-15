@@ -6,6 +6,8 @@ import (
 	context "context"
 	db "subscription-api/internal/db"
 
+	entities "subscription-api/internal/entities"
+
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -22,23 +24,82 @@ func (_m *DispatchRepo) EXPECT() *DispatchRepo_Expecter {
 	return &DispatchRepo_Expecter{mock: &_m.Mock}
 }
 
-// GetByID provides a mock function with given fields: ctx, _a1, dispatchId
-func (_m *DispatchRepo) GetByID(ctx context.Context, _a1 db.DB, dispatchId string) (db.DispatchData, error) {
+// GetAllDispatches provides a mock function with given fields: ctx, _a1
+func (_m *DispatchRepo) GetAllDispatches(ctx context.Context, _a1 db.DB) ([]entities.CurrencyDispatch, error) {
+	ret := _m.Called(ctx, _a1)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAllDispatches")
+	}
+
+	var r0 []entities.CurrencyDispatch
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, db.DB) ([]entities.CurrencyDispatch, error)); ok {
+		return rf(ctx, _a1)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, db.DB) []entities.CurrencyDispatch); ok {
+		r0 = rf(ctx, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]entities.CurrencyDispatch)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, db.DB) error); ok {
+		r1 = rf(ctx, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// DispatchRepo_GetAllDispatches_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAllDispatches'
+type DispatchRepo_GetAllDispatches_Call struct {
+	*mock.Call
+}
+
+// GetAllDispatches is a helper method to define mock.On call
+//   - ctx context.Context
+//   - _a1 db.DB
+func (_e *DispatchRepo_Expecter) GetAllDispatches(ctx interface{}, _a1 interface{}) *DispatchRepo_GetAllDispatches_Call {
+	return &DispatchRepo_GetAllDispatches_Call{Call: _e.mock.On("GetAllDispatches", ctx, _a1)}
+}
+
+func (_c *DispatchRepo_GetAllDispatches_Call) Run(run func(ctx context.Context, _a1 db.DB)) *DispatchRepo_GetAllDispatches_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(db.DB))
+	})
+	return _c
+}
+
+func (_c *DispatchRepo_GetAllDispatches_Call) Return(_a0 []entities.CurrencyDispatch, _a1 error) *DispatchRepo_GetAllDispatches_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *DispatchRepo_GetAllDispatches_Call) RunAndReturn(run func(context.Context, db.DB) ([]entities.CurrencyDispatch, error)) *DispatchRepo_GetAllDispatches_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetDispatchByID provides a mock function with given fields: ctx, _a1, dispatchId
+func (_m *DispatchRepo) GetDispatchByID(ctx context.Context, _a1 db.DB, dispatchId string) (entities.CurrencyDispatch, error) {
 	ret := _m.Called(ctx, _a1, dispatchId)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetByID")
+		panic("no return value specified for GetDispatchByID")
 	}
 
-	var r0 db.DispatchData
+	var r0 entities.CurrencyDispatch
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, db.DB, string) (db.DispatchData, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, db.DB, string) (entities.CurrencyDispatch, error)); ok {
 		return rf(ctx, _a1, dispatchId)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, db.DB, string) db.DispatchData); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, db.DB, string) entities.CurrencyDispatch); ok {
 		r0 = rf(ctx, _a1, dispatchId)
 	} else {
-		r0 = ret.Get(0).(db.DispatchData)
+		r0 = ret.Get(0).(entities.CurrencyDispatch)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, db.DB, string) error); ok {
@@ -50,32 +111,92 @@ func (_m *DispatchRepo) GetByID(ctx context.Context, _a1 db.DB, dispatchId strin
 	return r0, r1
 }
 
-// DispatchRepo_GetByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByID'
-type DispatchRepo_GetByID_Call struct {
+// DispatchRepo_GetDispatchByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetDispatchByID'
+type DispatchRepo_GetDispatchByID_Call struct {
 	*mock.Call
 }
 
-// GetByID is a helper method to define mock.On call
+// GetDispatchByID is a helper method to define mock.On call
 //   - ctx context.Context
 //   - _a1 db.DB
 //   - dispatchId string
-func (_e *DispatchRepo_Expecter) GetByID(ctx interface{}, _a1 interface{}, dispatchId interface{}) *DispatchRepo_GetByID_Call {
-	return &DispatchRepo_GetByID_Call{Call: _e.mock.On("GetByID", ctx, _a1, dispatchId)}
+func (_e *DispatchRepo_Expecter) GetDispatchByID(ctx interface{}, _a1 interface{}, dispatchId interface{}) *DispatchRepo_GetDispatchByID_Call {
+	return &DispatchRepo_GetDispatchByID_Call{Call: _e.mock.On("GetDispatchByID", ctx, _a1, dispatchId)}
 }
 
-func (_c *DispatchRepo_GetByID_Call) Run(run func(ctx context.Context, _a1 db.DB, dispatchId string)) *DispatchRepo_GetByID_Call {
+func (_c *DispatchRepo_GetDispatchByID_Call) Run(run func(ctx context.Context, _a1 db.DB, dispatchId string)) *DispatchRepo_GetDispatchByID_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(db.DB), args[2].(string))
 	})
 	return _c
 }
 
-func (_c *DispatchRepo_GetByID_Call) Return(_a0 db.DispatchData, _a1 error) *DispatchRepo_GetByID_Call {
+func (_c *DispatchRepo_GetDispatchByID_Call) Return(_a0 entities.CurrencyDispatch, _a1 error) *DispatchRepo_GetDispatchByID_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *DispatchRepo_GetByID_Call) RunAndReturn(run func(context.Context, db.DB, string) (db.DispatchData, error)) *DispatchRepo_GetByID_Call {
+func (_c *DispatchRepo_GetDispatchByID_Call) RunAndReturn(run func(context.Context, db.DB, string) (entities.CurrencyDispatch, error)) *DispatchRepo_GetDispatchByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetSubscribersOfDispatch provides a mock function with given fields: ctx, _a1, dispatchId
+func (_m *DispatchRepo) GetSubscribersOfDispatch(ctx context.Context, _a1 db.DB, dispatchId string) ([]string, error) {
+	ret := _m.Called(ctx, _a1, dispatchId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetSubscribersOfDispatch")
+	}
+
+	var r0 []string
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, db.DB, string) ([]string, error)); ok {
+		return rf(ctx, _a1, dispatchId)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, db.DB, string) []string); ok {
+		r0 = rf(ctx, _a1, dispatchId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, db.DB, string) error); ok {
+		r1 = rf(ctx, _a1, dispatchId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// DispatchRepo_GetSubscribersOfDispatch_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetSubscribersOfDispatch'
+type DispatchRepo_GetSubscribersOfDispatch_Call struct {
+	*mock.Call
+}
+
+// GetSubscribersOfDispatch is a helper method to define mock.On call
+//   - ctx context.Context
+//   - _a1 db.DB
+//   - dispatchId string
+func (_e *DispatchRepo_Expecter) GetSubscribersOfDispatch(ctx interface{}, _a1 interface{}, dispatchId interface{}) *DispatchRepo_GetSubscribersOfDispatch_Call {
+	return &DispatchRepo_GetSubscribersOfDispatch_Call{Call: _e.mock.On("GetSubscribersOfDispatch", ctx, _a1, dispatchId)}
+}
+
+func (_c *DispatchRepo_GetSubscribersOfDispatch_Call) Run(run func(ctx context.Context, _a1 db.DB, dispatchId string)) *DispatchRepo_GetSubscribersOfDispatch_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(db.DB), args[2].(string))
+	})
+	return _c
+}
+
+func (_c *DispatchRepo_GetSubscribersOfDispatch_Call) Return(_a0 []string, _a1 error) *DispatchRepo_GetSubscribersOfDispatch_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *DispatchRepo_GetSubscribersOfDispatch_Call) RunAndReturn(run func(context.Context, db.DB, string) ([]string, error)) *DispatchRepo_GetSubscribersOfDispatch_Call {
 	_c.Call.Return(run)
 	return _c
 }

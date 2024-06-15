@@ -23,23 +23,25 @@ func (_m *DispatchService) EXPECT() *DispatchService_Expecter {
 	return &DispatchService_Expecter{mock: &_m.Mock}
 }
 
-// GetDispatch provides a mock function with given fields: ctx, dispatch_id
-func (_m *DispatchService) GetDispatch(ctx context.Context, dispatch_id string) (entities.CurrencyDispatch, error) {
+// GetDispatches provides a mock function with given fields: ctx, dispatch_id
+func (_m *DispatchService) GetDispatches(ctx context.Context, dispatch_id string) ([]entities.CurrencyDispatch, error) {
 	ret := _m.Called(ctx, dispatch_id)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetDispatch")
+		panic("no return value specified for GetDispatches")
 	}
 
-	var r0 entities.CurrencyDispatch
+	var r0 []entities.CurrencyDispatch
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (entities.CurrencyDispatch, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) ([]entities.CurrencyDispatch, error)); ok {
 		return rf(ctx, dispatch_id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) entities.CurrencyDispatch); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) []entities.CurrencyDispatch); ok {
 		r0 = rf(ctx, dispatch_id)
 	} else {
-		r0 = ret.Get(0).(entities.CurrencyDispatch)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]entities.CurrencyDispatch)
+		}
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
@@ -51,31 +53,31 @@ func (_m *DispatchService) GetDispatch(ctx context.Context, dispatch_id string) 
 	return r0, r1
 }
 
-// DispatchService_GetDispatch_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetDispatch'
-type DispatchService_GetDispatch_Call struct {
+// DispatchService_GetDispatches_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetDispatches'
+type DispatchService_GetDispatches_Call struct {
 	*mock.Call
 }
 
-// GetDispatch is a helper method to define mock.On call
+// GetDispatches is a helper method to define mock.On call
 //   - ctx context.Context
 //   - dispatch_id string
-func (_e *DispatchService_Expecter) GetDispatch(ctx interface{}, dispatch_id interface{}) *DispatchService_GetDispatch_Call {
-	return &DispatchService_GetDispatch_Call{Call: _e.mock.On("GetDispatch", ctx, dispatch_id)}
+func (_e *DispatchService_Expecter) GetDispatches(ctx interface{}, dispatch_id interface{}) *DispatchService_GetDispatches_Call {
+	return &DispatchService_GetDispatches_Call{Call: _e.mock.On("GetDispatches", ctx, dispatch_id)}
 }
 
-func (_c *DispatchService_GetDispatch_Call) Run(run func(ctx context.Context, dispatch_id string)) *DispatchService_GetDispatch_Call {
+func (_c *DispatchService_GetDispatches_Call) Run(run func(ctx context.Context, dispatch_id string)) *DispatchService_GetDispatches_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
 
-func (_c *DispatchService_GetDispatch_Call) Return(_a0 entities.CurrencyDispatch, _a1 error) *DispatchService_GetDispatch_Call {
+func (_c *DispatchService_GetDispatches_Call) Return(_a0 []entities.CurrencyDispatch, _a1 error) *DispatchService_GetDispatches_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *DispatchService_GetDispatch_Call) RunAndReturn(run func(context.Context, string) (entities.CurrencyDispatch, error)) *DispatchService_GetDispatch_Call {
+func (_c *DispatchService_GetDispatches_Call) RunAndReturn(run func(context.Context, string) ([]entities.CurrencyDispatch, error)) *DispatchService_GetDispatches_Call {
 	_c.Call.Return(run)
 	return _c
 }
