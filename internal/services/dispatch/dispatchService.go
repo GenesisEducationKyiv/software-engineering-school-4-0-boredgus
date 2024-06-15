@@ -8,6 +8,9 @@ import (
 	e "subscription-api/internal/entities"
 	"subscription-api/internal/mailing"
 	"subscription-api/internal/services"
+	pb_cs "subscription-api/pkg/grpc/currency_service"
+
+	"google.golang.org/grpc"
 )
 
 type UserRepo interface {
@@ -32,25 +35,38 @@ type Mailman interface {
 	Send(email mailing.Email) error
 }
 
+type CurrencyService interface {
+	Convert(ctx context.Context, in *pb_cs.ConvertRequest, opts ...grpc.CallOption) (*pb_cs.ConvertResponse, error)
+}
+
 type dispatchService struct {
+	log          config.Logger
 	store        db.Store
 	userRepo     UserRepo
 	subRepo      SubRepo
 	dispatchRepo DispatchRepo
 	htmlParser   HTMLTemplateParser
 	mailman      Mailman
-	log          config.Logger
+	csClient     pb_cs.CurrencyServiceClient
 }
 
-func NewDispatchService(s db.Store, l config.Logger, smtpParams mailing.SMTPParams) *dispatchService {
+type DispatchServiceParams struct {
+	Store           db.Store
+	Logger          config.Logger
+	Mailman         Mailman
+	CurrencyService CurrencyService
+}
+
+func NewDispatchService(params DispatchServiceParams) *dispatchService {
 	return &dispatchService{
-		store:        s,
+		store:        params.Store,
 		userRepo:     db.NewUserRepo(),
 		subRepo:      db.NewSubRepo(),
 		dispatchRepo: db.NewDispatchRepo(),
-		htmlParser:   mailing.NewHTMLTemplateParser(l),
-		mailman:      mailing.NewMailman(smtpParams),
-		log:          l,
+		htmlParser:   mailing.NewHTMLTemplateParser(params.Logger),
+		mailman:      params.Mailman,
+		csClient:     params.CurrencyService,
+		log:          params.Logger,
 	}
 }
 
@@ -91,6 +107,11 @@ func (s *dispatchService) SubscribeForDispatch(ctx context.Context, email, dispa
 	return nil
 }
 
+type ExchangeRates struct {
+	BaseCurrency string
+	Rates        map[string]float64
+}
+
 func (s *dispatchService) SendDispatch(ctx context.Context, dispatchId string) error {
 	var dispatch e.CurrencyDispatch
 	var subscribers []string
@@ -103,7 +124,7 @@ func (s *dispatchService) SendDispatch(ctx context.Context, dispatchId string) e
 		if dsptch.CountOfSubscribers == 0 {
 			return nil
 		}
-
+		dispatch = dsptch
 		subscribers, err = s.dispatchRepo.GetSubscribersOfDispatch(ctx, d, dispatchId)
 		if err != nil {
 			return err
@@ -113,9 +134,22 @@ func (s *dispatchService) SendDispatch(ctx context.Context, dispatchId string) e
 	}); err != nil {
 		return err
 	}
-	s.log.Infof("fetched dispatch: %+v     subscribers: %v\n\n", dispatch, subscribers)
+	if len(subscribers) == 0 {
+		return nil
+	}
 
-	htmlContent, err := s.htmlParser.Parse(dispatch.TemplateName, dispatch)
+	resp, err := s.csClient.Convert(ctx, &pb_cs.ConvertRequest{
+		BaseCurrency:     dispatch.Details.BaseCurrency,
+		TargetCurrencies: dispatch.Details.TargetCurrencies,
+	})
+	if err != nil {
+		return err
+	}
+
+	htmlContent, err := s.htmlParser.Parse(dispatch.TemplateName, ExchangeRates{
+		BaseCurrency: resp.BaseCurrency,
+		Rates:        resp.Rates,
+	})
 	if err != nil {
 		return err
 	}
