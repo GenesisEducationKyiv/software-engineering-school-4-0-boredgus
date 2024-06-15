@@ -44,7 +44,7 @@ services:
       
 
   dispatch-daemon:
-    container_name: ${DISPATCH_DAEMON_CONTAINER}
+    container_name: ${DISPATCH_DAEMON_ADDRESS}
     build:
       context: .
       dockerfile: docker/Dockerfile.dispatch-daemon
