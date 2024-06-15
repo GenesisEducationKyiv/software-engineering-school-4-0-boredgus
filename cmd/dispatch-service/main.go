@@ -39,7 +39,7 @@ func main() {
 	pb_ds.RegisterDispatchServiceServer(server,
 		g.NewDispatchServiceServer(
 			ds.NewDispatchService(
-				ds.DispatchServiceParams{
+				&ds.DispatchServiceParams{
 					Store: store.NewStore(
 						utils.Must(db.NewPostrgreSQL(
 							env.PostgreSQLConnString,

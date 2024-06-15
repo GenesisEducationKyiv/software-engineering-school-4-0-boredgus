@@ -61,7 +61,7 @@ type DispatchServiceParams struct {
 	CurrencyService CurrencyServiceClient
 }
 
-func NewDispatchService(params DispatchServiceParams) *dispatchService {
+func NewDispatchService(params *DispatchServiceParams) *dispatchService {
 	return &dispatchService{
 		store:        params.Store,
 		userRepo:     db.NewUserRepo(),

@@ -31,7 +31,7 @@ func main() {
 
 	logger.Infof("started subscription API at %v port", env.Port)
 
-	err = internal.GetRouter(internal.APIParams{
+	err = internal.GetRouter(&internal.APIParams{
 		CurrencyService: pb_cs.NewCurrencyServiceClient(currencyServiceConn),
 		DispatchService: pb_ds.NewDispatchServiceClient(dispatchServiceConn),
 		Logger:          logger,

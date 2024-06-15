@@ -42,7 +42,7 @@ type APIParams struct {
 
 var MaxRequestDuration = 2000 * time.Millisecond
 
-func GetRouter(params APIParams) *gin.Engine {
+func GetRouter(params *APIParams) *gin.Engine {
 	r := gin.Default()
 
 	r.GET("/rate", func(ctx *gin.Context) {
