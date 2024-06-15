@@ -1,6 +1,10 @@
 package mailing
 
-import "github.com/go-mail/mail"
+import (
+	"fmt"
+
+	"github.com/go-mail/mail"
+)
 
 type Email struct {
 	To       []string
@@ -17,13 +21,14 @@ type SMTPParams struct {
 	Host     string
 	Port     int
 	Email    string
+	Name     string
 	Password string
 }
 
 func NewMailman(params SMTPParams) *mailman {
 	return &mailman{
 		dialer: mail.NewDialer(params.Host, params.Port, params.Email, params.Password),
-		author: params.Email,
+		author: fmt.Sprintf(`"%s" <%s>`, params.Name, params.Email),
 	}
 }
 
@@ -35,6 +40,7 @@ func (m *mailman) Send(e Email) error {
 		msg.SetHeader("To", target)
 		msg.SetHeader("Subject", e.Subject)
 		msg.SetBody("text/html", e.HTMLBody)
+		msgs = append(msgs, msg)
 	}
 
 	return m.dialer.DialAndSend(msgs...)
