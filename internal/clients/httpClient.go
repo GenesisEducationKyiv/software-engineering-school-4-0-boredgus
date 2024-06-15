@@ -10,10 +10,6 @@ import (
 
 var InvalidRequestErr = errors.New("invalid-request")
 
-type HTTPClient interface {
-	Get(ctx context.Context, url string) (*http.Response, error)
-}
-
 type httpClient struct {
 	client *http.Client
 }

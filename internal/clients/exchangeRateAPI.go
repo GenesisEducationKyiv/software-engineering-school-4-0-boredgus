@@ -4,10 +4,14 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"subscription-api/internal/entities"
+	e "subscription-api/internal/entities"
 	"subscription-api/internal/services"
 	"subscription-api/pkg/utils"
 )
+
+type HTTPClient interface {
+	Get(ctx context.Context, url string) (*http.Response, error)
+}
 
 type ExchangeRateAPIClient struct {
 	basePath   string
@@ -26,7 +30,11 @@ type conversionResult struct {
 	Rates     map[string]float64 `json:"conversion_rates"`
 }
 
-func (c *ExchangeRateAPIClient) Convert(ctx context.Context, baseCcy entities.Currency, targetCcies []entities.Currency) (map[entities.Currency]float64, error) {
+func (c *ExchangeRateAPIClient) Convert(
+	ctx context.Context,
+	baseCcy e.Currency,
+	targetCcies []e.Currency,
+) (map[e.Currency]float64, error) {
 	resp, err := c.httpClient.Get(ctx, fmt.Sprintf("%s/latest/%s", c.basePath, baseCcy))
 	if err != nil {
 		return nil, err
@@ -42,7 +50,7 @@ func (c *ExchangeRateAPIClient) Convert(ctx context.Context, baseCcy entities.Cu
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("%w: %v", services.FailedPreconditionErr, targetCcies)
 	}
-	rates := make(map[entities.Currency]float64)
+	rates := make(map[e.Currency]float64)
 	for _, currency := range targetCcies {
 		rates[currency] = result.Rates[string(currency)]
 	}

@@ -17,7 +17,6 @@ func main() {
 	env := utils.Must(internal.Env())
 	logger := config.InitLogger(env.Mode).With("service", "dispatch-daemon")
 
-	logger.Infof("started")
 	connURL := fmt.Sprintf("%s:%s", env.DispatchServiceAddress, env.DispatchServicePort)
 	logger.Info(connURL)
 
@@ -28,6 +27,7 @@ func main() {
 	utils.PanicOnError(err, "failed to connect to dispatch service grpc server")
 	logger.Info(dispatchServiceConn)
 
+	logger.Info("dispatch daemon has started")
 	internal.NewDispatchDaemon(
 		pb_ds.NewDispatchServiceClient(dispatchServiceConn),
 		logger,

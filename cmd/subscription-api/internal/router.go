@@ -4,8 +4,6 @@ import (
 	"context"
 	"subscription-api/config"
 	"subscription-api/internal/controllers"
-	pb_cs "subscription-api/pkg/grpc/currency_service"
-	pb_ds "subscription-api/pkg/grpc/dispatch_service"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -37,8 +35,8 @@ func (c *ctx) Logger() config.Logger {
 }
 
 type APIParams struct {
-	CurrencyService pb_cs.CurrencyServiceClient
-	DispatchService pb_ds.DispatchServiceClient
+	CurrencyService controllers.CurrencyService
+	DispatchService controllers.DispatchService
 	Logger          config.Logger
 }
 

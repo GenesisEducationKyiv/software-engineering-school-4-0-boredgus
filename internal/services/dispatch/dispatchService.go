@@ -13,6 +13,10 @@ import (
 	"google.golang.org/grpc"
 )
 
+type Store interface {
+	WithTx(ctx context.Context, f func(db.DB) error) error
+}
+
 type UserRepo interface {
 	CreateUser(ctx context.Context, db db.DB, email string) error
 }
@@ -41,17 +45,17 @@ type CurrencyService interface {
 
 type dispatchService struct {
 	log          config.Logger
-	store        db.Store
+	store        Store
 	userRepo     UserRepo
 	subRepo      SubRepo
 	dispatchRepo DispatchRepo
 	htmlParser   HTMLTemplateParser
 	mailman      Mailman
-	csClient     pb_cs.CurrencyServiceClient
+	csClient     CurrencyService
 }
 
 type DispatchServiceParams struct {
-	Store           db.Store
+	Store           Store
 	Logger          config.Logger
 	Mailman         Mailman
 	CurrencyService CurrencyService

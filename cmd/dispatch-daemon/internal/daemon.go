@@ -5,6 +5,8 @@ import (
 	"subscription-api/config"
 	pb_ds "subscription-api/pkg/grpc/dispatch_service"
 	"time"
+
+	"google.golang.org/grpc"
 )
 
 type Scheduler interface {
@@ -13,13 +15,18 @@ type Scheduler interface {
 	Run()
 }
 
+type DispatchService interface {
+	SendDispatch(ctx context.Context, in *pb_ds.SendDispatchRequest, opts ...grpc.CallOption) (*pb_ds.SendDispatchResponse, error)
+	GetAllDispatches(ctx context.Context, in *pb_ds.GetAllDispatchesRequest, opts ...grpc.CallOption) (*pb_ds.GetAllDispatchesResponse, error)
+}
+
 type DispatchDaemon struct {
-	ds  pb_ds.DispatchServiceClient
+	ds  DispatchService
 	log config.Logger
 	sc  Scheduler
 }
 
-func NewDispatchDaemon(ds pb_ds.DispatchServiceClient, l config.Logger, sc Scheduler) *DispatchDaemon {
+func NewDispatchDaemon(ds DispatchService, l config.Logger, sc Scheduler) *DispatchDaemon {
 	return &DispatchDaemon{
 		ds:  ds,
 		log: l,

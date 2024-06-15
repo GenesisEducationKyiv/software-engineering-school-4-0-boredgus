@@ -20,10 +20,6 @@ type DB interface {
 	DB() *sql.DB
 }
 
-type Store interface {
-	WithTx(ctx context.Context, f func(DB) error) error
-}
-
 type store struct {
 	database   *sql.DB
 	checkError ErrorCheckFunc
