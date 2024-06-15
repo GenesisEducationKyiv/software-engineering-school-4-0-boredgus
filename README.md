@@ -17,14 +17,14 @@ API allows:
 
 1. Copy example env file with  command below:
 ```
-> cp ./.env.example ./env
+cp ./.env.example ./env
 ```
 2. Get API key from [third-API](https://app.exchangerate-api.com/) and set to `EXCHANGE_CURRENCY_API_KEY` value in `.env`.
 3. Get app password from Google ([instruction](https://support.google.com/mail/answer/185833?hl=en)) and set to `SMTP_PASSWORD` value in `.env`.
 4. Update `SMTP_EMAIL` and `SMTP_USERNAME` values in `.env`.
 5. Start project with command below
 ```
-> make start
+make start
 ```
 
 
