@@ -3,41 +3,39 @@ package mailing
 import "github.com/go-mail/mail"
 
 type Email struct {
-	From     string
 	To       []string
-	ReplyTo  string
 	Subject  string
 	HTMLBody string
 }
 
-type Mailman interface {
-	Send(email Email) error
-}
-
 type mailman struct {
-	dialer mail.Dialer
+	dialer *mail.Dialer
+	author string
 }
 
 type SMTPParams struct {
 	Host     string
 	Port     int
-	Username string
+	Email    string
 	Password string
 }
 
 func NewMailman(params SMTPParams) *mailman {
 	return &mailman{
-		dialer: *mail.NewDialer(params.Host, params.Port, params.Username, params.Password),
+		dialer: mail.NewDialer(params.Host, params.Port, params.Email, params.Password),
+		author: params.Email,
 	}
 }
 
 func (m *mailman) Send(e Email) error {
-	msg := mail.NewMessage()
-	msg.SetHeader("From", e.From)
-	// TODO: find a way to send emails separately (without random subscriber knowing emails of other subscribers)
-	msg.SetHeader("To", e.To...)
-	msg.SetHeader("Subject", e.Subject)
-	msg.SetBody("text/html", e.HTMLBody)
+	msgs := make([]*mail.Message, 0, len(e.To))
+	for _, target := range e.To {
+		msg := mail.NewMessage()
+		msg.SetHeader("From", m.author)
+		msg.SetHeader("To", target)
+		msg.SetHeader("Subject", e.Subject)
+		msg.SetBody("text/html", e.HTMLBody)
+	}
 
-	return m.dialer.DialAndSend(msg)
+	return m.dialer.DialAndSend(msgs...)
 }
