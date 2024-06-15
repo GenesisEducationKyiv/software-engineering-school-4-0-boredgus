@@ -15,7 +15,7 @@ import (
 
 func main() {
 	env := utils.Must(internal.Env())
-	logger := config.InitLogger(env.Mode).With("service", "dispatch-daemon")
+	logger := config.InitLogger(env.Mode, config.WithProcess("dispatch-daemon"))
 
 	connURL := fmt.Sprintf("%s:%s", env.DispatchServiceAddress, env.DispatchServicePort)
 	logger.Info(connURL)

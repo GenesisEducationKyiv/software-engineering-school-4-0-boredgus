@@ -22,7 +22,7 @@ import (
 
 func main() {
 	env := utils.Must(internal.Env())
-	logger := config.InitLogger(env.Mode)
+	logger := config.InitLogger(env.Mode, config.WithProcess("dispatch-service"))
 
 	currencyServiceConn, err := grpc.NewClient(
 		fmt.Sprintf("%s:%s", env.CurrencyServiceAddress, env.CurrencyServicePort),

@@ -22,12 +22,25 @@ func (l *logger) Printf(format string, v ...interface{}) {
 	l.SugaredLogger.Infof(format, v...)
 }
 
-func InitLogger(mode Mode) *logger {
+type LoggerOption func(*zap.SugaredLogger)
+
+func WithProcess(processName string) LoggerOption {
+	return func(l *zap.SugaredLogger) {
+		l = l.With("process", processName)
+	}
+}
+
+func InitLogger(mode Mode, opts ...LoggerOption) *logger {
 	config := zap.NewDevelopmentConfig()
 	if mode == ProdMode {
 		config = zap.NewProductionConfig()
 	}
 	config.EncoderConfig.EncodeTime = zapcore.RFC3339NanoTimeEncoder
 
-	return &logger{SugaredLogger: zap.Must(config.Build()).Sugar()}
+	l := zap.Must(config.Build()).Sugar()
+	for _, opt := range opts {
+		opt(l)
+	}
+
+	return &logger{SugaredLogger: l}
 }

@@ -16,7 +16,7 @@ import (
 
 func main() {
 	env := utils.Must(internal.Env())
-	logger := config.InitLogger(env.Mode)
+	logger := config.InitLogger(env.Mode, config.WithProcess("currency-service"))
 
 	url := fmt.Sprintf("%s:%s", env.CurrencyServiceAddress, env.CurrencyServicePort)
 	lis, err := net.Listen("tcp", url)
