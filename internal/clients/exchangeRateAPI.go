@@ -2,6 +2,7 @@ package clients
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	e "subscription-api/internal/entities"
@@ -31,6 +32,8 @@ type conversionResult struct {
 	Rates     map[string]float64 `json:"conversion_rates"`
 }
 
+var InvalidArgumentErr = errors.New("invalid argument")
+
 func (c *ExchangeRateAPIClient) Convert(
 	ctx context.Context,
 	baseCcy e.Currency,
@@ -45,7 +48,7 @@ func (c *ExchangeRateAPIClient) Convert(
 	if err = utils.Parse(resp.Body, &result); err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != http.StatusOK && result.ErrorType == services.InvalidArgumentErr.Error() {
+	if result.ErrorType == InvalidArgumentErr.Error() {
 		return nil, fmt.Errorf("%w: %v", services.InvalidArgumentErr, baseCcy)
 	}
 	if resp.StatusCode != http.StatusOK {
