@@ -34,6 +34,7 @@ type conversionResult struct {
 
 var InvalidArgumentErr = errors.New("invalid argument")
 
+// Gets latest exchange rates for specifies currencies.
 func (c *ExchangeRateAPIClient) Convert(
 	ctx context.Context,
 	baseCcy e.Currency,

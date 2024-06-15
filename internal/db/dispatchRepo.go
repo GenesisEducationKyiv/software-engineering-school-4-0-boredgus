@@ -42,7 +42,7 @@ func (r *DispatchRepo) GetDispatchByID(ctx context.Context, db DB, dispatchId st
 	return d, nil
 }
 
-const getSubscribersForDsipatchQ string = `
+const getSubscribersOfDispatchQ string = `
 	select u.email
 	from subs."currency_dispatches" cd
 	left join subs."currency_subscriptions" cs
@@ -54,7 +54,7 @@ const getSubscribersForDsipatchQ string = `
 
 func (r *DispatchRepo) GetSubscribersOfDispatch(ctx context.Context, d DB, dispatchId string) ([]string, error) {
 	var result []string
-	rows, err := d.DB().QueryContext(ctx, getSubscribersForDsipatchQ, dispatchId)
+	rows, err := d.DB().QueryContext(ctx, getSubscribersOfDispatchQ, dispatchId)
 	if d.IsError(err, InvalidTextRepresentation) {
 		return result, fmt.Errorf("%w: incorrect format for uuid", services.InvalidArgumentErr)
 	}
@@ -69,7 +69,7 @@ func (r *DispatchRepo) GetSubscribersOfDispatch(ctx context.Context, d DB, dispa
 	return result, nil
 }
 
-const getAllQ = `
+const getAllDispatchesQ = `
 	select cd.u_id, cd.label, cd.template_name, cd.base_currency , cd.target_currencies, cd.send_at, count(cs.user_id) subs_count
 	from subs."currency_dispatches" cd
 	left join subs."currency_subscriptions" cs
@@ -80,7 +80,7 @@ const getAllQ = `
 func (r *DispatchRepo) GetAllDispatches(ctx context.Context, db DB) ([]e.CurrencyDispatch, error) {
 	dispatchCount := 5
 	result := make([]e.CurrencyDispatch, 0, dispatchCount)
-	rows, err := db.DB().QueryContext(ctx, getAllQ)
+	rows, err := db.DB().QueryContext(ctx, getAllDispatchesQ)
 	if err != nil {
 		return nil, err
 	}

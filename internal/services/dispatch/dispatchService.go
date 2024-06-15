@@ -111,7 +111,7 @@ func (s *dispatchService) SubscribeForDispatch(ctx context.Context, email, dispa
 	return nil
 }
 
-type ExchangeRates struct {
+type ExchangeRateTemplateParams struct {
 	BaseCurrency string
 	Rates        map[string]float64
 }
@@ -130,11 +130,8 @@ func (s *dispatchService) SendDispatch(ctx context.Context, dispatchId string) e
 		}
 		dispatch = dsptch
 		subscribers, err = s.dispatchRepo.GetSubscribersOfDispatch(ctx, d, dispatchId)
-		if err != nil {
-			return err
-		}
 
-		return nil
+		return err
 	}); err != nil {
 		return err
 	}
@@ -150,7 +147,7 @@ func (s *dispatchService) SendDispatch(ctx context.Context, dispatchId string) e
 		return err
 	}
 
-	htmlContent, err := s.htmlParser.Parse(dispatch.TemplateName, ExchangeRates{
+	htmlContent, err := s.htmlParser.Parse(dispatch.TemplateName, ExchangeRateTemplateParams{
 		BaseCurrency: resp.BaseCurrency,
 		Rates:        resp.Rates,
 	})
