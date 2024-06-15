@@ -20,7 +20,8 @@ type ExchangeRateAPIClient struct {
 
 func NewExchangeRateAPIClient(apiKey string) *ExchangeRateAPIClient {
 	return &ExchangeRateAPIClient{
-		basePath: "https://v6.exchangerate-api.com/v6/" + apiKey,
+		basePath:   "https://v6.exchangerate-api.com/v6/" + apiKey,
+		httpClient: NewHTTPClient(),
 	}
 }
 
@@ -55,5 +56,5 @@ func (c *ExchangeRateAPIClient) Convert(
 		rates[currency] = result.Rates[string(currency)]
 	}
 
-	return nil, nil
+	return rates, nil
 }
