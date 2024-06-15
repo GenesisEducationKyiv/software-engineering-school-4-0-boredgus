@@ -28,11 +28,11 @@ func NewHTMLTemplateParser(l config.Logger) *htmlTemplateParser {
 }
 func (p htmlTemplateParser) Parse(templateName string, data any) ([]byte, error) {
 	var buffer bytes.Buffer
-	filename := path(templateName + ".html")
+	templateFile := path(templateName + ".html")
 	if err := template.
-		Must(template.ParseFiles(filename)).
+		Must(template.ParseFiles(templateFile)).
 		Execute(&buffer, data); err != nil {
-		p.l.Errorf("failed to execute html template %s: %v", filename, err)
+		p.l.Errorf("failed to execute html template %s: %v", templateFile, err)
 
 		return []byte{}, err
 	}
