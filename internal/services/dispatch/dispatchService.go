@@ -39,7 +39,7 @@ type Mailman interface {
 	Send(email mailing.Email) error
 }
 
-type CurrencyService interface {
+type CurrencyServiceClient interface {
 	Convert(ctx context.Context, in *pb_cs.ConvertRequest, opts ...grpc.CallOption) (*pb_cs.ConvertResponse, error)
 }
 
@@ -51,14 +51,14 @@ type dispatchService struct {
 	dispatchRepo DispatchRepo
 	htmlParser   HTMLTemplateParser
 	mailman      Mailman
-	csClient     CurrencyService
+	csClient     CurrencyServiceClient
 }
 
 type DispatchServiceParams struct {
 	Store           Store
 	Logger          config.Logger
 	Mailman         Mailman
-	CurrencyService CurrencyService
+	CurrencyService CurrencyServiceClient
 }
 
 func NewDispatchService(params DispatchServiceParams) *dispatchService {
