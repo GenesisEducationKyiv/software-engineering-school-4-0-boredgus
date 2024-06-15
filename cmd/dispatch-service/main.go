@@ -6,6 +6,7 @@ import (
 	"subscription-api/cmd/dispatch-service/internal"
 	"subscription-api/config"
 	store "subscription-api/internal/db"
+	"subscription-api/internal/mailing"
 	ds "subscription-api/internal/services/dispatch"
 	g "subscription-api/internal/services/dispatch/grpc"
 	"subscription-api/internal/sql"
@@ -25,6 +26,12 @@ func main() {
 	utils.PanicOnError(err, fmt.Sprintf("failed to listen %s", url))
 
 	server := grpc.NewServer()
+	smtpParams := mailing.SMTPParams{
+		Host:     env.SMTPHost,
+		Port:     env.SMTPPort,
+		Email:    env.SMTPEmail,
+		Password: env.SMTPPassword,
+	}
 	pb_ds.RegisterDispatchServiceServer(server,
 		g.NewDispatchServiceServer(
 			ds.NewDispatchService(
@@ -34,11 +41,12 @@ func main() {
 						sql.PostgeSQLMigrationsUp("public", logger),
 					)),
 					db.IsPqError,
-				)),
+				),
+				logger,
+				smtpParams),
 			logger,
 		))
 
 	logger.Info("dispatch service started...")
-
 	utils.PanicOnError(server.Serve(lis), "failed to serve")
 }

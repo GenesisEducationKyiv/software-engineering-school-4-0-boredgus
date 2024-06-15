@@ -6,17 +6,17 @@ option go_package = "./";
 // import "google/protobuf/timestamp.proto";
 
 service DispatchService {
-  rpc SubscribeFor(SubscribeForRequest) returns (SubscribeForResponse) {}
+  rpc SubscribeForDispatch(SubscribeForDispatchRequest) returns (SubscribeForDispatchResponse) {}
   rpc SendDispatch(SendDispatchRequest) returns (SendDispatchResponse) {}
-  rpc GetDispatch(GetDispatchRequest) returns (GetDispatchResponse) {}
+  rpc GetAllDispatches(GetAllDispatchesRequest) returns (GetAllDispatchesResponse) {}
 }
 
-message SubscribeForRequest {
+message SubscribeForDispatchRequest {
   string email = 1;
   string dispatch_id = 2;
 }
 
-message SubscribeForResponse {}
+message SubscribeForDispatchResponse {}
 
 message SendDispatchRequest {
   string dispatch_id = 1;
@@ -24,18 +24,17 @@ message SendDispatchRequest {
 
 message SendDispatchResponse {}
 
-message GetDispatchRequest {
-  string dispatch_id = 1;
-}
+message GetAllDispatchesRequest {}
 
 message DispatchData {
   string id = 1;
-  string baseCurrency = 2;
-  repeated string targetCurrencies = 3;
+  // string baseCurrency = 2;
+  // repeated string targetCurrencies = 3;
   string send_at = 4;
   int64 countOfSubscribers = 5;
+  string label = 6;
 }
 
-message GetDispatchResponse {
-  DispatchData dispatch = 1;
+message GetAllDispatchesResponse {
+  repeated DispatchData dispatches = 1;
 }

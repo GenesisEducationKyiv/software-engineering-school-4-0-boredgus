@@ -3,8 +3,7 @@ package ds
 import (
 	"context"
 	"fmt"
-	db "subscription-api/internal/db"
-	"subscription-api/internal/entities"
+	e "subscription-api/internal/entities"
 	db_mocks "subscription-api/internal/mocks/db"
 	repo_mocks "subscription-api/internal/mocks/repo"
 	"testing"
@@ -13,14 +12,10 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func Test_DispatchService_GetDispatch(t *testing.T) {
-	type args struct {
-		ctx        context.Context
-		dispatchId string
-	}
+func Test_DispatchService_GetallDispatches(t *testing.T) {
 	type mocked struct {
 		txErr      error
-		dispatch   db.DispatchData
+		dispatch   e.CurrencyDispatch
 		getByidErr error
 	}
 
@@ -29,21 +24,20 @@ func Test_DispatchService_GetDispatch(t *testing.T) {
 	setup := func(m mocked) func() {
 		txCall := storeMock.EXPECT().WithTx(mock.Anything, mock.Anything).Once().
 			Return(m.txErr)
-		getByIDCall := dispatchRepoMock.EXPECT().GetByID(mock.Anything, mock.Anything, mock.Anything).
+		getCall := dispatchRepoMock.EXPECT().GetAllDispatches(mock.Anything, mock.Anything).
 			Maybe().Return(m.dispatch, m.getByidErr)
 
 		return func() {
 			txCall.Unset()
-			getByIDCall.Unset()
+			getCall.Unset()
 		}
 	}
 
 	someErr := fmt.Errorf("some err")
 	tests := []struct {
 		name    string
-		args    args
 		mocked  mocked
-		want    entities.CurrencyDispatch
+		want    e.CurrencyDispatch
 		wantErr error
 	}{
 		{
@@ -59,10 +53,10 @@ func Test_DispatchService_GetDispatch(t *testing.T) {
 			defer cleanup()
 
 			s := &dispatchService{
-				store:        storeMock,
-				dispatchRepo: dispatchRepoMock,
+				store: storeMock,
+				// dispatchRepo: dispatchRepoMock,
 			}
-			got, err := s.GetDispatch(tt.args.ctx, tt.args.dispatchId)
+			got, err := s.GetAllDispatches(context.Background())
 
 			assert.Equal(t, tt.want, got)
 			if tt.wantErr != nil {

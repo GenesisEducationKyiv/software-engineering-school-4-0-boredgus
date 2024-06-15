@@ -3,25 +3,24 @@ package grpc
 import (
 	"context"
 	"reflect"
-	ds "subscription-api/internal/services/dispatch"
 	pb_ds "subscription-api/pkg/grpc/dispatch_service"
 	"testing"
 )
 
-func Test_dispatchServiceServer_SubscribeFor(t *testing.T) {
+func Test_DispatchServiceServer_SubscribeForDispatch(t *testing.T) {
 	type fields struct {
-		s                                  ds.DispatchService
+		s                                  DispatchService
 		UnimplementedDispatchServiceServer pb_ds.UnimplementedDispatchServiceServer
 	}
 	type args struct {
 		ctx context.Context
-		req *pb_ds.SubscribeForRequest
+		req *pb_ds.SubscribeForDispatchRequest
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		want    *pb_ds.SubscribeForResponse
+		want    *pb_ds.SubscribeForDispatchRequest
 		wantErr bool
 	}{
 		// TODO: Add test cases.
@@ -32,7 +31,7 @@ func Test_dispatchServiceServer_SubscribeFor(t *testing.T) {
 				s:                                  tt.fields.s,
 				UnimplementedDispatchServiceServer: tt.fields.UnimplementedDispatchServiceServer,
 			}
-			got, err := s.SubscribeFor(tt.args.ctx, tt.args.req)
+			got, err := s.SubscribeForDispatch(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("dispatchServiceServer.SubscribeFor() error = %v, wantErr %v", err, tt.wantErr)
 
