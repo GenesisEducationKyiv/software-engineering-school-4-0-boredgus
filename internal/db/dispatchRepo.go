@@ -15,7 +15,7 @@ func NewDispatchRepo() *DispatchRepo {
 }
 
 const getDispatchByIdQ string = `
-	select cd.u_id, cd.base_currency , cd.target_currencies, cd.send_at, count(cs.user_id) subs_count
+	select cd.u_id, cd.label, cd.template_name, cd.base_currency , cd.target_currencies, cd.send_at, count(cs.user_id) subs_count
 	from subs."currency_dispatches" cd
 	left join subs."currency_subscriptions" cs
 	on cs.dispatch_id = cd.id
@@ -34,7 +34,7 @@ func (r *DispatchRepo) GetDispatchByID(ctx context.Context, db DB, dispatchId st
 		return d, err
 	}
 	var targetCurrencies string
-	if err := row.Scan(&d.Id, &d.Details.BaseCurrency, &targetCurrencies, &d.SendAt, &d.CountOfSubscribers); err != nil {
+	if err := row.Scan(&d.Id, &d.Label, &d.TemplateName, &d.Details.BaseCurrency, &targetCurrencies, &d.SendAt, &d.CountOfSubscribers); err != nil {
 		return d, fmt.Errorf("%w: dispatch with such id does not exists", services.NotFoundErr)
 	}
 	d.Details.TargetCurrencies = strings.Split(targetCurrencies, ",")
@@ -42,7 +42,7 @@ func (r *DispatchRepo) GetDispatchByID(ctx context.Context, db DB, dispatchId st
 	return d, nil
 }
 
-const getSubscribersByIdQ string = `
+const getSubscribersForDsipatchQ string = `
 	select u.email
 	from subs."currency_dispatches" cd
 	left join subs."currency_subscriptions" cs
@@ -54,7 +54,7 @@ const getSubscribersByIdQ string = `
 
 func (r *DispatchRepo) GetSubscribersOfDispatch(ctx context.Context, d DB, dispatchId string) ([]string, error) {
 	var result []string
-	rows, err := d.DB().QueryContext(ctx, getSubscribersByIdQ)
+	rows, err := d.DB().QueryContext(ctx, getSubscribersForDsipatchQ, dispatchId)
 	if d.IsError(err, InvalidTextRepresentation) {
 		return result, fmt.Errorf("%w: incorrect format for uuid", services.InvalidArgumentErr)
 	}
@@ -70,7 +70,7 @@ func (r *DispatchRepo) GetSubscribersOfDispatch(ctx context.Context, d DB, dispa
 }
 
 const getAllQ = `
-	select cd.u_id, cd.base_currency , cd.target_currencies, cd.send_at, count(cs.user_id) subs_count
+	select cd.u_id, cd.label, cd.template_name, cd.base_currency , cd.target_currencies, cd.send_at, count(cs.user_id) subs_count
 	from subs."currency_dispatches" cd
 	left join subs."currency_subscriptions" cs
 	on cs.dispatch_id = cd.id
@@ -87,7 +87,7 @@ func (r *DispatchRepo) GetAllDispatches(ctx context.Context, db DB) ([]e.Currenc
 	for rows.Next() {
 		var d e.CurrencyDispatch
 		var targetCurrencies string
-		if err := rows.Scan(&d.Id, &d.Details.BaseCurrency, &targetCurrencies, &d.SendAt, &d.CountOfSubscribers); err != nil {
+		if err := rows.Scan(&d.Id, &d.Label, &d.TemplateName, &d.Details.BaseCurrency, &targetCurrencies, &d.SendAt, &d.CountOfSubscribers); err != nil {
 			return result, fmt.Errorf("failed to scan currency dispatch: %w", err)
 		}
 		d.Details.TargetCurrencies = strings.Split(targetCurrencies, ",")
