@@ -12,8 +12,12 @@ type Email struct {
 	HTMLBody string
 }
 
+type Dialer interface {
+	DialAndSend(m ...*mail.Message) error
+}
+
 type mailman struct {
-	dialer *mail.Dialer
+	dialer Dialer
 	author string
 }
 
