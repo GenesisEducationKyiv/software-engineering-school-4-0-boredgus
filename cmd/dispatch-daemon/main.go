@@ -1,53 +1,36 @@
 package main
 
 import (
-	"bytes"
-	"html/template"
+	"context"
+	"fmt"
 	"subscription-api/cmd/dispatch-daemon/internal"
 	"subscription-api/config"
-	"subscription-api/internal/mailing"
 	"subscription-api/pkg/utils"
+
+	pb_ds "subscription-api/pkg/grpc/dispatch_service"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
-/*
-This module is not implemented yet.
-The logic written below is redundunt and not worth to pay attention to.
-I'll implement it later.
-
-In perspective it will:
-- fetch data (id and count of subscribers) of dispatches filtering by time of sending
-- invoke sending of emails through gRPC
-*/
 func main() {
 	env := utils.Must(internal.Env())
-	logger := config.InitLogger(env.Mode)
+	logger := config.InitLogger(env.Mode).With("service", "dispatch-daemon")
 
-	defaultRate := 30.1232211
-	data := struct {
-		BaseCurrency   string
-		TargetCurrency string
-		ExchangeRate   float64
-	}{
-		BaseCurrency:   "USD",
-		TargetCurrency: "UAH",
-		ExchangeRate:   defaultRate,
-	}
-	var buffer bytes.Buffer
-	err := template.
-		Must(template.ParseFiles("internal/mailing/emails/exchange_rate.html")).
-		Execute(&buffer, data)
-	utils.PanicOnError(err, "failed to execute template")
+	logger.Infof("started")
+	connURL := fmt.Sprintf("%s:%s", env.DispatchServiceAddress, env.DispatchServicePort)
+	logger.Info(connURL)
 
-	logger.Info(mailing.NewMailman(mailing.SMTPParams{
-		Host:     env.MailmanHost,
-		Port:     env.MailmanPort,
-		Username: env.MailmanEmail,
-		Password: env.MailmanPassword}).
-		Send(mailing.Email{
-			From:     env.MailmanEmail,
-			To:       []string{"daha@gmail.com"},
-			ReplyTo:  env.MailmanEmail,
-			Subject:  "Daily USD-UAH exchange rate",
-			HTMLBody: buffer.String(),
-		}))
+	dispatchServiceConn, err := grpc.NewClient(
+		connURL,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	utils.PanicOnError(err, "failed to connect to dispatch service grpc server")
+	logger.Info(dispatchServiceConn)
+
+	internal.NewDispatchDaemon(
+		pb_ds.NewDispatchServiceClient(dispatchServiceConn),
+		logger.With(),
+		internal.NewScheduler(logger),
+	).Run(context.Background())
 }
