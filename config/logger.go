@@ -21,6 +21,9 @@ type logger struct {
 func (l *logger) Printf(format string, v ...interface{}) {
 	l.SugaredLogger.Infof(format, v...)
 }
+func (l *logger) Flush() {
+	l.SugaredLogger.Sync()
+}
 
 type LoggerOption func(*zap.SugaredLogger)
 

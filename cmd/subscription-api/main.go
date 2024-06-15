@@ -15,6 +15,7 @@ import (
 func main() {
 	env := utils.Must(internal.Env())
 	logger := config.InitLogger(env.Mode, config.WithProcess("api"))
+	defer logger.Flush()
 
 	currencyServiceConn, err := grpc.NewClient(
 		fmt.Sprintf("%s:%s", env.CurrencyServiceAddress, env.CurrencyServicePort),
