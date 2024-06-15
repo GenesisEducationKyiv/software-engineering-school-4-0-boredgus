@@ -1,4 +1,4 @@
-ENV_FILE=.env.example
+ENV_FILE=.env
 
 start:
 	ENV_FILE=${ENV_FILE} docker compose -f docker-compose.yaml --env-file ${ENV_FILE} up
