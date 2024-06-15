@@ -37,7 +37,7 @@ func (d *DispatchDaemon) scheduleDispatchSending(ctx context.Context, id, sendAt
 
 	d.sc.AddTask(
 		id,
-		TaskSpec{Mins: t.Minute(), Hours: t.Hour()},
+		TaskSpec{Hours: t.Hour(), Mins: t.Minute()},
 		func() {
 			_, err = d.ds.SendDispatch(ctx, &pb_ds.SendDispatchRequest{DispatchId: id})
 			if err != nil {

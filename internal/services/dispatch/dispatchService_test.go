@@ -37,7 +37,7 @@ func Test_DispatchService_GetallDispatches(t *testing.T) {
 	tests := []struct {
 		name    string
 		mocked  mocked
-		want    e.CurrencyDispatch
+		want    []e.CurrencyDispatch
 		wantErr error
 	}{
 		{

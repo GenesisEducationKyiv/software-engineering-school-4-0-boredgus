@@ -30,7 +30,7 @@ func main() {
 
 	internal.NewDispatchDaemon(
 		pb_ds.NewDispatchServiceClient(dispatchServiceConn),
-		logger.With(),
+		logger,
 		internal.NewScheduler(logger),
 	).Run(context.Background())
 }
