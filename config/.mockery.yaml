@@ -33,7 +33,4 @@ packages:
         config:
           dir: "internal/mocks/repo"
           outpkg: "repo_mocks"
-      Store:
-        config:
-          dir: "internal/mocks/db"
-          outpkg: "db_mocks"
+
