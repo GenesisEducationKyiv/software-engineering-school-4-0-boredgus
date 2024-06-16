@@ -19,6 +19,10 @@ func path(filename string) string {
 	return filepath.Join(basePath, "emails", filename)
 }
 
+type TemplateParser interface {
+	Parse(templateName string, data any) ([]byte, error)
+}
+
 type htmlTemplateParser struct {
 	l config.Logger
 }
@@ -34,7 +38,7 @@ func (p htmlTemplateParser) Parse(templateName string, data any) ([]byte, error)
 		Execute(&buffer, data); err != nil {
 		p.l.Errorf("failed to execute html template %s: %v", templateFile, err)
 
-		return []byte{}, err
+		return nil, err
 	}
 
 	return buffer.Bytes(), nil
