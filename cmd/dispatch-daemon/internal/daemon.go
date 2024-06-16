@@ -37,7 +37,7 @@ func NewDispatchDaemon(ds DispatchService, l config.Logger, sc Scheduler) *Dispa
 func (d *DispatchDaemon) scheduleDispatchSending(ctx context.Context, id, sendAt string) {
 	t, err := time.Parse(time.TimeOnly, sendAt)
 	if err != nil {
-		d.log.Errorf("faild to parse time: %v", err)
+		d.log.Errorf("failed to parse time: %v", err)
 
 		return
 	}
@@ -48,7 +48,7 @@ func (d *DispatchDaemon) scheduleDispatchSending(ctx context.Context, id, sendAt
 		func() {
 			_, err = d.ds.SendDispatch(ctx, &pb_ds.SendDispatchRequest{DispatchId: id})
 			if err != nil {
-				d.log.Errorf("faild to send dispatch: %v", err)
+				d.log.Errorf("failed to send dispatch: %v", err)
 			}
 		})
 }
@@ -56,7 +56,7 @@ func (d *DispatchDaemon) scheduleDispatchSending(ctx context.Context, id, sendAt
 func (d *DispatchDaemon) Run(ctx context.Context) {
 	resp, err := d.ds.GetAllDispatches(ctx, &pb_ds.GetAllDispatchesRequest{})
 	if err != nil {
-		d.log.Errorf("faild to get dispatch: %v", err)
+		d.log.Errorf("failed to get dispatch: %v", err)
 
 		return
 	}
