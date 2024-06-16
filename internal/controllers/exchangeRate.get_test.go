@@ -12,10 +12,6 @@ import (
 )
 
 func TestGetExchangeRate(t *testing.T) {
-	type args struct {
-		ctx Context
-		cs  CurrencyService
-	}
 	type mocked struct {
 		ctx            context.Context
 		rates          map[string]float64

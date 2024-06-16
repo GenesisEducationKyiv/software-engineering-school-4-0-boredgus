@@ -15,14 +15,9 @@ import (
 )
 
 func TestSubscribeForDailyDispatch(t *testing.T) {
-	type args struct {
-		ctx Context
-		ds  DispatchService
-	}
 	type mocked struct {
 		bindErr        error
 		ctx            context.Context
-		rates          map[string]float64
 		subscribeErr   error
 		responseStatus int
 		responseStr    string
