@@ -8,14 +8,16 @@ import (
 	"github.com/lib/pq"
 )
 
-func NewPostrgreSQL(dsn string, handlers ...func(db *sql.DB)) (*sql.DB, error) {
+func NewPostrgreSQL(dsn string, handlers ...func(db *sql.DB) error) (*sql.DB, error) {
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		panic(fmt.Errorf("failed to connect to postgres db: %w", err))
 	}
 
 	for _, handler := range handlers {
-		handler(db)
+		if err = handler(db); err != nil {
+			return db, nil
+		}
 	}
 
 	return db, nil
