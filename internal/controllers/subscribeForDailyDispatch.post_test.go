@@ -6,6 +6,7 @@ import (
 	"net/http"
 	client_mocks "subscription-api/internal/mocks/clients"
 	controllers_mocks "subscription-api/internal/mocks/controllers"
+	"subscription-api/internal/services"
 	pb_ds "subscription-api/pkg/grpc/dispatch_service"
 	"testing"
 
@@ -35,7 +36,7 @@ func TestSubscribeForDailyDispatch(t *testing.T) {
 		subscribeCall := dsClientMock.EXPECT().
 			SubscribeForDispatch(m.ctx, &pb_ds.SubscribeForDispatchRequest{
 				Email:      "",
-				DispatchId: USD_UAH_DISPATCH_ID,
+				DispatchId: services.USD_UAH_DISPATCH_ID,
 			}).Once().NotBefore(contextCall).
 			Return(&pb_ds.SubscribeForDispatchResponse{}, m.subscribeErr)
 		statusCall := contextMock.EXPECT().

@@ -19,3 +19,5 @@ type DispatchService interface {
 	SendDispatch(ctx context.Context, dispatch string) error
 	GetAllDispatches(ctx context.Context) ([]e.CurrencyDispatch, error)
 }
+
+const USD_UAH_DISPATCH_ID = "f669a90d-d4aa-4285-bbce-6b14c6ff9065"

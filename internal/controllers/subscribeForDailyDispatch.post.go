@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"net/http"
+	"subscription-api/internal/services"
 	pb_ds "subscription-api/pkg/grpc/dispatch_service"
 
 	"google.golang.org/grpc"
@@ -18,8 +19,6 @@ type subscribeParams struct {
 	Email string `json:"email"`
 }
 
-const USD_UAH_DISPATCH_ID = "f669a90d-d4aa-4285-bbce-6b14c6ff9065"
-
 func SubscribeForDailyDispatch(ctx Context, ds DispatchService) {
 	var params subscribeParams
 	if err := ctx.BindJSON(&params); err != nil {
@@ -30,7 +29,7 @@ func SubscribeForDailyDispatch(ctx Context, ds DispatchService) {
 
 	_, err := ds.SubscribeForDispatch(ctx.Context(), &pb_ds.SubscribeForDispatchRequest{
 		Email:      params.Email,
-		DispatchId: USD_UAH_DISPATCH_ID,
+		DispatchId: services.USD_UAH_DISPATCH_ID,
 	})
 	if status.Code(err) == codes.AlreadyExists {
 		ctx.Status(http.StatusConflict)
