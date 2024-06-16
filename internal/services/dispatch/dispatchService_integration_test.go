@@ -18,6 +18,8 @@ import (
 	cs "subscription-api/internal/services/currency"
 	g "subscription-api/internal/services/currency/grpc"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -32,6 +34,7 @@ type DispatchServiceSuite struct {
 	l           config.Logger
 	dbContainer *testhelpers.PostgresContainer
 	ctx         context.Context
+	mailman     *stubs.MailmanStub
 }
 
 const CurrencyServiceURL = "localhost:4040"
@@ -56,6 +59,7 @@ func (s *DispatchServiceSuite) startCurrencyServiceServer() {
 }
 
 func (s *DispatchServiceSuite) SetupSuite() {
+	s.l = config.InitLogger(config.TestMode)
 	s.startCurrencyServiceServer()
 
 	s.ctx = context.Background()
@@ -69,13 +73,14 @@ func (s *DispatchServiceSuite) SetupSuite() {
 	}
 	s.dbContainer = cont
 
-	s.l = config.InitLogger(config.TestMode)
-
 	currencyServiceConn, err := grpc.NewClient(
 		CurrencyServiceURL,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	s.NoErrorf(err, "failed to create connection to currency service")
+
+	mailman := stubs.NewMailmanStub()
+	s.mailman = mailman
 
 	s.service = NewDispatchService(&DispatchServiceParams{
 		Logger: s.l,
@@ -86,7 +91,7 @@ func (s *DispatchServiceSuite) SetupSuite() {
 			)),
 			db.IsPqError,
 		),
-		Mailman:         stubs.NewMailmanStub(),
+		Mailman:         mailman,
 		CurrencyService: pb_cs.NewCurrencyServiceClient(currencyServiceConn),
 	})
 	// s.NoError(s.dbContainer.Snapshot(s.ctx, postgres.WithSnapshotName("initial")))
@@ -99,38 +104,70 @@ func (s *DispatchServiceSuite) TearDownSuite() {
 	}
 }
 
-func (s *DispatchServiceSuite) SetupTest() {
-	// s.NoError(s.dbContainer.Restore(s.ctx, postgres.WithSnapshotName("initial")))
-}
+func (s *DispatchServiceSuite) SetupTest() {}
 
 func (s *DispatchServiceSuite) Test_GetAllDispatches() {
-	dispatches, err := s.service.GetAllDispatches(context.Background())
+	ctx := context.Background()
+
+	dispatches, err := s.service.GetAllDispatches(ctx)
+
 	s.NoError(err)
 	s.Equal(1, len(dispatches))
-	d := dispatches[0]
-	s.Equal(d.Id, services.USD_UAH_DISPATCH_ID)
-}
-
-func (s *DispatchServiceSuite) Test_SubscribeForDispatch() {
-	email1, email2 := "email@gmail.com", "qwerty@gmail.com"
-
-	err := s.service.SubscribeForDispatch(context.Background(), email1, services.USD_UAH_DISPATCH_ID)
-	s.NoError(err)
-	err = s.service.SubscribeForDispatch(context.Background(), email1, services.USD_UAH_DISPATCH_ID)
-	s.ErrorIs(err, services.UniqueViolationErr)
-	err = s.service.SubscribeForDispatch(context.Background(), email2, services.USD_UAH_DISPATCH_ID)
-	s.NoError(err)
-	dispatches, err := s.service.GetAllDispatches(context.Background())
-	s.NoError(err)
-	for _, d := range dispatches {
-		if d.Id == services.USD_UAH_DISPATCH_ID {
-			s.Equal(2, d.CountOfSubscribers)
-		}
-	}
+	s.Equal(dispatches[0].Id, services.USD_UAH_DISPATCH_ID)
 }
 
 func (s *DispatchServiceSuite) Test_SendDispatch() {
-	s.NoError(s.service.SendDispatch(context.Background(), services.USD_UAH_DISPATCH_ID))
+	dispatchId := services.USD_UAH_DISPATCH_ID
+	emails := []string{"send.dispatch1@gmail.com", "send.dispatch2@gmail.com"}
+	ctx := context.Background()
+
+	for _, email := range emails {
+		s.NoError(s.service.SubscribeForDispatch(ctx, email, dispatchId))
+	}
+
+	dispatchesAfter, err := s.service.GetAllDispatches(ctx)
+	for _, d := range dispatchesAfter {
+		if d.Id == dispatchId {
+			assert.GreaterOrEqual(s.T(), d.CountOfSubscribers, len(emails))
+		}
+	}
+	s.mailman.On("Send", mock.Anything).Once()
+
+	s.NoError(err)
+	s.NoError(s.service.SendDispatch(ctx, services.USD_UAH_DISPATCH_ID))
+	s.Equal(1, len(s.mailman.Calls))
+}
+
+func (s *DispatchServiceSuite) Test_SubscribeForDispatch() {
+	email1, email2 := "email1@gmail.com", "email2@gmail.com"
+	dispatchId := services.USD_UAH_DISPATCH_ID
+	countBefore, countAfter := 0, 0
+
+	dispatchesBefore, err1 := s.service.GetAllDispatches(context.Background())
+	err2 := s.service.SubscribeForDispatch(context.Background(), email1, dispatchId)
+	err3 := s.service.SubscribeForDispatch(context.Background(), email1, dispatchId)
+	err4 := s.service.SubscribeForDispatch(context.Background(), email1, "invalid-dispatch-uuid")
+	err5 := s.service.SubscribeForDispatch(context.Background(), email1, "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+	err6 := s.service.SubscribeForDispatch(context.Background(), email2, dispatchId)
+	dispatchesAfter, err6 := s.service.GetAllDispatches(context.Background())
+	for _, d := range dispatchesBefore {
+		if d.Id == dispatchId {
+			countBefore = d.CountOfSubscribers
+		}
+	}
+	for _, d := range dispatchesAfter {
+		if d.Id == dispatchId {
+			countAfter = d.CountOfSubscribers
+		}
+	}
+
+	s.NoError(err1)
+	s.NoError(err2)
+	s.ErrorIs(err3, services.UniqueViolationErr)
+	s.ErrorIs(err4, services.InvalidArgumentErr)
+	s.ErrorIs(err5, services.NotFoundErr)
+	s.NoError(err6)
+	s.Equal(2, countAfter-countBefore)
 }
 
 func TestDispatchServiceSuite(t *testing.T) {

@@ -2,14 +2,18 @@ package stubs
 
 import (
 	"subscription-api/internal/mailing"
+
+	"github.com/stretchr/testify/mock"
 )
 
-type mailmanStub struct {
+type MailmanStub struct {
+	mock.Mock
 }
 
-func NewMailmanStub() *mailmanStub {
-	return &mailmanStub{}
+func NewMailmanStub() *MailmanStub {
+	return &MailmanStub{}
 }
-func (m *mailmanStub) Send(email mailing.Email) error {
+func (m *MailmanStub) Send(email mailing.Email) error {
+	m.Called(email)
 	return nil
 }
