@@ -43,7 +43,7 @@ func main() {
 					Store: store.NewStore(
 						utils.Must(db.NewPostrgreSQL(
 							env.PostgreSQLConnString,
-							sql.PostgeSQLMigrationsUp("public", logger),
+							sql.PostgeSQLMigrationsUp(logger),
 						)),
 						db.IsPqError,
 					),
