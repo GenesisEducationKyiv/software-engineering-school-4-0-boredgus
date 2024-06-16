@@ -15,5 +15,6 @@ func NewMailmanStub() *MailmanStub {
 }
 func (m *MailmanStub) Send(email mailing.Email) error {
 	m.Called(email)
+
 	return nil
 }
