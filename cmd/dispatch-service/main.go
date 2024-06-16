@@ -36,31 +36,31 @@ func main() {
 	lis, err := net.Listen("tcp", url)
 	utils.PanicOnError(err, fmt.Sprintf("failed to listen %s", url))
 
+	params := &ds.DispatchServiceParams{
+		Store: store.NewStore(
+			utils.Must(db.NewPostrgreSQL(
+				env.PostgreSQLConnString,
+				sql.PostgeSQLMigrationsUp("public", logger),
+			)),
+			db.IsPqError,
+		),
+		Logger: logger,
+		Mailman: mailing.NewMailman(
+			mailing.SMTPParams{
+				Host:     env.SMTPHost,
+				Port:     env.SMTPPort,
+				Email:    env.SMTPEmail,
+				Name:     env.SMTPUsername,
+				Password: env.SMTPPassword,
+			},
+		),
+		CurrencyService: pb_cs.NewCurrencyServiceClient(currencyServiceConn),
+	}
+
 	server := grpc.NewServer()
 	pb_ds.RegisterDispatchServiceServer(server,
 		g.NewDispatchServiceServer(
-			ds.NewDispatchService(
-				&ds.DispatchServiceParams{
-					Store: store.NewStore(
-						utils.Must(db.NewPostrgreSQL(
-							env.PostgreSQLConnString,
-							sql.PostgeSQLMigrationsUp("public", logger),
-						)),
-						db.IsPqError,
-					),
-					Logger: logger,
-					Mailman: mailing.NewMailman(
-						mailing.SMTPParams{
-							Host:     env.SMTPHost,
-							Port:     env.SMTPPort,
-							Email:    env.SMTPEmail,
-							Name:     env.SMTPUsername,
-							Password: env.SMTPPassword,
-						},
-					),
-					CurrencyService: pb_cs.NewCurrencyServiceClient(currencyServiceConn),
-				},
-			),
+			ds.NewDispatchService(params),
 			logger,
 		))
 
