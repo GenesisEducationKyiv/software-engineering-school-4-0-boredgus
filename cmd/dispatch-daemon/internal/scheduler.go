@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"subscription-api/config"
 	"time"
@@ -48,8 +47,4 @@ func (s *scheduler) RemoveTask(taskId int) {
 
 func (s *scheduler) Run() {
 	s.cron.Run()
-}
-
-func (s *scheduler) Stop() context.Context {
-	return s.cron.Stop()
 }
