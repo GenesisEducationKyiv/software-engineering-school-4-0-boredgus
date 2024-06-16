@@ -8,6 +8,9 @@ packages:
   subscription-api/config:
     interfaces:
       Logger:
+  subscription-api/internal/controllers:
+    interfaces: 
+      Context:
   subscription-api/internal/db:
     interfaces:
       DB:
