@@ -81,10 +81,7 @@ func (s *dispatchService) GetAllDispatches(ctx context.Context) ([]e.CurrencyDis
 		if err != nil {
 			return err
 		}
-		dispatches = make([]e.CurrencyDispatch, 0, len(d))
-		for _, dsptch := range d {
-			dispatches = append(dispatches, dsptch)
-		}
+		dispatches = d
 
 		return nil
 	})
