@@ -26,7 +26,7 @@ func main() {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	utils.PanicOnError(err, "failed to connect to dispatch service grpc server")
-	logger.Info(dispatchServiceConn)
+	defer dispatchServiceConn.Close()
 
 	logger.Info("dispatch daemon has started")
 	internal.NewDispatchDaemon(

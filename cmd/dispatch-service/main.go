@@ -30,6 +30,7 @@ func main() {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	utils.PanicOnError(err, "failed to connect to currency service grpc server")
+	defer currencyServiceConn.Close()
 
 	url := fmt.Sprintf("%s:%s", env.DispatchServiceAddress, env.DispatchServicePort)
 	lis, err := net.Listen("tcp", url)

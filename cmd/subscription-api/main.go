@@ -22,12 +22,14 @@ func main() {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	utils.PanicOnError(err, "failed to connect to currency service grpc server")
+	defer currencyServiceConn.Close()
 
 	dispatchServiceConn, err := grpc.NewClient(
 		fmt.Sprintf("%s:%s", env.DispatchServiceAddress, env.DispatchServicePort),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	utils.PanicOnError(err, "failed to connect to dispatch service grpc server")
+	dispatchServiceConn.Close()
 
 	logger.Infof("started subscription API at %v port", env.Port)
 
