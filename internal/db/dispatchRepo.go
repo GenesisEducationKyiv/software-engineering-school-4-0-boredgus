@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"strings"
 	e "subscription-api/internal/entities"
@@ -59,11 +60,13 @@ func (r *DispatchRepo) GetSubscribersOfDispatch(ctx context.Context, d DB, dispa
 		return result, fmt.Errorf("%w: incorrect format for uuid", services.InvalidArgumentErr)
 	}
 	for rows.Next() {
-		var email string
+		var email sql.NullString
 		if err := rows.Scan(&email); err != nil {
 			return result, fmt.Errorf("failed to scan row: %w", err)
 		}
-		result = append(result, email)
+		if email.Valid {
+			result = append(result, email.String)
+		}
 	}
 
 	return result, nil
