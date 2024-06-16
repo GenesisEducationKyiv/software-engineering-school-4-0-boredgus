@@ -15,12 +15,8 @@ const (
 
 type ErrorCheckFunc func(error, Error) bool
 
-type Transaction interface {
-	Rollback() error
-	Commit() error
-}
 type WithTransaction interface {
-	BeginTx(ctx context.Context, opts *sql.TxOptions) (Transaction, error)
+	BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
 }
 type Database interface {
 	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
