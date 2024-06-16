@@ -122,9 +122,6 @@ func (s *dispatchService) SendDispatch(ctx context.Context, dispatchId string) e
 		if err != nil {
 			return err
 		}
-		if dsptch.CountOfSubscribers == 0 {
-			return nil
-		}
 		dispatch = dsptch
 		subscribers, err = s.dispatchRepo.GetSubscribersOfDispatch(ctx, d, dispatchId)
 

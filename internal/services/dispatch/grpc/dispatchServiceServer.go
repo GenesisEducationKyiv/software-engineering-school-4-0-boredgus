@@ -46,7 +46,7 @@ func (s *dispatchServiceServer) SendDispatch(ctx context.Context, req *pb_ds.Sen
 	s.log("SendDispatch", req.String())
 	err := s.s.SendDispatch(ctx, req.DispatchId)
 	if errors.Is(err, services.NotFoundErr) {
-		return nil, status.Error(codes.Canceled, err.Error())
+		return nil, status.Error(codes.NotFound, err.Error())
 	}
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -58,14 +58,11 @@ func (s *dispatchServiceServer) SendDispatch(ctx context.Context, req *pb_ds.Sen
 func (s *dispatchServiceServer) GetAllDispatches(ctx context.Context, req *pb_ds.GetAllDispatchesRequest) (*pb_ds.GetAllDispatchesResponse, error) {
 	s.log("GetAllDispatches", req.String())
 	d, err := s.s.GetAllDispatches(ctx)
-	if errors.Is(err, services.NotFoundErr) {
-		return nil, status.Error(codes.NotFound, err.Error())
-	}
-	if errors.Is(err, services.InvalidArgumentErr) {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
+	}
+	if len(d) == 0 {
+		return &pb_ds.GetAllDispatchesResponse{Dispatches: []*pb_ds.DispatchData{}}, nil
 	}
 
 	dispatches := make([]*pb_ds.DispatchData, 0, len(d))

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"subscription-api/internal/entities"
-	cfg_mocks "subscription-api/internal/mocks/config"
+	config_mocks "subscription-api/internal/mocks/config"
 	s_mocks "subscription-api/internal/mocks/services"
 	s "subscription-api/internal/services"
 	pb_cs "subscription-api/pkg/grpc/currency_service"
@@ -25,7 +25,7 @@ func Test_CurrencyServiceServer_Convert(t *testing.T) {
 		convertErr     error
 	}
 	csMock := s_mocks.NewCurrencyService(t)
-	loggerMock := cfg_mocks.NewLogger(t)
+	loggerMock := config_mocks.NewLogger(t)
 	internalError := fmt.Errorf("internal-error")
 	setup := func(res *mockedRes, args s.ConvertCurrencyParams) func() {
 		csCall := csMock.EXPECT().Convert(mock.Anything, args).Return(res.convertedRates, res.convertErr).Once()
