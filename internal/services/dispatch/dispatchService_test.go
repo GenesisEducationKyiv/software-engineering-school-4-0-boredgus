@@ -1,4 +1,4 @@
-package ds
+package dispatch_service
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	e "subscription-api/internal/entities"
 	db_mocks "subscription-api/internal/mocks/db"
 	repo_mocks "subscription-api/internal/mocks/repo"
+	"subscription-api/internal/services"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -37,7 +38,7 @@ func Test_DispatchService_GetallDispatches(t *testing.T) {
 	tests := []struct {
 		name    string
 		mocked  mocked
-		want    []e.CurrencyDispatch
+		want    []services.DispatchData
 		wantErr error
 	}{
 		{

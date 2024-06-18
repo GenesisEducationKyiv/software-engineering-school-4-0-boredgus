@@ -77,20 +77,18 @@ const getAllDispatchesQ = `
 	group by cd.id;
 `
 
-func (r *DispatchRepo) GetAllDispatches(ctx context.Context, db DB) ([]e.CurrencyDispatch, error) {
-	result := make([]e.CurrencyDispatch, 0, 5) // nolint:mnd
+func (r *DispatchRepo) GetAllDispatches(ctx context.Context, db DB) ([]services.DispatchData, error) {
+	result := make([]services.DispatchData, 0, 5) // nolint:mnd
 	rows, err := db.DB().QueryContext(ctx, getAllDispatchesQ)
 	if err != nil {
 		return nil, err
 	}
 	for rows.Next() {
-		var d e.CurrencyDispatch
-		var targetCurrencies string
-		if err := rows.Scan(&d.Id, &d.Label, &d.TemplateName, &d.Details.BaseCurrency, &targetCurrencies, &d.SendAt, &d.CountOfSubscribers); err != nil {
+		var dispatch services.DispatchData
+		if err := rows.Scan(&dispatch.Id, &dispatch.Label, &dispatch.SendAt, &dispatch.CountOfSubscribers); err != nil {
 			return result, fmt.Errorf("failed to scan currency dispatch: %w", err)
 		}
-		d.Details.TargetCurrencies = strings.Split(targetCurrencies, ",")
-		result = append(result, d)
+		result = append(result, dispatch)
 	}
 
 	return result, nil

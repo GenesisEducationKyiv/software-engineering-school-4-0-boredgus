@@ -1,4 +1,4 @@
-package grpc
+package dispatch_service
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"subscription-api/config"
 	"subscription-api/internal/services"
 	ss "subscription-api/internal/services"
-	pb_ds "subscription-api/pkg/grpc/dispatch_service"
+	grpc "subscription-api/internal/services/dispatch/grpc"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -15,7 +15,7 @@ import (
 type dispatchServiceServer struct {
 	s ss.DispatchService
 	l config.Logger
-	pb_ds.UnimplementedDispatchServiceServer
+	grpc.UnimplementedDispatchServiceServer
 }
 
 func NewDispatchServiceServer(s ss.DispatchService, l config.Logger) *dispatchServiceServer {
@@ -26,7 +26,7 @@ func (s *dispatchServiceServer) log(method string, req any) {
 	s.l.Infof("DispatchService.%v(%+v)", method, req)
 }
 
-func (s *dispatchServiceServer) SubscribeForDispatch(ctx context.Context, req *pb_ds.SubscribeForDispatchRequest) (*pb_ds.SubscribeForDispatchResponse, error) {
+func (s *dispatchServiceServer) SubscribeForDispatch(ctx context.Context, req *grpc.SubscribeForDispatchRequest) (*grpc.SubscribeForDispatchResponse, error) {
 	s.log("SubscribeForDispatch", req.String())
 	err := s.s.SubscribeForDispatch(ctx, req.Email, req.DispatchId)
 	if errors.Is(err, services.UniqueViolationErr) {
@@ -39,10 +39,10 @@ func (s *dispatchServiceServer) SubscribeForDispatch(ctx context.Context, req *p
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &pb_ds.SubscribeForDispatchResponse{}, nil
+	return &grpc.SubscribeForDispatchResponse{}, nil
 }
 
-func (s *dispatchServiceServer) SendDispatch(ctx context.Context, req *pb_ds.SendDispatchRequest) (*pb_ds.SendDispatchResponse, error) {
+func (s *dispatchServiceServer) SendDispatch(ctx context.Context, req *grpc.SendDispatchRequest) (*grpc.SendDispatchResponse, error) {
 	s.log("SendDispatch", req.String())
 	err := s.s.SendDispatch(ctx, req.DispatchId)
 	if errors.Is(err, services.NotFoundErr) {
@@ -52,12 +52,12 @@ func (s *dispatchServiceServer) SendDispatch(ctx context.Context, req *pb_ds.Sen
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &pb_ds.SendDispatchResponse{}, nil
+	return &grpc.SendDispatchResponse{}, nil
 }
 
-func (s *dispatchServiceServer) GetAllDispatches(ctx context.Context, req *pb_ds.GetAllDispatchesRequest) (*pb_ds.GetAllDispatchesResponse, error) {
+func (s *dispatchServiceServer) GetAllDispatches(ctx context.Context, req *grpc.GetAllDispatchesRequest) (*grpc.GetAllDispatchesResponse, error) {
 	s.log("GetAllDispatches", req.String())
-	d, err := s.s.GetAllDispatches(ctx)
+	allDispatches, err := s.s.GetAllDispatches(ctx)
 	if errors.Is(err, services.NotFoundErr) {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
@@ -68,10 +68,10 @@ func (s *dispatchServiceServer) GetAllDispatches(ctx context.Context, req *pb_ds
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	dispatches := make([]*pb_ds.DispatchData, 0, len(d))
-	for _, dsptch := range d {
+	dispatches := make([]*grpc.DispatchData, 0, len(allDispatches))
+	for _, dsptch := range allDispatches {
 		dispatches = append(dispatches, dsptch.ToProto())
 	}
 
-	return &pb_ds.GetAllDispatchesResponse{Dispatches: dispatches}, nil
+	return &grpc.GetAllDispatchesResponse{Dispatches: dispatches}, nil
 }

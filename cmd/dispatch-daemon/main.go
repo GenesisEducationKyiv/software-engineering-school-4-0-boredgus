@@ -7,7 +7,7 @@ import (
 	"subscription-api/config"
 	"subscription-api/pkg/utils"
 
-	pb_ds "subscription-api/pkg/grpc/dispatch_service"
+	grpc_client "subscription-api/pkg/grpc"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -30,7 +30,7 @@ func main() {
 
 	logger.Info("dispatch daemon has started")
 	internal.NewDispatchDaemon(
-		pb_ds.NewDispatchServiceClient(dispatchServiceConn),
+		grpc_client.NewDispatchServiceClient(dispatchServiceConn),
 		logger,
 		internal.NewScheduler(logger),
 	).Run(context.Background())

@@ -1,4 +1,4 @@
-package ds
+package dispatch_service
 
 import (
 	"bytes"
@@ -10,9 +10,6 @@ import (
 	e "subscription-api/internal/entities"
 	"subscription-api/internal/mailing"
 	"subscription-api/internal/services"
-	pb_cs "subscription-api/pkg/grpc/currency_service"
-
-	"google.golang.org/grpc"
 )
 
 type Store interface {
@@ -30,7 +27,7 @@ type SubRepo interface {
 type DispatchRepo interface {
 	GetDispatchByID(ctx context.Context, db db.DB, dispatchId string) (e.CurrencyDispatch, error)
 	GetSubscribersOfDispatch(ctx context.Context, db db.DB, dispatchId string) ([]string, error)
-	GetAllDispatches(ctx context.Context, db db.DB) ([]e.CurrencyDispatch, error)
+	GetAllDispatches(ctx context.Context, db db.DB) ([]services.DispatchData, error)
 }
 
 type Mailman interface {
@@ -38,7 +35,7 @@ type Mailman interface {
 }
 
 type CurrencyServiceClient interface {
-	Convert(ctx context.Context, in *pb_cs.ConvertRequest, opts ...grpc.CallOption) (*pb_cs.ConvertResponse, error)
+	Convert(ctx context.Context, params services.ConvertCurrencyParams) (map[string]float64, error)
 }
 
 type dispatchService struct {
@@ -70,8 +67,8 @@ func NewDispatchService(params *DispatchServiceParams) *dispatchService {
 	}
 }
 
-func (s *dispatchService) GetAllDispatches(ctx context.Context) ([]e.CurrencyDispatch, error) {
-	var dispatches []e.CurrencyDispatch
+func (s *dispatchService) GetAllDispatches(ctx context.Context) ([]services.DispatchData, error) {
+	var dispatches []services.DispatchData
 	err := s.store.WithTx(ctx, func(db db.DB) error {
 		d, err := s.dispatchRepo.GetAllDispatches(ctx, db)
 		if err != nil {
@@ -150,17 +147,17 @@ func (s *dispatchService) SendDispatch(ctx context.Context, dispatchId string) e
 		return nil
 	}
 
-	resp, err := s.csClient.Convert(ctx, &pb_cs.ConvertRequest{
-		BaseCurrency:     dispatch.Details.BaseCurrency,
-		TargetCurrencies: dispatch.Details.TargetCurrencies,
+	curencyRates, err := s.csClient.Convert(ctx, services.ConvertCurrencyParams{
+		Base:   dispatch.Details.BaseCurrency,
+		Target: dispatch.Details.TargetCurrencies,
 	})
 	if err != nil {
 		return err
 	}
 
 	htmlContent, err := s.parseHTMLTemplate(dispatch.TemplateName, ExchangeRateTemplateParams{
-		BaseCurrency: resp.BaseCurrency,
-		Rates:        resp.Rates,
+		BaseCurrency: dispatch.Details.BaseCurrency,
+		Rates:        curencyRates,
 	})
 	if err != nil {
 		return err

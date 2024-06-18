@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	e "subscription-api/internal/entities"
 	"subscription-api/internal/services"
 	"subscription-api/pkg/utils"
 )
@@ -33,9 +32,9 @@ var InvalidArgumentErr = errors.New("invalid argument")
 // Gets latest exchange rates for specifies currencies.
 func (c *ExchangeRateAPIClient) Convert(
 	ctx context.Context,
-	baseCcy e.Currency,
-	targetCcies []e.Currency,
-) (map[e.Currency]float64, error) {
+	baseCcy string,
+	targetCcies []string,
+) (map[string]float64, error) {
 	resp, err := c.httpClient.Get(ctx, fmt.Sprintf("%s/latest/%s", c.basePath, baseCcy))
 	if err != nil {
 		return nil, err
@@ -51,9 +50,9 @@ func (c *ExchangeRateAPIClient) Convert(
 	if result.ErrorType == InvalidArgumentErr.Error() {
 		return nil, fmt.Errorf("%w: %v", services.InvalidArgumentErr, baseCcy)
 	}
-	rates := make(map[e.Currency]float64)
+	rates := make(map[string]float64)
 	for _, currency := range targetCcies {
-		rates[currency] = result.Rates[string(currency)]
+		rates[currency] = result.Rates[currency]
 	}
 
 	return rates, nil

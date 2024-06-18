@@ -6,9 +6,8 @@ import (
 	"subscription-api/cmd/currency-service/internal"
 	"subscription-api/config"
 	"subscription-api/internal/clients"
-	cs "subscription-api/internal/services/currency"
-	g "subscription-api/internal/services/currency/grpc"
-	pb_cs "subscription-api/pkg/grpc/currency_service"
+	currency_service "subscription-api/internal/services/currency"
+	currency_grpc "subscription-api/internal/services/currency/grpc"
 	"subscription-api/pkg/utils"
 
 	"google.golang.org/grpc"
@@ -24,9 +23,9 @@ func main() {
 	utils.PanicOnError(err, fmt.Sprintf("failed to listen %s", url))
 
 	server := grpc.NewServer()
-	pb_cs.RegisterCurrencyServiceServer(server,
-		g.NewCurrencyServiceServer(
-			cs.NewCurrencyService(
+	currency_grpc.RegisterCurrencyServiceServer(server,
+		currency_service.NewCurrencyServiceServer(
+			currency_service.NewCurrencyService(
 				clients.NewExchangeRateAPIClient(env.ExchangeCurrencyAPIKey),
 			),
 			logger,
