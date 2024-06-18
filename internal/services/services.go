@@ -30,6 +30,20 @@ func (d DispatchData) ToProto() *dispatch_grpc.DispatchData {
 	}
 }
 
+func DispatchDataFromProto(dispatches []*dispatch_grpc.DispatchData) []DispatchData {
+	convertedDispatches := make([]DispatchData, 0, len(dispatches))
+	for _, dispatch := range dispatches {
+		convertedDispatches = append(convertedDispatches, DispatchData{
+			Id:                 dispatch.Id,
+			Label:              dispatch.Label,
+			SendAt:             dispatch.SendAt,
+			CountOfSubscribers: int(dispatch.CountOfSubscribers),
+		})
+	}
+
+	return convertedDispatches
+}
+
 type DispatchService interface {
 	SubscribeForDispatch(ctx context.Context, email, dispatch string) error
 	SendDispatch(ctx context.Context, dispatch string) error

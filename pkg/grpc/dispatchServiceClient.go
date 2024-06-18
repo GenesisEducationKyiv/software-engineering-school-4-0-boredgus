@@ -34,8 +34,10 @@ func (c *dispatchServiceClient) SendDispatch(ctx context.Context, dispatchId str
 }
 
 func (c *dispatchServiceClient) GetAllDispatches(ctx context.Context) ([]services.DispatchData, error) {
-	/* resp, err :=  */ c.client.GetAllDispatches(ctx, &dispatch_client.GetAllDispatchesRequest{})
-	// TODO: fix types in next line
-	// return resp.Dispatches, err
-	return nil, nil
+	resp, err := c.client.GetAllDispatches(ctx, &dispatch_client.GetAllDispatchesRequest{})
+	if err != nil {
+		return nil, err
+	}
+
+	return services.DispatchDataFromProto(resp.Dispatches), nil
 }
