@@ -199,7 +199,6 @@ func Test_DispatchService_SendDispatch(t *testing.T) {
 		rates          map[string]float64
 		convertErr     error
 		parsedEmail    []byte
-		parseErr       error
 		sendErr        error
 	}
 
