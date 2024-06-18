@@ -24,22 +24,22 @@ const getDispatchByIdQ string = `
 `
 
 func (r *DispatchRepo) GetDispatchByID(ctx context.Context, db DB, dispatchId string) (e.CurrencyDispatch, error) {
-	var d e.CurrencyDispatch
+	var dispatch e.CurrencyDispatch
 	row := db.DB().QueryRowContext(ctx, getDispatchByIdQ, dispatchId)
 	err := row.Err()
 	if err != nil && db.IsError(err, InvalidTextRepresentation) {
-		return d, fmt.Errorf("%w: incorrect format for uuid", services.InvalidArgumentErr)
+		return dispatch, fmt.Errorf("%w: incorrect format for uuid", services.InvalidArgumentErr)
 	}
 	if err != nil {
-		return d, err
+		return dispatch, err
 	}
 	var targetCurrencies string
-	if err := row.Scan(&d.Id, &d.Label, &d.TemplateName, &d.Details.BaseCurrency, &targetCurrencies, &d.SendAt, &d.CountOfSubscribers); err != nil {
-		return d, fmt.Errorf("%w: dispatch with such id does not exists", services.NotFoundErr)
+	if err := row.Scan(&dispatch.Id, &dispatch.Label, &dispatch.TemplateName, &dispatch.Details.BaseCurrency, &targetCurrencies, &dispatch.SendAt, &dispatch.CountOfSubscribers); err != nil {
+		return dispatch, fmt.Errorf("%w: dispatch with such id does not exists", services.NotFoundErr)
 	}
-	d.Details.TargetCurrencies = strings.Split(targetCurrencies, ",")
+	dispatch.Details.TargetCurrencies = strings.Split(targetCurrencies, ",")
 
-	return d, nil
+	return dispatch, nil
 }
 
 const getSubscribersOfDispatchQ string = `
