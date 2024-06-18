@@ -10,13 +10,9 @@ import (
 	"subscription-api/pkg/utils"
 )
 
-type HTTPClient interface {
-	Get(ctx context.Context, url string) (*http.Response, error)
-}
-
 type ExchangeRateAPIClient struct {
 	basePath   string
-	httpClient HTTPClient
+	httpClient *httpClient
 }
 
 func NewExchangeRateAPIClient(apiKey string) *ExchangeRateAPIClient {
