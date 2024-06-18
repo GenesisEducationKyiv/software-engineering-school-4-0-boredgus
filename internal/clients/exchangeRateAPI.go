@@ -44,6 +44,9 @@ func (c *ExchangeRateAPIClient) Convert(
 	if err != nil {
 		return nil, err
 	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("%w: %v", services.FailedPreconditionErr, targetCcies)
+	}
 
 	var result conversionResult
 	if err = utils.ParseJSON(resp.Body, &result); err != nil {
@@ -51,9 +54,6 @@ func (c *ExchangeRateAPIClient) Convert(
 	}
 	if result.ErrorType == InvalidArgumentErr.Error() {
 		return nil, fmt.Errorf("%w: %v", services.InvalidArgumentErr, baseCcy)
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("%w: %v", services.FailedPreconditionErr, targetCcies)
 	}
 	rates := make(map[e.Currency]float64)
 	for _, currency := range targetCcies {
