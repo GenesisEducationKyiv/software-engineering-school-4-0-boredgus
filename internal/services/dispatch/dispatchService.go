@@ -7,7 +7,7 @@ import (
 	"html/template"
 	"subscription-api/config"
 	db "subscription-api/internal/db"
-	e "subscription-api/internal/entities"
+	"subscription-api/internal/entities"
 	"subscription-api/internal/mailing"
 	"subscription-api/internal/services"
 )
@@ -25,7 +25,7 @@ type SubRepo interface {
 }
 
 type DispatchRepo interface {
-	GetDispatchByID(ctx context.Context, db db.DB, dispatchId string) (e.CurrencyDispatch, error)
+	GetDispatchByID(ctx context.Context, db db.DB, dispatchId string) (entities.CurrencyDispatch, error)
 	GetSubscribersOfDispatch(ctx context.Context, db db.DB, dispatchId string) ([]string, error)
 	GetAllDispatches(ctx context.Context, db db.DB) ([]services.DispatchData, error)
 }
@@ -125,7 +125,7 @@ type ExchangeRateTemplateParams struct {
 }
 
 func (s *dispatchService) SendDispatch(ctx context.Context, dispatchId string) error {
-	var dispatch e.CurrencyDispatch
+	var dispatch entities.CurrencyDispatch
 	var subscribers []string
 
 	if err := s.store.WithTx(ctx, func(d db.DB) error {

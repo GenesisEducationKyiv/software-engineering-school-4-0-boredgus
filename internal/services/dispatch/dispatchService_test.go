@@ -3,7 +3,7 @@ package dispatch_service
 import (
 	"context"
 	"fmt"
-	e "subscription-api/internal/entities"
+	"subscription-api/internal/entities"
 	db_mocks "subscription-api/internal/mocks/db"
 	repo_mocks "subscription-api/internal/mocks/repo"
 	"subscription-api/internal/services"
@@ -16,7 +16,7 @@ import (
 func Test_DispatchService_GetallDispatches(t *testing.T) {
 	type mocked struct {
 		txErr      error
-		dispatch   e.CurrencyDispatch
+		dispatch   entities.CurrencyDispatch
 		getByidErr error
 	}
 

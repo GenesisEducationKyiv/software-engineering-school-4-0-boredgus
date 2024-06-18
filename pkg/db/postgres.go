@@ -35,8 +35,8 @@ var pqErrors = map[db.Error]pq.ErrorCode{
 }
 
 func IsPqError(err error, errCode db.Error) bool {
-	e, ok := err.(*pq.Error)
-	if !ok || e.Code != pqErrors[errCode] {
+	pqErr, ok := err.(*pq.Error)
+	if !ok || pqErr.Code != pqErrors[errCode] {
 		return false
 	}
 

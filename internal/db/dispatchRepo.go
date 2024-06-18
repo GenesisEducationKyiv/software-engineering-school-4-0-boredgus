@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	e "subscription-api/internal/entities"
+	"subscription-api/internal/entities"
 	"subscription-api/internal/services"
 )
 
@@ -23,8 +23,8 @@ const getDispatchByIdQ string = `
 	group by cd.id;
 `
 
-func (r *DispatchRepo) GetDispatchByID(ctx context.Context, db DB, dispatchId string) (e.CurrencyDispatch, error) {
-	var dispatch e.CurrencyDispatch
+func (r *DispatchRepo) GetDispatchByID(ctx context.Context, db DB, dispatchId string) (entities.CurrencyDispatch, error) {
+	var dispatch entities.CurrencyDispatch
 	row := db.DB().QueryRowContext(ctx, getDispatchByIdQ, dispatchId)
 	err := row.Err()
 	if err != nil && db.IsError(err, InvalidTextRepresentation) {
