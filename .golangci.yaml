@@ -21,6 +21,7 @@ linters-settings:
   mnd:
     ignored-files:
       - 'dbContainer.go'
+      - 'stubs/*'
     ignored-functions:
       - 'timeout.WithTimeout'
 
