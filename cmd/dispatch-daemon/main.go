@@ -29,9 +29,12 @@ func main() {
 	defer dispatchServiceConn.Close()
 
 	logger.Info("dispatch daemon has started")
-	internal.NewDispatchDaemon(
+
+	daemon := internal.NewDispatchDaemon(
 		grpc_client.NewDispatchServiceClient(dispatchServiceConn),
 		logger,
 		internal.NewScheduler(logger),
-	).Run(context.Background())
+	)
+
+	daemon.Run(context.Background())
 }

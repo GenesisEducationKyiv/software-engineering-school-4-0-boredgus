@@ -32,10 +32,11 @@ func main() {
 
 	logger.Infof("started subscription API at %v port", env.Port)
 
-	err = internal.GetRouter(&internal.APIParams{
+	router := internal.GetRouter(&internal.APIParams{
 		CurrencyService: grpc_clients.NewCurrencyServiceClient(currencyServiceConn),
 		DispatchService: grpc_clients.NewDispatchServiceClient(dispatchServiceConn),
 		Logger:          logger,
-	}).Run(":" + env.Port)
-	utils.PanicOnError(err, "failed to start server")
+	})
+
+	utils.PanicOnError(router.Run(":"+env.Port), "failed to start server")
 }
