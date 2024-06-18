@@ -4,7 +4,6 @@ import (
 	"context"
 	"subscription-api/config"
 	"subscription-api/internal/controllers"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -40,21 +39,21 @@ type APIParams struct {
 	Logger          config.Logger
 }
 
-var MaxRequestDuration = 2000 * time.Millisecond
-
 func GetRouter(params *APIParams) *gin.Engine {
 	r := gin.Default()
 
+	r.Use(TimeoutMiddleware())
+
+	newContext := func(ctx *gin.Context) controllers.Context {
+		return NewContext(ctx, context.Background(), params.Logger)
+	}
+
 	r.GET("/rate", func(ctx *gin.Context) {
-		c, cancel := context.WithTimeout(context.Background(), MaxRequestDuration)
-		defer cancel()
-		controllers.GetExchangeRate(NewContext(ctx, c, params.Logger), params.CurrencyService)
+		controllers.GetExchangeRate(newContext(ctx), params.CurrencyService)
 	})
 
 	r.POST("/subscribe", func(ctx *gin.Context) {
-		c, cancel := context.WithTimeout(context.Background(), MaxRequestDuration)
-		defer cancel()
-		controllers.SubscribeForDailyDispatch(NewContext(ctx, c, params.Logger), params.DispatchService)
+		controllers.SubscribeForDailyDispatch(newContext(ctx), params.DispatchService)
 	})
 
 	return r
