@@ -40,15 +40,15 @@ func NewMailman(params SMTPParams) *mailman {
 	}
 }
 
-func (m *mailman) Send(e Email) error {
-	msgs := make([]*mail.Message, 0, len(e.To))
+func (m *mailman) Send(email Email) error {
+	msgs := make([]*mail.Message, 0, len(email.To))
 
-	for _, target := range e.To {
+	for _, target := range email.To {
 		msg := mail.NewMessage()
 		msg.SetHeader("From", m.author)
 		msg.SetHeader("To", target)
-		msg.SetHeader("Subject", e.Subject)
-		msg.SetBody("text/html", e.HTMLBody)
+		msg.SetHeader("Subject", email.Subject)
+		msg.SetBody("text/html", email.HTMLBody)
 		msgs = append(msgs, msg)
 	}
 

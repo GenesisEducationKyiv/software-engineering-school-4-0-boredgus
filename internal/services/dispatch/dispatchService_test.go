@@ -1,4 +1,4 @@
-package ds
+package dispatch_service
 
 import (
 	"context"
@@ -8,10 +8,11 @@ import (
 	e "subscription-api/internal/entities"
 	"subscription-api/internal/mailing"
 	client_mocks "subscription-api/internal/mocks/clients"
+	config_mocks "subscription-api/internal/mocks/config"
 	db_mocks "subscription-api/internal/mocks/db"
 	mailing_mocks "subscription-api/internal/mocks/mailing"
 	repo_mocks "subscription-api/internal/mocks/repo"
-	pb_cs "subscription-api/pkg/grpc/currency_service"
+	"subscription-api/internal/services"
 	"testing"
 	"time"
 
@@ -24,7 +25,7 @@ func Test_DispatchService_GetAllDispatches(t *testing.T) {
 		ctx context.Context
 	}
 	type mocked struct {
-		dispatches    []e.CurrencyDispatch
+		dispatches    []services.DispatchData
 		getDsptchsErr error
 	}
 
@@ -40,14 +41,9 @@ func Test_DispatchService_GetAllDispatches(t *testing.T) {
 		}
 	}
 
-	dispatches := []e.CurrencyDispatch{{
-		Id:           "id",
-		Label:        "label",
-		SendAt:       time.Date(1, 1, 1, 1, 1, 1, 1, time.UTC),
-		TemplateName: "template",
-		Details: e.CurrencyDispatchDetails{
-			BaseCurrency:     "base",
-			TargetCurrencies: []string{"target"}},
+	dispatches := []services.DispatchData{{
+		Id:                 "id",
+		Label:              "label",
 		CountOfSubscribers: 2,
 	}}
 	someErr := fmt.Errorf("some err")
@@ -57,7 +53,7 @@ func Test_DispatchService_GetAllDispatches(t *testing.T) {
 		name    string
 		args    args
 		mocked  mocked
-		want    []e.CurrencyDispatch
+		want    []services.DispatchData
 		wantErr error
 	}{
 		{
@@ -208,9 +204,9 @@ func Test_DispatchService_SendDispatch(t *testing.T) {
 	}
 
 	storeMock := db_mocks.NewStore()
+	loggerMock := config_mocks.NewLogger(t)
 	dispatchRepoMock := repo_mocks.NewDispatchRepo(t)
 	csClientMock := client_mocks.NewCurrencyServiceClient(t)
-	parserMock := mailing_mocks.NewTemplateParser(t)
 	mailmanMock := mailing_mocks.NewMailman(t)
 
 	setup := func(m *mocked, a *args) func() {
@@ -221,31 +217,25 @@ func Test_DispatchService_SendDispatch(t *testing.T) {
 			GetSubscribersOfDispatch(a.ctx, mock.Anything, a.dispatchId).
 			Maybe().NotBefore(getDsptchCall).Return(m.subscribers, m.getSubsErr)
 		convertCall := csClientMock.EXPECT().
-			Convert(a.ctx, &pb_cs.ConvertRequest{
-				BaseCurrency:     m.dispatch.Details.BaseCurrency,
-				TargetCurrencies: m.dispatch.Details.TargetCurrencies,
-			}).Maybe().NotBefore(getSubsCall).Return(&pb_cs.ConvertResponse{
-			BaseCurrency: m.dispatch.Details.BaseCurrency,
-			Rates:        m.rates,
-		}, m.convertErr)
-		parseCall := parserMock.EXPECT().
-			Parse(m.dispatch.TemplateName, ExchangeRateTemplateParams{
-				BaseCurrency: m.dispatch.Details.BaseCurrency,
-				Rates:        m.rates,
-			}).Maybe().NotBefore(convertCall).Return(m.parsedEmail, m.parseErr)
+			Convert(a.ctx, services.ConvertCurrencyParams{
+				Base:   m.dispatch.Details.BaseCurrency,
+				Target: m.dispatch.Details.TargetCurrencies,
+			}).Maybe().NotBefore(getSubsCall).Return(m.rates, m.convertErr)
 		sendCall := mailmanMock.EXPECT().
 			Send(mailing.Email{
 				To:       m.subscribers,
 				Subject:  m.dispatch.Label,
 				HTMLBody: string(m.parsedEmail),
-			}).Maybe().NotBefore(parseCall).Return(m.sendErr)
+			}).Maybe().NotBefore(convertCall).Return(m.sendErr)
+		errorCall := loggerMock.EXPECT().
+			Errorf(mock.Anything, mock.Anything, mock.Anything, mock.Anything).Maybe()
 
 		return func() {
 			getDsptchCall.Unset()
 			getSubsCall.Unset()
 			convertCall.Unset()
-			parseCall.Unset()
 			sendCall.Unset()
+			errorCall.Unset()
 		}
 	}
 
@@ -253,7 +243,7 @@ func Test_DispatchService_SendDispatch(t *testing.T) {
 		ctx:        context.Background(),
 		dispatchId: "dispatch-id",
 	}
-	dispatch := e.CurrencyDispatch{
+	invalidDispatch := e.CurrencyDispatch{
 		Id:           "id",
 		Label:        "label",
 		SendAt:       time.Date(1, 1, 1, 1, 1, 1, 1, time.UTC),
@@ -263,11 +253,20 @@ func Test_DispatchService_SendDispatch(t *testing.T) {
 			TargetCurrencies: []string{"target"}},
 		CountOfSubscribers: 2,
 	}
+	dispatch := e.CurrencyDispatch{
+		Id:           "id",
+		Label:        "label",
+		SendAt:       time.Date(1, 1, 1, 1, 1, 1, 1, time.UTC),
+		TemplateName: "test/test",
+		Details: e.CurrencyDispatchDetails{
+			BaseCurrency:     "base",
+			TargetCurrencies: []string{"target"}},
+		CountOfSubscribers: 2,
+	}
 	getDispatchErr := fmt.Errorf("get-dispatch-err")
 	getSubsErr := fmt.Errorf("get-subs-err")
 	subscribers := []string{"sub1", "sub2"}
 	convertErr := fmt.Errorf("convert-err")
-	parseErr := fmt.Errorf("parse-err")
 	sendErr := fmt.Errorf("send-err")
 
 	tests := []struct {
@@ -300,7 +299,7 @@ func Test_DispatchService_SendDispatch(t *testing.T) {
 			args: &a,
 			mocked: &mocked{
 				subscribers: subscribers,
-				dispatch:    dispatch,
+				dispatch:    invalidDispatch,
 				convertErr:  convertErr,
 			},
 			wantErr: convertErr,
@@ -310,10 +309,9 @@ func Test_DispatchService_SendDispatch(t *testing.T) {
 			args: &a,
 			mocked: &mocked{
 				subscribers: subscribers,
-				dispatch:    dispatch,
-				parseErr:    parseErr,
+				dispatch:    invalidDispatch,
 			},
-			wantErr: parseErr,
+			wantErr: TemplateParseErr,
 		},
 		{
 			name: "failed to send emails",
@@ -321,6 +319,7 @@ func Test_DispatchService_SendDispatch(t *testing.T) {
 			mocked: &mocked{
 				subscribers: subscribers,
 				dispatch:    dispatch,
+				parsedEmail: []byte("<div><span>test template</span></div>"),
 				sendErr:     sendErr,
 			},
 			wantErr: sendErr,
@@ -331,7 +330,7 @@ func Test_DispatchService_SendDispatch(t *testing.T) {
 			mocked: &mocked{
 				subscribers: subscribers,
 				dispatch:    dispatch,
-				parsedEmail: []byte("email"),
+				parsedEmail: []byte("<div><span>test template</span></div>"),
 			},
 		},
 	}
@@ -343,9 +342,9 @@ func Test_DispatchService_SendDispatch(t *testing.T) {
 			s := &dispatchService{
 				store:        storeMock,
 				dispatchRepo: dispatchRepoMock,
-				htmlParser:   parserMock,
 				mailman:      mailmanMock,
 				csClient:     csClientMock,
+				log:          loggerMock,
 			}
 			err := s.SendDispatch(tt.args.ctx, tt.args.dispatchId)
 

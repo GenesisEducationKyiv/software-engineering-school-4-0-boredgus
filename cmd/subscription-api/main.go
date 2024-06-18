@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"subscription-api/cmd/subscription-api/internal"
 	"subscription-api/config"
-	pb_cs "subscription-api/pkg/grpc/currency_service"
-	pb_ds "subscription-api/pkg/grpc/dispatch_service"
+	grpc_clients "subscription-api/pkg/grpc"
 	"subscription-api/pkg/utils"
 
 	"google.golang.org/grpc"
@@ -22,19 +21,22 @@ func main() {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	utils.PanicOnError(err, "failed to connect to currency service grpc server")
+	defer currencyServiceConn.Close()
 
 	dispatchServiceConn, err := grpc.NewClient(
 		fmt.Sprintf("%s:%s", env.DispatchServiceAddress, env.DispatchServicePort),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	utils.PanicOnError(err, "failed to connect to dispatch service grpc server")
+	defer dispatchServiceConn.Close()
 
 	logger.Infof("started subscription API at %v port", env.Port)
 
-	err = internal.GetRouter(&internal.APIParams{
-		CurrencyService: pb_cs.NewCurrencyServiceClient(currencyServiceConn),
-		DispatchService: pb_ds.NewDispatchServiceClient(dispatchServiceConn),
+	router := internal.GetRouter(&internal.APIParams{
+		CurrencyService: grpc_clients.NewCurrencyServiceClient(currencyServiceConn),
+		DispatchService: grpc_clients.NewDispatchServiceClient(dispatchServiceConn),
 		Logger:          logger,
-	}).Run(":" + env.Port)
-	utils.PanicOnError(err, "failed to start server")
+	})
+
+	utils.PanicOnError(router.Run(":"+env.Port), "failed to start server")
 }

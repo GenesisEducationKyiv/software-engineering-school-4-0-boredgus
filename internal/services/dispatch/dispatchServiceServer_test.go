@@ -1,15 +1,13 @@
-package grpc
+package dispatch_service
 
 import (
 	"context"
 	"fmt"
-	e "subscription-api/internal/entities"
 	config_mocks "subscription-api/internal/mocks/config"
 	services_mocks "subscription-api/internal/mocks/services"
 	"subscription-api/internal/services"
-	pb_ds "subscription-api/pkg/grpc/dispatch_service"
+	grpc "subscription-api/internal/services/dispatch/grpc"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -20,7 +18,7 @@ import (
 func Test_DispatchServiceServer_SubscribeForDispatch(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		req *pb_ds.SubscribeForDispatchRequest
+		req *grpc.SubscribeForDispatchRequest
 	}
 	type mocked struct {
 		subscribeErr error
@@ -44,7 +42,7 @@ func Test_DispatchServiceServer_SubscribeForDispatch(t *testing.T) {
 
 	arguments := &args{
 		ctx: context.Background(),
-		req: &pb_ds.SubscribeForDispatchRequest{
+		req: &grpc.SubscribeForDispatchRequest{
 			Email:      "email",
 			DispatchId: "dispatch-id",
 		},
@@ -54,7 +52,7 @@ func Test_DispatchServiceServer_SubscribeForDispatch(t *testing.T) {
 		name    string
 		args    *args
 		mocked  *mocked
-		want    *pb_ds.SubscribeForDispatchResponse
+		want    *grpc.SubscribeForDispatchResponse
 		wantErr error
 	}{
 		{
@@ -79,7 +77,7 @@ func Test_DispatchServiceServer_SubscribeForDispatch(t *testing.T) {
 			name:   "success",
 			args:   arguments,
 			mocked: &mocked{},
-			want:   &pb_ds.SubscribeForDispatchResponse{},
+			want:   &grpc.SubscribeForDispatchResponse{},
 		},
 	}
 	for _, tt := range tests {
@@ -88,9 +86,9 @@ func Test_DispatchServiceServer_SubscribeForDispatch(t *testing.T) {
 			defer cleanup()
 
 			s := &dispatchServiceServer{
-				s:                                  dsMock,
-				l:                                  loggerMock,
-				UnimplementedDispatchServiceServer: pb_ds.UnimplementedDispatchServiceServer{},
+				service:                            dsMock,
+				logger:                             loggerMock,
+				UnimplementedDispatchServiceServer: grpc.UnimplementedDispatchServiceServer{},
 			}
 			got, err := s.SubscribeForDispatch(tt.args.ctx, tt.args.req)
 
@@ -108,7 +106,7 @@ func Test_DispatchServiceServer_SubscribeForDispatch(t *testing.T) {
 func Test_DispatchServiceServer_SendDispatch(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		req *pb_ds.SendDispatchRequest
+		req *grpc.SendDispatchRequest
 	}
 	type mocked struct {
 		sendErr error
@@ -133,7 +131,7 @@ func Test_DispatchServiceServer_SendDispatch(t *testing.T) {
 	internalError := fmt.Errorf("internal-error")
 	arguments := &args{
 		ctx: context.Background(),
-		req: &pb_ds.SendDispatchRequest{
+		req: &grpc.SendDispatchRequest{
 			DispatchId: "dispatch-id",
 		},
 	}
@@ -142,7 +140,7 @@ func Test_DispatchServiceServer_SendDispatch(t *testing.T) {
 		name    string
 		args    *args
 		mocked  *mocked
-		want    *pb_ds.SendDispatchResponse
+		want    *grpc.SendDispatchResponse
 		wantErr error
 	}{
 		{
@@ -161,7 +159,7 @@ func Test_DispatchServiceServer_SendDispatch(t *testing.T) {
 			name:   "success",
 			args:   arguments,
 			mocked: &mocked{},
-			want:   &pb_ds.SendDispatchResponse{},
+			want:   &grpc.SendDispatchResponse{},
 		},
 	}
 	for _, tt := range tests {
@@ -170,9 +168,9 @@ func Test_DispatchServiceServer_SendDispatch(t *testing.T) {
 			defer cleanup()
 
 			s := &dispatchServiceServer{
-				s:                                  dsMock,
-				l:                                  loggerMock,
-				UnimplementedDispatchServiceServer: pb_ds.UnimplementedDispatchServiceServer{},
+				service:                            dsMock,
+				logger:                             loggerMock,
+				UnimplementedDispatchServiceServer: grpc.UnimplementedDispatchServiceServer{},
 			}
 			got, err := s.SendDispatch(tt.args.ctx, tt.args.req)
 
@@ -190,10 +188,10 @@ func Test_DispatchServiceServer_SendDispatch(t *testing.T) {
 func Test_DispatchServiceServer_GetAllDispatches(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		req *pb_ds.GetAllDispatchesRequest
+		req *grpc.GetAllDispatchesRequest
 	}
 	type mocked struct {
-		dispatches []e.CurrencyDispatch
+		dispatches []services.DispatchData
 		getErr     error
 	}
 
@@ -215,19 +213,14 @@ func Test_DispatchServiceServer_GetAllDispatches(t *testing.T) {
 
 	arguments := &args{
 		ctx: context.Background(),
-		req: &pb_ds.GetAllDispatchesRequest{},
+		req: &grpc.GetAllDispatchesRequest{},
 	}
-	dispatches := []e.CurrencyDispatch{{
-		Id:           "id",
-		Label:        "label",
-		SendAt:       time.Date(1, 1, 1, 1, 1, 1, 1, time.UTC),
-		TemplateName: "template",
-		Details: e.CurrencyDispatchDetails{
-			BaseCurrency:     "base",
-			TargetCurrencies: []string{"target"}},
+	dispatches := []services.DispatchData{{
+		Id:                 "id",
+		Label:              "label",
 		CountOfSubscribers: 2,
 	}}
-	dispatchProtos := make([]*pb_ds.DispatchData, 0, len(dispatches))
+	dispatchProtos := make([]*grpc.DispatchData, 0, len(dispatches))
 	for _, d := range dispatches {
 		dispatchProtos = append(dispatchProtos, d.ToProto())
 	}
@@ -236,7 +229,7 @@ func Test_DispatchServiceServer_GetAllDispatches(t *testing.T) {
 		name    string
 		args    *args
 		mocked  *mocked
-		want    *pb_ds.GetAllDispatchesResponse
+		want    *grpc.GetAllDispatchesResponse
 		wantErr error
 	}{
 		{
@@ -249,15 +242,15 @@ func Test_DispatchServiceServer_GetAllDispatches(t *testing.T) {
 			name:   "there is no dispatches",
 			args:   arguments,
 			mocked: &mocked{},
-			want: &pb_ds.GetAllDispatchesResponse{
-				Dispatches: []*pb_ds.DispatchData{},
+			want: &grpc.GetAllDispatchesResponse{
+				Dispatches: []*grpc.DispatchData{},
 			},
 		},
 		{
 			name:   "success",
 			args:   arguments,
 			mocked: &mocked{dispatches: dispatches},
-			want: &pb_ds.GetAllDispatchesResponse{
+			want: &grpc.GetAllDispatchesResponse{
 				Dispatches: dispatchProtos,
 			},
 		},
@@ -268,9 +261,9 @@ func Test_DispatchServiceServer_GetAllDispatches(t *testing.T) {
 			defer cleanup()
 
 			s := &dispatchServiceServer{
-				s:                                  dsMock,
-				l:                                  loggerMock,
-				UnimplementedDispatchServiceServer: pb_ds.UnimplementedDispatchServiceServer{},
+				service:                            dsMock,
+				logger:                             loggerMock,
+				UnimplementedDispatchServiceServer: grpc.UnimplementedDispatchServiceServer{},
 			}
 			got, err := s.GetAllDispatches(tt.args.ctx, tt.args.req)
 

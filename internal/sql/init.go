@@ -4,30 +4,32 @@ import (
 	"database/sql"
 	"embed"
 	"fmt"
-	"subscription-api/pkg/utils"
 
 	"github.com/pressly/goose/v3"
 )
 
-func initMigrations(dialect string, db *sql.DB) {
+func initMigrations(dialect string, db *sql.DB) error {
 	if err := goose.SetDialect(dialect); err != nil {
-		utils.PanicOnError(err, fmt.Sprintf("failed to set %v dialect", dialect))
+		return fmt.Errorf("failed to set %v dialect: %w", dialect, err)
 	}
 	if err := goose.Up(db, dialect); err != nil {
-		utils.PanicOnError(err, fmt.Sprintf("failed to make %v migrations up", dialect))
+		return fmt.Errorf("failed to make %v migrations up: %w", dialect, err)
 	}
+
+	return nil
 }
 
 //go:embed postgres/*.sql
 var potgresqlMigrations embed.FS
 
-func PostgeSQLMigrationsUp(l goose.Logger) func(db *sql.DB) {
-	return func(db *sql.DB) {
+func PostgeSQLMigrationsUp(l goose.Logger) func(db *sql.DB) error {
+	return func(db *sql.DB) error {
 		if l != nil {
 			goose.SetLogger(l)
 		}
 		goose.SetBaseFS(potgresqlMigrations)
 		goose.SetTableName("public.goose_db_version")
-		initMigrations(string(goose.DialectPostgres), db)
+
+		return initMigrations(string(goose.DialectPostgres), db)
 	}
 }

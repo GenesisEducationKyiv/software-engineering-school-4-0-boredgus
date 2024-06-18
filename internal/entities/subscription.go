@@ -1,7 +1,7 @@
 package entities
 
 import (
-	pb_ds "subscription-api/pkg/grpc/dispatch_service"
+	grpc "subscription-api/internal/services/dispatch/grpc"
 	"time"
 )
 
@@ -21,8 +21,8 @@ type Dispatch[T any] struct {
 
 type CurrencyDispatch Dispatch[CurrencyDispatchDetails]
 
-func (d CurrencyDispatch) ToProto() *pb_ds.DispatchData {
-	return &pb_ds.DispatchData{
+func (d CurrencyDispatch) ToProto() *grpc.DispatchData {
+	return &grpc.DispatchData{
 		Id:                 d.Id,
 		Label:              d.Label,
 		SendAt:             d.SendAt.Format(time.TimeOnly),

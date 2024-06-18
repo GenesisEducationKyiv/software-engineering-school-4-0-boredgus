@@ -4,7 +4,7 @@ package services_mocks
 
 import (
 	context "context"
-	entities "subscription-api/internal/entities"
+	services "subscription-api/internal/services"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -23,23 +23,23 @@ func (_m *DispatchService) EXPECT() *DispatchService_Expecter {
 }
 
 // GetAllDispatches provides a mock function with given fields: ctx
-func (_m *DispatchService) GetAllDispatches(ctx context.Context) ([]entities.CurrencyDispatch, error) {
+func (_m *DispatchService) GetAllDispatches(ctx context.Context) ([]services.DispatchData, error) {
 	ret := _m.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetAllDispatches")
 	}
 
-	var r0 []entities.CurrencyDispatch
+	var r0 []services.DispatchData
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) ([]entities.CurrencyDispatch, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) ([]services.DispatchData, error)); ok {
 		return rf(ctx)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) []entities.CurrencyDispatch); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) []services.DispatchData); ok {
 		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]entities.CurrencyDispatch)
+			r0 = ret.Get(0).([]services.DispatchData)
 		}
 	}
 
@@ -70,12 +70,12 @@ func (_c *DispatchService_GetAllDispatches_Call) Run(run func(ctx context.Contex
 	return _c
 }
 
-func (_c *DispatchService_GetAllDispatches_Call) Return(_a0 []entities.CurrencyDispatch, _a1 error) *DispatchService_GetAllDispatches_Call {
+func (_c *DispatchService_GetAllDispatches_Call) Return(_a0 []services.DispatchData, _a1 error) *DispatchService_GetAllDispatches_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *DispatchService_GetAllDispatches_Call) RunAndReturn(run func(context.Context) ([]entities.CurrencyDispatch, error)) *DispatchService_GetAllDispatches_Call {
+func (_c *DispatchService_GetAllDispatches_Call) RunAndReturn(run func(context.Context) ([]services.DispatchData, error)) *DispatchService_GetAllDispatches_Call {
 	_c.Call.Return(run)
 	return _c
 }

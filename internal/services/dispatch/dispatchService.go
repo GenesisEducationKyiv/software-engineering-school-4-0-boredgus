@@ -1,16 +1,16 @@
-package ds
+package dispatch_service
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"fmt"
+	"html/template"
 	"subscription-api/config"
 	db "subscription-api/internal/db"
-	e "subscription-api/internal/entities"
+	"subscription-api/internal/entities"
 	"subscription-api/internal/mailing"
 	"subscription-api/internal/services"
-	pb_cs "subscription-api/pkg/grpc/currency_service"
-
-	"google.golang.org/grpc"
 )
 
 type Store interface {
@@ -26,13 +26,9 @@ type SubRepo interface {
 }
 
 type DispatchRepo interface {
-	GetDispatchByID(ctx context.Context, db db.DB, dispatchId string) (e.CurrencyDispatch, error)
+	GetDispatchByID(ctx context.Context, db db.DB, dispatchId string) (entities.CurrencyDispatch, error)
 	GetSubscribersOfDispatch(ctx context.Context, db db.DB, dispatchId string) ([]string, error)
-	GetAllDispatches(ctx context.Context, db db.DB) ([]e.CurrencyDispatch, error)
-}
-
-type HTMLTemplateParser interface {
-	Parse(templateName string, data any) ([]byte, error)
+	GetAllDispatches(ctx context.Context, db db.DB) ([]services.DispatchData, error)
 }
 
 type Mailman interface {
@@ -40,7 +36,7 @@ type Mailman interface {
 }
 
 type CurrencyServiceClient interface {
-	Convert(ctx context.Context, in *pb_cs.ConvertRequest, opts ...grpc.CallOption) (*pb_cs.ConvertResponse, error)
+	Convert(ctx context.Context, params services.ConvertCurrencyParams) (map[string]float64, error)
 }
 
 type dispatchService struct {
@@ -49,7 +45,6 @@ type dispatchService struct {
 	userRepo     UserRepo
 	subRepo      SubRepo
 	dispatchRepo DispatchRepo
-	htmlParser   HTMLTemplateParser
 	mailman      Mailman
 	csClient     CurrencyServiceClient
 }
@@ -67,15 +62,14 @@ func NewDispatchService(params *DispatchServiceParams) *dispatchService {
 		userRepo:     db.NewUserRepo(),
 		subRepo:      db.NewSubRepo(),
 		dispatchRepo: db.NewDispatchRepo(),
-		htmlParser:   mailing.NewHTMLTemplateParser(params.Logger),
 		mailman:      params.Mailman,
 		csClient:     params.CurrencyService,
 		log:          params.Logger,
 	}
 }
 
-func (s *dispatchService) GetAllDispatches(ctx context.Context) ([]e.CurrencyDispatch, error) {
-	var dispatches []e.CurrencyDispatch
+func (s *dispatchService) GetAllDispatches(ctx context.Context) ([]services.DispatchData, error) {
+	var dispatches []services.DispatchData
 	err := s.store.WithTx(ctx, func(db db.DB) error {
 		d, err := s.dispatchRepo.GetAllDispatches(ctx, db)
 		if err != nil {
@@ -108,13 +102,33 @@ func (s *dispatchService) SubscribeForDispatch(ctx context.Context, email, dispa
 	return nil
 }
 
+var TemplateParseErr = errors.New("template error")
+
+func (s *dispatchService) parseHTMLTemplate(templateName string, data any) ([]byte, error) {
+	templateFile := mailing.PathToTemplate(templateName + ".html")
+	tmpl, err := template.ParseFiles(templateFile)
+	if err != nil {
+		s.log.Errorf("failed to parse html template %s: %v", templateFile, err)
+
+		return nil, fmt.Errorf("%w: %w", TemplateParseErr, err)
+	}
+	var buffer bytes.Buffer
+	if err := tmpl.Execute(&buffer, data); err != nil {
+		s.log.Errorf("failed to execute html template %s: %v", templateFile, err)
+
+		return nil, fmt.Errorf("%w: %w", TemplateParseErr, err)
+	}
+
+	return buffer.Bytes(), nil
+}
+
 type ExchangeRateTemplateParams struct {
 	BaseCurrency string
 	Rates        map[string]float64
 }
 
 func (s *dispatchService) SendDispatch(ctx context.Context, dispatchId string) error {
-	var dispatch e.CurrencyDispatch
+	var dispatch entities.CurrencyDispatch
 	var subscribers []string
 
 	if err := s.store.WithTx(ctx, func(d db.DB) error {
@@ -133,17 +147,17 @@ func (s *dispatchService) SendDispatch(ctx context.Context, dispatchId string) e
 		return nil
 	}
 
-	resp, err := s.csClient.Convert(ctx, &pb_cs.ConvertRequest{
-		BaseCurrency:     dispatch.Details.BaseCurrency,
-		TargetCurrencies: dispatch.Details.TargetCurrencies,
+	curencyRates, err := s.csClient.Convert(ctx, services.ConvertCurrencyParams{
+		Base:   dispatch.Details.BaseCurrency,
+		Target: dispatch.Details.TargetCurrencies,
 	})
 	if err != nil {
 		return err
 	}
 
-	htmlContent, err := s.htmlParser.Parse(dispatch.TemplateName, ExchangeRateTemplateParams{
-		BaseCurrency: resp.BaseCurrency,
-		Rates:        resp.Rates,
+	htmlContent, err := s.parseHTMLTemplate(dispatch.TemplateName, ExchangeRateTemplateParams{
+		BaseCurrency: dispatch.Details.BaseCurrency,
+		Rates:        curencyRates,
 	})
 	if err != nil {
 		return err

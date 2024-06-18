@@ -7,7 +7,7 @@ import (
 	"subscription-api/config"
 	"subscription-api/pkg/utils"
 
-	pb_ds "subscription-api/pkg/grpc/dispatch_service"
+	grpc_client "subscription-api/pkg/grpc"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -26,12 +26,15 @@ func main() {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	utils.PanicOnError(err, "failed to connect to dispatch service grpc server")
-	logger.Info(dispatchServiceConn)
+	defer dispatchServiceConn.Close()
 
 	logger.Info("dispatch daemon has started")
-	internal.NewDispatchDaemon(
-		pb_ds.NewDispatchServiceClient(dispatchServiceConn),
+
+	daemon := internal.NewDispatchDaemon(
+		grpc_client.NewDispatchServiceClient(dispatchServiceConn),
 		logger,
 		internal.NewScheduler(logger),
-	).Run(context.Background())
+	)
+
+	daemon.Run(context.Background())
 }

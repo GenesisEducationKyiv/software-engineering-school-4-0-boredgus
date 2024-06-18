@@ -1,4 +1,4 @@
-package ds
+package dispatch_service
 
 import (
 	"context"
@@ -11,12 +11,13 @@ import (
 	"subscription-api/internal/testhelpers"
 	"subscription-api/internal/testhelpers/stubs"
 	"subscription-api/pkg/db"
-	pb_cs "subscription-api/pkg/grpc/currency_service"
 	"subscription-api/pkg/utils"
 	"testing"
 
-	cs "subscription-api/internal/services/currency"
-	g "subscription-api/internal/services/currency/grpc"
+	currency_service "subscription-api/internal/services/currency"
+	currency_grpc "subscription-api/internal/services/currency/grpc"
+
+	grpc_client "subscription-api/pkg/grpc"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -44,9 +45,9 @@ func (s *DispatchServiceSuite) startCurrencyServiceServer() {
 	s.NoErrorf(err, "failed to listen url")
 
 	server := grpc.NewServer()
-	pb_cs.RegisterCurrencyServiceServer(server,
-		g.NewCurrencyServiceServer(
-			cs.NewCurrencyService(stubs.NewCurrencyAPIClient()),
+	currency_grpc.RegisterCurrencyServiceServer(server,
+		currency_service.NewCurrencyServiceServer(
+			currency_service.NewCurrencyService(stubs.NewCurrencyAPIClient()),
 			s.l,
 		))
 	s.cs = server
@@ -92,9 +93,8 @@ func (s *DispatchServiceSuite) SetupSuite() {
 			db.IsPqError,
 		),
 		Mailman:         mailman,
-		CurrencyService: pb_cs.NewCurrencyServiceClient(currencyServiceConn),
+		CurrencyService: grpc_client.NewCurrencyServiceClient(currencyServiceConn),
 	})
-	// s.NoError(s.dbContainer.Snapshot(s.ctx, postgres.WithSnapshotName("initial")))
 }
 
 func (s *DispatchServiceSuite) TearDownSuite() {

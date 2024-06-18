@@ -4,15 +4,13 @@ import (
 	"context"
 	"net/http"
 	"subscription-api/internal/services"
-	pb_ds "subscription-api/pkg/grpc/dispatch_service"
 
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 type DispatchService interface {
-	SubscribeForDispatch(ctx context.Context, in *pb_ds.SubscribeForDispatchRequest, opts ...grpc.CallOption) (*pb_ds.SubscribeForDispatchResponse, error)
+	SubscribeForDispatch(ctx context.Context, email, dispatchId string) error
 }
 
 type subscribeParams struct {
@@ -27,10 +25,7 @@ func SubscribeForDailyDispatch(ctx Context, ds DispatchService) {
 		return
 	}
 
-	_, err := ds.SubscribeForDispatch(ctx.Context(), &pb_ds.SubscribeForDispatchRequest{
-		Email:      params.Email,
-		DispatchId: services.USD_UAH_DISPATCH_ID,
-	})
+	err := ds.SubscribeForDispatch(ctx.Context(), params.Email, services.USD_UAH_DISPATCH_ID)
 	if status.Code(err) == codes.AlreadyExists {
 		ctx.Status(http.StatusConflict)
 

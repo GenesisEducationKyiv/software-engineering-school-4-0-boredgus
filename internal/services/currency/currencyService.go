@@ -1,14 +1,13 @@
-package cs
+package currency_service
 
 import (
 	"context"
 	"fmt"
-	"subscription-api/internal/entities"
-	ss "subscription-api/internal/services"
+	"subscription-api/internal/services"
 )
 
 type CurrencyAPIClient interface {
-	Convert(ctx context.Context, baseCcy entities.Currency, targetCcies []entities.Currency) (map[entities.Currency]float64, error)
+	Convert(ctx context.Context, baseCcy string, targetCcies []string) (map[string]float64, error)
 }
 type currencyService struct {
 	currencyAPIClient CurrencyAPIClient
@@ -20,9 +19,9 @@ func NewCurrencyService(client CurrencyAPIClient) *currencyService {
 	}
 }
 
-func (s *currencyService) Convert(ctx context.Context, params ss.ConvertCurrencyParams) (map[entities.Currency]float64, error) {
+func (s *currencyService) Convert(ctx context.Context, params services.ConvertCurrencyParams) (map[string]float64, error) {
 	if len(params.Target) == 0 {
-		return nil, fmt.Errorf("%w: no target currencies provided", ss.InvalidArgumentErr)
+		return nil, fmt.Errorf("%w: no target currencies provided", services.InvalidArgumentErr)
 	}
 
 	return s.currencyAPIClient.Convert(ctx, params.Base, params.Target)

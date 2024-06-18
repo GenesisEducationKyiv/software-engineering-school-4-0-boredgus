@@ -21,6 +21,8 @@ linters-settings:
   mnd:
     ignored-files:
       - 'dbContainer.go'
+    ignored-functions:
+      - 'timeout.WithTimeout'
 
 issues:
   max-same-issues: 50

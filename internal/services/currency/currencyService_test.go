@@ -1,10 +1,9 @@
-package cs
+package currency_service
 
 import (
 	"context"
-	"subscription-api/internal/entities"
 	client_mocks "subscription-api/internal/mocks/clients"
-	s "subscription-api/internal/services"
+	"subscription-api/internal/services"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,10 +13,10 @@ import (
 func Test_CurrencyService_Convert(t *testing.T) {
 	type args struct {
 		ctx    context.Context
-		params s.ConvertCurrencyParams
+		params services.ConvertCurrencyParams
 	}
 	type mocked struct {
-		rates      map[entities.Currency]float64
+		rates      map[string]float64
 		convertErr error
 	}
 	currencyAPIMock := client_mocks.NewCurrencyAPIClient(t)
@@ -29,25 +28,23 @@ func Test_CurrencyService_Convert(t *testing.T) {
 			apiCall.Unset()
 		}
 	}
-	rates := map[entities.Currency]float64{
-		entities.UkrainianHryvnia: 30,
-	}
+	rates := map[string]float64{"UAH": 30}
 	tests := []struct {
 		name    string
 		args    args
 		mocked  mocked
-		want    map[entities.Currency]float64
+		want    map[string]float64
 		wantErr error
 	}{
 		{
 			name:    "no target currencies provided",
 			args:    args{},
 			want:    nil,
-			wantErr: s.InvalidArgumentErr,
+			wantErr: services.InvalidArgumentErr,
 		},
 		{
 			name:    "success",
-			args:    args{params: s.ConvertCurrencyParams{Target: []entities.Currency{entities.UkrainianHryvnia}}},
+			args:    args{params: services.ConvertCurrencyParams{Target: []string{"UAH"}}},
 			mocked:  mocked{rates: rates},
 			want:    rates,
 			wantErr: nil,

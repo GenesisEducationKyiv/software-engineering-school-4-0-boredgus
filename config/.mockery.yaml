@@ -18,9 +18,7 @@ packages:
           with-expecter: false
   subscription-api/internal/mailing:
     interfaces:
-      TemplateParser:
       Mailman:
-      Dialer:
   subscription-api/internal/services:
     interfaces:
       CurrencyService:
@@ -46,14 +44,12 @@ packages:
         config:
           dir: "internal/mocks/repo"
           outpkg: "repo_mocks"
-  subscription-api/pkg/grpc/currency_service:
+  subscription-api/pkg/grpc:
     interfaces:
       CurrencyServiceClient:
         config:
           dir: "internal/mocks/clients"
           outpkg: "client_mocks"
-  subscription-api/pkg/grpc/dispatch_service:
-    interfaces:
       DispatchServiceClient:
         config:
           dir: "internal/mocks/clients"

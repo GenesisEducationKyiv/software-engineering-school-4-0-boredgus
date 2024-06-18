@@ -7,7 +7,7 @@ import (
 	"subscription-api/internal/entities"
 	client_mocks "subscription-api/internal/mocks/clients"
 	controllers_mocks "subscription-api/internal/mocks/controllers"
-	pb_cs "subscription-api/pkg/grpc/currency_service"
+	"subscription-api/internal/services"
 	"testing"
 )
 
@@ -27,12 +27,10 @@ func TestGetExchangeRate(t *testing.T) {
 		contextCall := contextMock.EXPECT().
 			Context().Once().Return(m.ctx)
 		convertCall := csClientMock.EXPECT().
-			Convert(m.ctx, &pb_cs.ConvertRequest{
-				BaseCurrency:     string(entities.AmericanDollar),
-				TargetCurrencies: []string{string(entities.UkrainianHryvnia)},
-			}).Once().NotBefore(contextCall).Return(&pb_cs.ConvertResponse{
-			Rates: m.rates,
-		}, m.convertErr)
+			Convert(m.ctx, services.ConvertCurrencyParams{
+				Base:   "USD",
+				Target: []string{"UAH"},
+			}).Once().NotBefore(contextCall).Return(m.rates, m.convertErr)
 		statusCall := contextMock.EXPECT().
 			Status(m.responseStatus).NotBefore(convertCall).Maybe()
 		stringCall := contextMock.EXPECT().

@@ -10,7 +10,7 @@ import (
 var ParseErr = errors.New("parse-err")
 
 // Reads and unmarshals content from buffer.
-func Parse(read io.ReadCloser, target any) error {
+func ParseJSON(read io.ReadCloser, target any) error {
 	body, err := io.ReadAll(read)
 	if err != nil {
 		return fmt.Errorf("%w: %w", ParseErr, err)
