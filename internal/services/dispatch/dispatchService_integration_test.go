@@ -106,17 +106,21 @@ func (s *DispatchServiceSuite) TearDownSuite() {
 
 func (s *DispatchServiceSuite) SetupTest() {}
 
-func (s *DispatchServiceSuite) Test_GetAllDispatches() {
+func (s *DispatchServiceSuite) TestIntegration_GetAllDispatches() {
 	ctx := context.Background()
 
-	dispatches, err := s.service.GetAllDispatches(ctx)
+	dispatches1, err1 := s.service.GetAllDispatches(ctx)
+	dispatches2, err2 := s.service.GetAllDispatches(ctx)
 
-	s.NoError(err)
-	s.Equal(1, len(dispatches))
-	s.Equal(dispatches[0].Id, services.USD_UAH_DISPATCH_ID)
+	s.NoError(err1)
+	s.NoError(err2)
+	s.Equal(1, len(dispatches1))
+	s.Equal(1, len(dispatches2))
+	s.Equal(dispatches1, dispatches2)
+	s.Equal(dispatches1[0].Id, services.USD_UAH_DISPATCH_ID)
 }
 
-func (s *DispatchServiceSuite) Test_SendDispatch() {
+func (s *DispatchServiceSuite) TestIntegration_SendDispatch() {
 	dispatchId := services.USD_UAH_DISPATCH_ID
 	emails := []string{"send.dispatch1@gmail.com", "send.dispatch2@gmail.com"}
 	ctx := context.Background()
@@ -138,7 +142,7 @@ func (s *DispatchServiceSuite) Test_SendDispatch() {
 	s.Equal(1, len(s.mailman.Calls))
 }
 
-func (s *DispatchServiceSuite) Test_SubscribeForDispatch() {
+func (s *DispatchServiceSuite) TestIntegration_SubscribeForDispatch() {
 	email1, email2 := "email1@gmail.com", "email2@gmail.com"
 	dispatchId := services.USD_UAH_DISPATCH_ID
 	countBefore, countAfter := 0, 0
@@ -170,6 +174,6 @@ func (s *DispatchServiceSuite) Test_SubscribeForDispatch() {
 	s.Equal(2, countAfter-countBefore)
 }
 
-func TestDispatchServiceSuite(t *testing.T) {
+func TestIntegration_DispatchService(t *testing.T) {
 	suite.Run(t, new(DispatchServiceSuite))
 }
