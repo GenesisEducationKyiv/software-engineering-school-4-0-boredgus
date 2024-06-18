@@ -29,7 +29,7 @@ func Test_DispatchServiceServer_SubscribeForDispatch(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &dispatchServiceServer{
-				s:                                  tt.fields.s,
+				service:                            tt.fields.s,
 				UnimplementedDispatchServiceServer: tt.fields.UnimplementedDispatchServiceServer,
 			}
 			got, err := s.SubscribeForDispatch(tt.args.ctx, tt.args.req)

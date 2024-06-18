@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	cfg_mocks "subscription-api/internal/mocks/config"
-	s_mocks "subscription-api/internal/mocks/services"
-	s "subscription-api/internal/services"
+	service_mocks "subscription-api/internal/mocks/services"
+	"subscription-api/internal/services"
 	currency_grpc "subscription-api/internal/services/currency/grpc"
 	"testing"
 
@@ -23,10 +23,10 @@ func Test_CurrencyServiceServer_Convert(t *testing.T) {
 		convertedRates map[string]float64
 		convertErr     error
 	}
-	csMock := s_mocks.NewCurrencyService(t)
+	csMock := service_mocks.NewCurrencyService(t)
 	loggerMock := cfg_mocks.NewLogger(t)
 	internalError := fmt.Errorf("internal-error")
-	setup := func(res *mockedRes, args s.ConvertCurrencyParams) func() {
+	setup := func(res *mockedRes, args services.ConvertCurrencyParams) func() {
 		csCall := csMock.EXPECT().Convert(mock.Anything, args).Return(res.convertedRates, res.convertErr).Once()
 		logCall := loggerMock.EXPECT().Infof(mock.Anything, mock.Anything, mock.Anything)
 
@@ -45,23 +45,23 @@ func Test_CurrencyServiceServer_Convert(t *testing.T) {
 		{
 			name:      "unsupported currency provided",
 			args:      args{&currency_grpc.ConvertRequest{BaseCurrency: "123"}},
-			mockedRes: mockedRes{convertErr: s.InvalidArgumentErr},
+			mockedRes: mockedRes{convertErr: services.InvalidArgumentErr},
 			want:      nil,
-			wantErr:   status.Error(codes.InvalidArgument, s.InvalidArgumentErr.Error()),
+			wantErr:   status.Error(codes.InvalidArgument, services.InvalidArgumentErr.Error()),
 		},
 		{
 			name:      "no target currencies provided",
 			args:      args{&currency_grpc.ConvertRequest{BaseCurrency: "123"}},
-			mockedRes: mockedRes{convertErr: s.InvalidArgumentErr},
+			mockedRes: mockedRes{convertErr: services.InvalidArgumentErr},
 			want:      nil,
-			wantErr:   status.Error(codes.InvalidArgument, s.InvalidArgumentErr.Error()),
+			wantErr:   status.Error(codes.InvalidArgument, services.InvalidArgumentErr.Error()),
 		},
 		{
 			name:      "failed precodition",
 			args:      args{&currency_grpc.ConvertRequest{BaseCurrency: "USD"}},
-			mockedRes: mockedRes{convertErr: s.FailedPreconditionErr},
+			mockedRes: mockedRes{convertErr: services.FailedPreconditionErr},
 			want:      nil,
-			wantErr:   status.Error(codes.FailedPrecondition, s.FailedPreconditionErr.Error()),
+			wantErr:   status.Error(codes.FailedPrecondition, services.FailedPreconditionErr.Error()),
 		},
 		{
 			name:      "internal error",
@@ -83,15 +83,15 @@ func Test_CurrencyServiceServer_Convert(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reset := setup(&tt.mockedRes, s.ConvertCurrencyParams{
+			reset := setup(&tt.mockedRes, services.ConvertCurrencyParams{
 				Base:   tt.args.req.BaseCurrency,
 				Target: tt.args.req.TargetCurrencies})
 			defer reset()
 
 			s := &currencyServiceServer{
 				UnimplementedCurrencyServiceServer: currency_grpc.UnimplementedCurrencyServiceServer{},
-				s:                                  csMock,
-				l:                                  loggerMock,
+				service:                            csMock,
+				logger:                             loggerMock,
 			}
 			got, err := s.Convert(context.Background(), tt.args.req)
 			assert.Equal(t, got, tt.want)

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"subscription-api/config"
 	"subscription-api/internal/services"
-	ss "subscription-api/internal/services"
 	grpc "subscription-api/internal/services/dispatch/grpc"
 
 	"google.golang.org/grpc/codes"
@@ -13,22 +12,22 @@ import (
 )
 
 type dispatchServiceServer struct {
-	s ss.DispatchService
-	l config.Logger
+	service services.DispatchService
+	logger  config.Logger
 	grpc.UnimplementedDispatchServiceServer
 }
 
-func NewDispatchServiceServer(s ss.DispatchService, l config.Logger) *dispatchServiceServer {
-	return &dispatchServiceServer{s: s, l: l}
+func NewDispatchServiceServer(s services.DispatchService, l config.Logger) *dispatchServiceServer {
+	return &dispatchServiceServer{service: s, logger: l}
 }
 
 func (s *dispatchServiceServer) log(method string, req any) {
-	s.l.Infof("DispatchService.%v(%+v)", method, req)
+	s.logger.Infof("DispatchService.%v(%+v)", method, req)
 }
 
 func (s *dispatchServiceServer) SubscribeForDispatch(ctx context.Context, req *grpc.SubscribeForDispatchRequest) (*grpc.SubscribeForDispatchResponse, error) {
 	s.log("SubscribeForDispatch", req.String())
-	err := s.s.SubscribeForDispatch(ctx, req.Email, req.DispatchId)
+	err := s.service.SubscribeForDispatch(ctx, req.Email, req.DispatchId)
 	if errors.Is(err, services.UniqueViolationErr) {
 		return nil, status.Error(codes.AlreadyExists, err.Error())
 	}
@@ -44,7 +43,7 @@ func (s *dispatchServiceServer) SubscribeForDispatch(ctx context.Context, req *g
 
 func (s *dispatchServiceServer) SendDispatch(ctx context.Context, req *grpc.SendDispatchRequest) (*grpc.SendDispatchResponse, error) {
 	s.log("SendDispatch", req.String())
-	err := s.s.SendDispatch(ctx, req.DispatchId)
+	err := s.service.SendDispatch(ctx, req.DispatchId)
 	if errors.Is(err, services.NotFoundErr) {
 		return nil, status.Error(codes.Canceled, err.Error())
 	}
@@ -57,7 +56,7 @@ func (s *dispatchServiceServer) SendDispatch(ctx context.Context, req *grpc.Send
 
 func (s *dispatchServiceServer) GetAllDispatches(ctx context.Context, req *grpc.GetAllDispatchesRequest) (*grpc.GetAllDispatchesResponse, error) {
 	s.log("GetAllDispatches", req.String())
-	allDispatches, err := s.s.GetAllDispatches(ctx)
+	allDispatches, err := s.service.GetAllDispatches(ctx)
 	if errors.Is(err, services.NotFoundErr) {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}

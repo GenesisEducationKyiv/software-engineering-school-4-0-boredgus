@@ -13,21 +13,21 @@ import (
 
 type currencyServiceServer struct {
 	currency_grpc.UnimplementedCurrencyServiceServer
-	s services.CurrencyService
-	l config.Logger
+	service services.CurrencyService
+	logger  config.Logger
 }
 
 func NewCurrencyServiceServer(s services.CurrencyService, l config.Logger) *currencyServiceServer {
-	return &currencyServiceServer{s: s, l: l}
+	return &currencyServiceServer{service: s, logger: l}
 }
 
 func (s *currencyServiceServer) log(method string, req any) {
-	s.l.Infof("CurrencyService.%v(%+v)", method, req)
+	s.logger.Infof("CurrencyService.%v(%+v)", method, req)
 }
 
 func (s *currencyServiceServer) Convert(ctx context.Context, req *currency_grpc.ConvertRequest) (*currency_grpc.ConvertResponse, error) {
 	s.log("Convert", req)
-	rates, err := s.s.Convert(ctx, services.ConvertCurrencyParams{
+	rates, err := s.service.Convert(ctx, services.ConvertCurrencyParams{
 		Base:   req.BaseCurrency,
 		Target: req.TargetCurrencies,
 	})

@@ -19,41 +19,41 @@ type DispatchService interface {
 }
 
 type DispatchDaemon struct {
-	ds  DispatchService
-	log config.Logger
-	sc  Scheduler
+	service   DispatchService
+	logger    config.Logger
+	scheduler Scheduler
 }
 
 func NewDispatchDaemon(ds DispatchService, l config.Logger, sc Scheduler) *DispatchDaemon {
 	return &DispatchDaemon{
-		ds:  ds,
-		log: l,
-		sc:  sc,
+		service:   ds,
+		logger:    l,
+		scheduler: sc,
 	}
 }
 
 func (d *DispatchDaemon) scheduleDispatchSending(ctx context.Context, id, sendAt string) {
 	t, err := time.Parse(time.TimeOnly, sendAt)
 	if err != nil {
-		d.log.Errorf("failed to parse time: %v", err)
+		d.logger.Errorf("failed to parse time: %v", err)
 
 		return
 	}
 
-	d.sc.AddTask(
+	d.scheduler.AddTask(
 		id,
 		TaskSpec{Hours: t.Hour(), Mins: t.Minute()},
 		func() {
-			if err := d.ds.SendDispatch(ctx, id); err != nil {
-				d.log.Errorf("failed to send dispatch: %v", err)
+			if err := d.service.SendDispatch(ctx, id); err != nil {
+				d.logger.Errorf("failed to send dispatch: %v", err)
 			}
 		})
 }
 
 func (d *DispatchDaemon) Run(ctx context.Context) {
-	dispatches, err := d.ds.GetAllDispatches(ctx)
+	dispatches, err := d.service.GetAllDispatches(ctx)
 	if err != nil {
-		d.log.Errorf("failed to get dispatch: %v", err)
+		d.logger.Errorf("failed to get dispatch: %v", err)
 
 		return
 	}
@@ -61,5 +61,5 @@ func (d *DispatchDaemon) Run(ctx context.Context) {
 	for _, dispatch := range dispatches {
 		d.scheduleDispatchSending(ctx, dispatch.Id, dispatch.SendAt)
 	}
-	d.sc.Run()
+	d.scheduler.Run()
 }

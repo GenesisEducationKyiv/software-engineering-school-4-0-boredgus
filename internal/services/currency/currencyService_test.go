@@ -3,7 +3,7 @@ package currency_service
 import (
 	"context"
 	client_mocks "subscription-api/internal/mocks/clients"
-	s "subscription-api/internal/services"
+	"subscription-api/internal/services"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,7 +13,7 @@ import (
 func Test_CurrencyService_Convert(t *testing.T) {
 	type args struct {
 		ctx    context.Context
-		params s.ConvertCurrencyParams
+		params services.ConvertCurrencyParams
 	}
 	type mocked struct {
 		rates      map[string]float64
@@ -40,11 +40,11 @@ func Test_CurrencyService_Convert(t *testing.T) {
 			name:    "no target currencies provided",
 			args:    args{},
 			want:    nil,
-			wantErr: s.InvalidArgumentErr,
+			wantErr: services.InvalidArgumentErr,
 		},
 		{
 			name:    "success",
-			args:    args{params: s.ConvertCurrencyParams{Target: []string{"UAH"}}},
+			args:    args{params: services.ConvertCurrencyParams{Target: []string{"UAH"}}},
 			mocked:  mocked{rates: rates},
 			want:    rates,
 			wantErr: nil,
