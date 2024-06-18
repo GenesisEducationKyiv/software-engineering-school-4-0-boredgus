@@ -29,7 +29,7 @@ func main() {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	utils.PanicOnError(err, "failed to connect to dispatch service grpc server")
-	dispatchServiceConn.Close()
+	defer dispatchServiceConn.Close()
 
 	logger.Infof("started subscription API at %v port", env.Port)
 
