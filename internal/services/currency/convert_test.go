@@ -1,105 +1,99 @@
-package cs
+package currency_service
 
 import (
 	"context"
 	"fmt"
-	"net/http"
-	"net/http/httptest"
-	"subscription-api/internal/entities"
-	"subscription-api/pkg/utils"
+	cfg_mocks "subscription-api/internal/mocks/config"
+	service_mocks "subscription-api/internal/mocks/services"
+	"subscription-api/internal/services"
+	currency_grpc "subscription-api/internal/services/currency/grpc"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/mock"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
-func Test_CurrencyService_Convert(t *testing.T) {
-	invalidCurrency := entities.Currency("invalid-currency")
-	validServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == fmt.Sprintf("/latest/%s", invalidCurrency) {
-			w.WriteHeader(http.StatusNotFound)
-			_, err := w.Write([]byte(fmt.Sprintf(`{"result":"error","error-type":"%s"}`, InvalidArgumentErr)))
-			require.NoError(t, err)
-
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte(`{"result":"success","conversion_rates":{"USD":1,"EUR":0.9201,"GBP":0.7883,"PLN":3.9255,"UAH":39.4347}}`))
-		require.NoError(t, err)
-	}))
-	invalidServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/latest/USD" {
-			w.WriteHeader(http.StatusBadRequest)
-			_, err := w.Write([]byte(`{"result":"error","error-type":"some-error"}`))
-			require.NoError(t, err)
-
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte(`}`))
-		require.NoError(t, err)
-	}))
-	defer validServer.Close()
-	defer invalidServer.Close()
-
-	type fields struct {
-		APIBasePath string
-	}
+func Test_CurrencyServiceServer_Convert(t *testing.T) {
 	type args struct {
-		ctx    context.Context
-		params ConvertParams
+		req *currency_grpc.ConvertRequest
 	}
-	ctx := context.Background()
+	type mockedRes struct {
+		convertedRates map[string]float64
+		convertErr     error
+	}
+	csMock := service_mocks.NewCurrencyService(t)
+	loggerMock := cfg_mocks.NewLogger(t)
+	internalError := fmt.Errorf("internal-error")
+	setup := func(res *mockedRes, args services.ConvertCurrencyParams) func() {
+		csCall := csMock.EXPECT().Convert(mock.Anything, args).Return(res.convertedRates, res.convertErr).Once()
+		logCall := loggerMock.EXPECT().Infof(mock.Anything, mock.Anything, mock.Anything)
+
+		return func() {
+			csCall.Unset()
+			logCall.Unset()
+		}
+	}
 	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    map[entities.Currency]float64
-		wantErr error
+		name      string
+		args      args
+		mockedRes mockedRes
+		want      *currency_grpc.ConvertResponse
+		wantErr   error
 	}{
 		{
-			name:    "failed to fetch exchange rate info from thrird-party api",
-			fields:  fields{},
-			args:    args{ctx: ctx, params: ConvertParams{}},
-			wantErr: InvalidArgumentErr,
+			name:      "unsupported currency provided",
+			args:      args{&currency_grpc.ConvertRequest{BaseCurrency: "123"}},
+			mockedRes: mockedRes{convertErr: services.InvalidArgumentErr},
+			want:      nil,
+			wantErr:   status.Error(codes.InvalidArgument, services.InvalidArgumentErr.Error()),
 		},
 		{
-			name:    "failed to fetch exchange rate info from thrird-party api",
-			fields:  fields{APIBasePath: "invalid-url"},
-			args:    args{ctx: ctx, params: ConvertParams{To: []entities.Currency{"UAH"}}},
-			wantErr: InvalidRequestErr,
+			name:      "no target currencies provided",
+			args:      args{&currency_grpc.ConvertRequest{BaseCurrency: "123"}},
+			mockedRes: mockedRes{convertErr: services.InvalidArgumentErr},
+			want:      nil,
+			wantErr:   status.Error(codes.InvalidArgument, services.InvalidArgumentErr.Error()),
 		},
 		{
-			name:    "invalid format of thrird-party api response",
-			fields:  fields{APIBasePath: invalidServer.URL},
-			args:    args{ctx: ctx, params: ConvertParams{To: []entities.Currency{"UAH"}}},
-			wantErr: utils.ParseErr,
+			name:      "failed precodition",
+			args:      args{&currency_grpc.ConvertRequest{BaseCurrency: "USD"}},
+			mockedRes: mockedRes{convertErr: services.FailedPreconditionErr},
+			want:      nil,
+			wantErr:   status.Error(codes.FailedPrecondition, services.FailedPreconditionErr.Error()),
 		},
 		{
-			name:    "unsupported currency provided",
-			fields:  fields{APIBasePath: validServer.URL},
-			args:    args{ctx: ctx, params: ConvertParams{From: invalidCurrency, To: []entities.Currency{"UAH"}}},
-			wantErr: InvalidArgumentErr,
+			name:      "internal error",
+			args:      args{&currency_grpc.ConvertRequest{BaseCurrency: "USD"}},
+			mockedRes: mockedRes{convertErr: internalError},
+			want:      nil,
+			wantErr:   status.Error(codes.Internal, internalError.Error()),
 		},
 		{
-			name:    "unexpected thrird-party api response",
-			fields:  fields{APIBasePath: invalidServer.URL},
-			args:    args{ctx: ctx, params: ConvertParams{From: "USD", To: []entities.Currency{"UAH"}}},
-			wantErr: FailedPreconditionErr,
-		},
-		{
-			name:   "succesfully converted",
-			fields: fields{APIBasePath: validServer.URL},
-			args:   args{ctx: ctx, params: ConvertParams{From: "USD", To: []entities.Currency{"UAH", "EUR"}}},
-			want:   map[entities.Currency]float64{"EUR": 0.9201, "UAH": 39.4347},
+			name: "successfully converted",
+			args: args{&currency_grpc.ConvertRequest{BaseCurrency: "USD", TargetCurrencies: []string{"UAH", "EUR"}}},
+			mockedRes: mockedRes{
+				convertedRates: map[string]float64{"UAH": 39.4347, "EUR": 0.9201}},
+			want: &currency_grpc.ConvertResponse{
+				BaseCurrency: "USD",
+				Rates:        map[string]float64{"UAH": 39.4347, "EUR": 0.9201}},
+			wantErr: nil,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			e := currencyService{
-				APIBasePath: tt.fields.APIBasePath,
+			reset := setup(&tt.mockedRes, services.ConvertCurrencyParams{
+				Base:   tt.args.req.BaseCurrency,
+				Target: tt.args.req.TargetCurrencies})
+			defer reset()
+
+			s := &currencyServiceServer{
+				UnimplementedCurrencyServiceServer: currency_grpc.UnimplementedCurrencyServiceServer{},
+				service:                            csMock,
+				logger:                             loggerMock,
 			}
-			got, err := e.Convert(tt.args.ctx, tt.args.params)
+			got, err := s.Convert(context.Background(), tt.args.req)
 			assert.Equal(t, got, tt.want)
 			if tt.wantErr != nil {
 				assert.ErrorIs(t, err, tt.wantErr)

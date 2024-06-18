@@ -8,13 +8,12 @@ import (
 )
 
 type envVars struct {
-	Mode            config.Mode `env:"MODE"`
-	MailmanHost     string      `env:"MAILMAN_HOST"`
-	MailmanPort     int         `env:"MAILMAN_PORT"`
-	MailmanEmail    string      `env:"MAILMAN_EMAIL"`
-	MailmanPassword string      `env:"MAILMAN_PASSWORD"`
+	Mode                   config.Mode `env:"MODE"`
+	DispatchServiceAddress string      `env:"DISPATCH_SERVICE_ADDRESS"`
+	DispatchServicePort    string      `env:"DISPATCH_SERVICE_PORT"`
 }
 
+// Parses environment variables.
 func Env() (*envVars, error) {
 	var vars envVars
 	if err := env.Parse(&vars); err != nil {

@@ -6,40 +6,65 @@ import (
 	"subscription-api/cmd/dispatch-service/internal"
 	"subscription-api/config"
 	store "subscription-api/internal/db"
-	d_store "subscription-api/internal/db/dispatch"
-	ds "subscription-api/internal/services/dispatch"
-	g "subscription-api/internal/services/dispatch/grpc"
+	"subscription-api/internal/mailing"
+	dispatch_service "subscription-api/internal/services/dispatch"
+	dispatch_grpc "subscription-api/internal/services/dispatch/grpc"
 	"subscription-api/internal/sql"
 	"subscription-api/pkg/db"
-	pb_ds "subscription-api/pkg/grpc/dispatch_service"
+
+	grpc_client "subscription-api/pkg/grpc"
 	"subscription-api/pkg/utils"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
 	env := utils.Must(internal.Env())
-	logger := config.InitLogger(env.Mode)
+	logger := config.InitLogger(env.Mode, config.WithProcess("dispatch-service"))
+	defer logger.Flush()
+
+	currencyServiceConn, err := grpc.NewClient(
+		fmt.Sprintf("%s:%s", env.CurrencyServiceAddress, env.CurrencyServicePort),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	utils.PanicOnError(err, "failed to connect to currency service grpc server")
+	defer currencyServiceConn.Close()
 
 	url := fmt.Sprintf("%s:%s", env.DispatchServiceAddress, env.DispatchServicePort)
 	lis, err := net.Listen("tcp", url)
 	utils.PanicOnError(err, fmt.Sprintf("failed to listen %s", url))
 
+	postgresqlDB := utils.Must(db.NewPostrgreSQL(
+		env.PostgreSQLConnString,
+		sql.PostgeSQLMigrationsUp("public", logger),
+	))
+
+	store := store.NewStore(postgresqlDB, db.IsPqError)
+
+	mailman := mailing.NewMailman(mailing.SMTPParams{
+		Host:     env.SMTPHost,
+		Port:     env.SMTPPort,
+		Email:    env.SMTPEmail,
+		Name:     env.SMTPUsername,
+		Password: env.SMTPPassword,
+	})
+
+	serviceParams := &dispatch_service.DispatchServiceParams{
+		Store:           store,
+		Logger:          logger,
+		Mailman:         mailman,
+		CurrencyService: grpc_client.NewCurrencyServiceClient(currencyServiceConn),
+	}
+
+	dispatchServiceServer := dispatch_service.NewDispatchServiceServer(
+		dispatch_service.NewDispatchService(serviceParams),
+		logger,
+	)
+
 	server := grpc.NewServer()
-	pb_ds.RegisterDispatchServiceServer(server,
-		g.NewDispatchServiceServer(
-			ds.NewDispatchService(d_store.NewCurrencyDispatchStore(
-				store.NewStore(
-					utils.Must(db.NewPostrgreSQL(
-						env.PostgreSQLConnString,
-						sql.PostgeSQLMigrationsUp("public", logger),
-					)),
-					db.IsPqError,
-				))),
-			logger,
-		))
+	dispatch_grpc.RegisterDispatchServiceServer(server, dispatchServiceServer)
 
-	logger.Info("dispatch service started...")
-
+	logger.Infof("dispatch service started at %s", url)
 	utils.PanicOnError(server.Serve(lis), "failed to serve")
 }

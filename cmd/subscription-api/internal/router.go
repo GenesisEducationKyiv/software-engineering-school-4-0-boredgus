@@ -4,9 +4,6 @@ import (
 	"context"
 	"subscription-api/config"
 	"subscription-api/internal/controllers"
-	pb_cs "subscription-api/pkg/grpc/currency_service"
-	pb_ds "subscription-api/pkg/grpc/dispatch_service"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,7 +14,7 @@ type ctx struct {
 	logger config.Logger
 }
 
-func NewContext(c *gin.Context, cx context.Context, logger config.Logger) controllers.Context {
+func NewContext(c *gin.Context, cx context.Context, logger config.Logger) *ctx {
 	return &ctx{c: c, ctx: c, logger: logger}
 }
 func (c *ctx) Status(status int) {
@@ -37,26 +34,26 @@ func (c *ctx) Logger() config.Logger {
 }
 
 type APIParams struct {
-	CurrencyService pb_cs.CurrencyServiceClient
-	DispatchService pb_ds.DispatchServiceClient
+	CurrencyService controllers.CurrencyService
+	DispatchService controllers.DispatchService
 	Logger          config.Logger
 }
 
-var MaxRequestDuration = 2000 * time.Millisecond
-
-func GetRouter(params APIParams) *gin.Engine {
+func GetRouter(params *APIParams) *gin.Engine {
 	r := gin.Default()
 
+	r.Use(TimeoutMiddleware())
+
+	newContext := func(ctx *gin.Context) controllers.Context {
+		return NewContext(ctx, context.Background(), params.Logger)
+	}
+
 	r.GET("/rate", func(ctx *gin.Context) {
-		c, cancel := context.WithTimeout(context.Background(), MaxRequestDuration)
-		defer cancel()
-		controllers.GetExchangeRate(NewContext(ctx, c, params.Logger), params.CurrencyService)
+		controllers.GetExchangeRate(newContext(ctx), params.CurrencyService)
 	})
 
 	r.POST("/subscribe", func(ctx *gin.Context) {
-		c, cancel := context.WithTimeout(context.Background(), MaxRequestDuration)
-		defer cancel()
-		controllers.SubscribeForDailyDispatch(NewContext(ctx, c, params.Logger), params.DispatchService)
+		controllers.SubscribeForDailyDispatch(newContext(ctx), params.DispatchService)
 	})
 
 	return r

@@ -1,43 +1,52 @@
 package mailing
 
-import "github.com/go-mail/mail"
+import (
+	"fmt"
+
+	"github.com/go-mail/mail"
+)
 
 type Email struct {
-	From     string
 	To       []string
-	ReplyTo  string
 	Subject  string
 	HTMLBody string
 }
 
-type Mailman interface {
-	Send(email Email) error
+type Dialer interface {
+	DialAndSend(m ...*mail.Message) error
 }
 
 type mailman struct {
-	dialer mail.Dialer
+	dialer Dialer
+	author string
 }
 
 type SMTPParams struct {
 	Host     string
 	Port     int
-	Username string
+	Email    string
+	Name     string
 	Password string
 }
 
-func NewMailman(params SMTPParams) Mailman {
+func NewMailman(params SMTPParams) *mailman {
 	return &mailman{
-		dialer: *mail.NewDialer(params.Host, params.Port, params.Username, params.Password),
+		dialer: mail.NewDialer(params.Host, params.Port, params.Email, params.Password),
+		author: fmt.Sprintf(`"%s" <%s>`, params.Name, params.Email),
 	}
 }
 
-func (m *mailman) Send(e Email) error {
-	msg := mail.NewMessage()
-	msg.SetHeader("From", e.From)
-	// TODO: find a way to send emails separately (without random subscriber knowing emails of other subscribers)
-	msg.SetHeader("To", e.To...)
-	msg.SetHeader("Subject", e.Subject)
-	msg.SetBody("text/html", e.HTMLBody)
+func (m *mailman) Send(email Email) error {
+	msgs := make([]*mail.Message, 0, len(email.To))
 
-	return m.dialer.DialAndSend(msg)
+	for _, target := range email.To {
+		msg := mail.NewMessage()
+		msg.SetHeader("From", m.author)
+		msg.SetHeader("To", target)
+		msg.SetHeader("Subject", email.Subject)
+		msg.SetBody("text/html", email.HTMLBody)
+		msgs = append(msgs, msg)
+	}
+
+	return m.dialer.DialAndSend(msgs...)
 }

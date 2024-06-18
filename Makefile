@@ -1,4 +1,4 @@
-ENV_FILE=.env.example
+ENV_FILE=.env
 
 start:
 	ENV_FILE=${ENV_FILE} docker compose -f docker-compose.yaml --env-file ${ENV_FILE} up
@@ -19,5 +19,5 @@ test-coverage:
 generate-grpc:
 	protoc --go_out=. --go_opt=paths=source_relative \
 		--go-grpc_out=. --go-grpc_opt=paths=source_relative \
-    pkg/grpc/currency_service/currencyService.proto \
-		pkg/grpc/dispatch_service/dispatchService.proto
+    internal/services/currency/grpc/currencyService.proto \
+		internal/services/dispatch/grpc/dispatchService.proto

@@ -1,12 +1,16 @@
 package controllers
 
 import (
+	"context"
 	"net/http"
-	pb_ds "subscription-api/pkg/grpc/dispatch_service"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
+
+type DispatchService interface {
+	SubscribeForDispatch(ctx context.Context, email, dispatchId string) error
+}
 
 type subscribeParams struct {
 	Email string `json:"email"`
@@ -14,7 +18,7 @@ type subscribeParams struct {
 
 const USD_UAH_DISPATCH_ID = "f669a90d-d4aa-4285-bbce-6b14c6ff9065"
 
-func SubscribeForDailyDispatch(ctx Context, ds pb_ds.DispatchServiceClient) {
+func SubscribeForDailyDispatch(ctx Context, ds DispatchService) {
 	var params subscribeParams
 	if err := ctx.BindJSON(&params); err != nil {
 		ctx.Logger().Debug("failed to bind subscribe params from json: " + err.Error())
@@ -23,10 +27,7 @@ func SubscribeForDailyDispatch(ctx Context, ds pb_ds.DispatchServiceClient) {
 		return
 	}
 
-	_, err := ds.SubscribeFor(ctx.Context(), &pb_ds.SubscribeForRequest{
-		Email:      params.Email,
-		DispatchId: USD_UAH_DISPATCH_ID,
-	})
+	err := ds.SubscribeForDispatch(ctx.Context(), params.Email, USD_UAH_DISPATCH_ID)
 	if status.Code(err) == codes.AlreadyExists {
 		ctx.Status(http.StatusConflict)
 
@@ -34,6 +35,7 @@ func SubscribeForDailyDispatch(ctx Context, ds pb_ds.DispatchServiceClient) {
 	}
 	if err != nil {
 		ctx.Status(http.StatusInternalServerError)
+		ctx.Logger().Debugf("failed to subscribe user for dispatch: %v", err)
 
 		return
 	}

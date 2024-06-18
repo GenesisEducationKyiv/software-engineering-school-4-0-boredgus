@@ -1,11 +1,16 @@
-package ds
+package db
 
 import (
 	"context"
 	"fmt"
-	"subscription-api/internal/db"
 	"subscription-api/internal/services"
 )
+
+type subRepo struct{}
+
+func NewSubRepo() *subRepo {
+	return &subRepo{}
+}
 
 const subscribeForQ string = `
 	insert into subs."currency_subscriptions" (user_id, dispatch_id)
@@ -20,9 +25,13 @@ const subscribeForQ string = `
 	;
 `
 
-func (s *currencyDispatchStore) SubscribeFor(ctx context.Context, params SubscribeForParams) error {
-	_, err := s.DB().ExecContext(ctx, subscribeForQ, params.Email, params.Dispatch)
-	if s.IsError(err, db.UniqueViolation) {
+type SubscriptionData struct {
+	Email, Dispatch string
+}
+
+func (s *subRepo) CreateSubscription(ctx context.Context, d DB, args SubscriptionData) error {
+	_, err := d.DB().ExecContext(ctx, subscribeForQ, args.Email, args.Dispatch)
+	if d.IsError(err, UniqueViolation) {
 		return fmt.Errorf("%w: user has already subscribed for this dispatch", services.UniqueViolationErr)
 	}
 
