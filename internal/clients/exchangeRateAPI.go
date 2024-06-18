@@ -46,7 +46,7 @@ func (c *ExchangeRateAPIClient) Convert(
 	}
 
 	var result conversionResult
-	if err = utils.Parse(resp.Body, &result); err != nil {
+	if err = utils.ParseJSON(resp.Body, &result); err != nil {
 		return nil, err
 	}
 	if result.ErrorType == InvalidArgumentErr.Error() {
