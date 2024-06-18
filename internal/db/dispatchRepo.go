@@ -78,8 +78,7 @@ const getAllDispatchesQ = `
 `
 
 func (r *DispatchRepo) GetAllDispatches(ctx context.Context, db DB) ([]e.CurrencyDispatch, error) {
-	// dispatchCount := 5
-	result := make([]e.CurrencyDispatch, 0, 5)
+	result := make([]e.CurrencyDispatch, 0, 5) // nolint:mnd
 	rows, err := db.DB().QueryContext(ctx, getAllDispatchesQ)
 	if err != nil {
 		return nil, err

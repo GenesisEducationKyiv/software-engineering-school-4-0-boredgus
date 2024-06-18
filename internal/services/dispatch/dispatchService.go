@@ -1,8 +1,10 @@
 package ds
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"html/template"
 	"subscription-api/config"
 	db "subscription-api/internal/db"
 	e "subscription-api/internal/entities"
@@ -31,10 +33,6 @@ type DispatchRepo interface {
 	GetAllDispatches(ctx context.Context, db db.DB) ([]e.CurrencyDispatch, error)
 }
 
-type HTMLTemplateParser interface {
-	Parse(templateName string, data any) ([]byte, error)
-}
-
 type Mailman interface {
 	Send(email mailing.Email) error
 }
@@ -49,7 +47,6 @@ type dispatchService struct {
 	userRepo     UserRepo
 	subRepo      SubRepo
 	dispatchRepo DispatchRepo
-	htmlParser   HTMLTemplateParser
 	mailman      Mailman
 	csClient     CurrencyServiceClient
 }
@@ -67,7 +64,6 @@ func NewDispatchService(params *DispatchServiceParams) *dispatchService {
 		userRepo:     db.NewUserRepo(),
 		subRepo:      db.NewSubRepo(),
 		dispatchRepo: db.NewDispatchRepo(),
-		htmlParser:   mailing.NewHTMLTemplateParser(params.Logger),
 		mailman:      params.Mailman,
 		csClient:     params.CurrencyService,
 		log:          params.Logger,
@@ -108,6 +104,24 @@ func (s *dispatchService) SubscribeForDispatch(ctx context.Context, email, dispa
 	return nil
 }
 
+func (s *dispatchService) parseHTMLTemplate(templateName string, data any) ([]byte, error) {
+	templateFile := mailing.PathToTemplate(templateName + ".html")
+	tmpl, err := template.ParseFiles(templateFile)
+	if err != nil {
+		s.log.Errorf("failed to parse html template %s: %v", templateFile, err)
+
+		return nil, err
+	}
+	var buffer bytes.Buffer
+	if err := tmpl.Execute(&buffer, data); err != nil {
+		s.log.Errorf("failed to execute html template %s: %v", templateFile, err)
+
+		return nil, err
+	}
+
+	return buffer.Bytes(), nil
+}
+
 type ExchangeRateTemplateParams struct {
 	BaseCurrency string
 	Rates        map[string]float64
@@ -144,7 +158,7 @@ func (s *dispatchService) SendDispatch(ctx context.Context, dispatchId string) e
 		return err
 	}
 
-	htmlContent, err := s.htmlParser.Parse(dispatch.TemplateName, ExchangeRateTemplateParams{
+	htmlContent, err := s.parseHTMLTemplate(dispatch.TemplateName, ExchangeRateTemplateParams{
 		BaseCurrency: resp.BaseCurrency,
 		Rates:        resp.Rates,
 	})
