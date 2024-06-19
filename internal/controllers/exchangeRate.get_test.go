@@ -64,7 +64,7 @@ func Test_GetExchangeRate_Controller(t *testing.T) {
 				ctx: ctx,
 				rates: map[string]float64{
 					string(entities.UkrainianHryvnia): float64(uahRate)},
-				responseStr:    fmt.Sprint(uahRate),
+				responseStr:    strconv.Itoa(uahRate),
 				responseStatus: http.StatusOK,
 			},
 		},
