@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-func TestGetExchangeRate(t *testing.T) {
+func Test_GetExchangeRate_Controller(t *testing.T) {
 	type mocked struct {
 		ctx            context.Context
 		rates          map[string]float64

@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc/codes"
 )
 
-func TestSubscribeForDailyDispatch(t *testing.T) {
+func Test_SubscribeForDailyDispatch_Controller(t *testing.T) {
 	type mocked struct {
 		bindErr        error
 		ctx            context.Context
