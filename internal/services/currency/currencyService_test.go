@@ -43,7 +43,7 @@ func Test_CurrencyService_Convert(t *testing.T) {
 			wantErr: services.InvalidArgumentErr,
 		},
 		{
-			name:    "success",
+			name:    "successfuly converted currency",
 			args:    args{params: services.ConvertCurrencyParams{Target: []string{"UAH"}}},
 			mocked:  mocked{rates: rates},
 			want:    rates,

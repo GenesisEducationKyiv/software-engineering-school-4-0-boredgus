@@ -51,7 +51,7 @@ func Test_GetExchangeRate_Controller(t *testing.T) {
 		mocked *mocked
 	}{
 		{
-			name: "failed to convert curerncy",
+			name: "failed to convert currency",
 			mocked: &mocked{
 				ctx:            ctx,
 				convertErr:     fmt.Errorf("some-err"),
@@ -59,7 +59,7 @@ func Test_GetExchangeRate_Controller(t *testing.T) {
 			},
 		},
 		{
-			name: "success",
+			name: "successfuly got exchange rate",
 			mocked: &mocked{
 				ctx: ctx,
 				rates: map[string]float64{

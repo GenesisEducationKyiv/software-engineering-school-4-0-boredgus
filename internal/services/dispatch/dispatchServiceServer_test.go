@@ -74,7 +74,7 @@ func Test_DispatchServiceServer_SubscribeForDispatch(t *testing.T) {
 			wantErr: status.Error(codes.Internal, internalError.Error()),
 		},
 		{
-			name:   "success",
+			name:   "successfuly subscribed for a dispatch",
 			args:   arguments,
 			mocked: &mocked{},
 			want:   &grpc.SubscribeForDispatchResponse{},
@@ -156,7 +156,7 @@ func Test_DispatchServiceServer_SendDispatch(t *testing.T) {
 			wantErr: status.Error(codes.Internal, internalError.Error()),
 		},
 		{
-			name:   "success",
+			name:   "dispatch was successfuly sent",
 			args:   arguments,
 			mocked: &mocked{},
 			want:   &grpc.SendDispatchResponse{},
@@ -247,7 +247,7 @@ func Test_DispatchServiceServer_GetAllDispatches(t *testing.T) {
 			},
 		},
 		{
-			name:   "success",
+			name:   "success got all dispatches",
 			args:   arguments,
 			mocked: &mocked{dispatches: dispatches},
 			want: &grpc.GetAllDispatchesResponse{

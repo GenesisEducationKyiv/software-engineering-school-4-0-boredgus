@@ -75,7 +75,7 @@ func Test_SubscribeForDailyDispatch_Controller(t *testing.T) {
 			},
 		},
 		{
-			name: "success",
+			name: "successfuly subscribed or daily dispatch",
 			mocked: &mocked{
 				responseStatus: http.StatusOK,
 			},

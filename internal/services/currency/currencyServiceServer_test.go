@@ -71,7 +71,7 @@ func Test_CurrencyServiceServer_Convert(t *testing.T) {
 			wantErr:   status.Error(codes.Internal, internalError.Error()),
 		},
 		{
-			name: "successfully converted",
+			name: "successfully converted currency",
 			args: args{&grpc.ConvertRequest{BaseCurrency: "USD", TargetCurrencies: []string{"UAH", "EUR"}}},
 			mockedRes: mockedRes{
 				convertedRates: map[string]float64{"UAH": 39.4347, "EUR": 0.9201}},

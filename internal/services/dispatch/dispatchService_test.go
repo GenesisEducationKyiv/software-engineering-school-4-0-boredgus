@@ -63,7 +63,7 @@ func Test_DispatchService_GetAllDispatches(t *testing.T) {
 			wantErr: someErr,
 		},
 		{
-			name:   "success",
+			name:   "successfuly got all dispatches",
 			args:   arguments,
 			mocked: mocked{dispatches: dispatches},
 			want:   dispatches,
@@ -159,7 +159,7 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 			wantErr: createSubErr,
 		},
 		{
-			name:   "success",
+			name:   "success subscribed for a dispatch",
 			args:   &a,
 			mocked: &mocked{},
 		},
@@ -324,7 +324,7 @@ func Test_DispatchService_SendDispatch(t *testing.T) {
 			wantErr: sendErr,
 		},
 		{
-			name: "success",
+			name: "dispatch was successfuly sent",
 			args: &a,
 			mocked: &mocked{
 				subscribers: subscribers,
