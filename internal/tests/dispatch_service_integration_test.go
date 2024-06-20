@@ -1,4 +1,4 @@
-package dispatch_service
+package dispatch_service_test
 
 import (
 	"context"
@@ -8,14 +8,15 @@ import (
 	store "subscription-api/internal/db"
 	"subscription-api/internal/services"
 	"subscription-api/internal/sql"
-	"subscription-api/internal/testhelpers"
-	"subscription-api/internal/testhelpers/stubs"
+	testhelpers "subscription-api/internal/tests/helpers"
+	"subscription-api/internal/tests/stubs"
 	"subscription-api/pkg/db"
 	"subscription-api/pkg/utils"
 	"testing"
 
 	currency_service "subscription-api/internal/services/currency"
 	currency_grpc "subscription-api/internal/services/currency/grpc"
+	dispatch_service "subscription-api/internal/services/dispatch"
 
 	grpc_client "subscription-api/pkg/grpc"
 
@@ -31,7 +32,7 @@ type DispatchServiceSuite struct {
 	cs interface {
 		Stop()
 	}
-	service     *dispatchService
+	service     services.DispatchService
 	l           config.Logger
 	dbContainer *testhelpers.PostgresContainer
 	ctx         context.Context
@@ -83,7 +84,7 @@ func (s *DispatchServiceSuite) SetupSuite() {
 	mailman := stubs.NewMailmanStub()
 	s.mailman = mailman
 
-	s.service = NewDispatchService(&DispatchServiceParams{
+	s.service = dispatch_service.NewDispatchService(&dispatch_service.DispatchServiceParams{
 		Logger: s.l,
 		Store: store.NewStore(
 			utils.Must(db.NewPostrgreSQL(
