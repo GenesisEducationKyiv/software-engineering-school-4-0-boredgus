@@ -20,8 +20,7 @@ linters-settings:
     threshold: 100
   mnd:
     ignored-files:
-      - 'dbContainer.go'
-      - 'stubs/*'
+      - 'tests/'
     ignored-functions:
       - 'timeout.WithTimeout'
 
