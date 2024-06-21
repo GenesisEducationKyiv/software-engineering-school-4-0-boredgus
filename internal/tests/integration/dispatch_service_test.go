@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net"
+	"slices"
 	"subscription-api/config"
 	store "subscription-api/internal/db"
 	"subscription-api/internal/mailing"
@@ -66,6 +67,19 @@ func (s *DispatchServiceSuite) startCurrencyServiceServer() {
 			s.Fail(err.Error())
 		}
 	}()
+}
+
+func (s *DispatchServiceSuite) getSubscribersOfDispatch(ctx context.Context, dispatchID string) ([]string, error) {
+	postgresqlDB, err := db.NewPostrgreSQL(s.pgContainer.ConnectionString)
+	s.NoError(err)
+	defer postgresqlDB.Close()
+
+	dispatchRepo := store.NewDispatchRepo()
+
+	return dispatchRepo.GetSubscribersOfDispatch(
+		ctx,
+		store.NewStore(postgresqlDB, db.IsPqError),
+		dispatchID)
 }
 
 func (s *DispatchServiceSuite) SetupSuite() {
@@ -137,40 +151,23 @@ func (s *DispatchServiceSuite) Test_SendDispatch() {
 func (s *DispatchServiceSuite) Test_SubscribeForDispatch_Success() {
 	email := "email_1@gmail.com"
 	dispatchId := services.USD_UAH_DISPATCH_ID
-	s.NoError(s.service.SubscribeForDispatch(context.Background(), email, dispatchId))
+	ctx := context.Background()
 
-	// countBefore, countAfter := 0, 0
-	// dispatchesBefore, err1 := s.service.GetAllDispatches(context.Background())
-	// err3 := s.service.SubscribeForDispatch(context.Background(), email, dispatchId)
-	// err4 := s.service.SubscribeForDispatch(context.Background(), email, "invalid-dispatch-uuid")
-	// err5 := s.service.SubscribeForDispatch(context.Background(), email, "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
-	// err6 := s.service.SubscribeForDispatch(context.Background(), email2, dispatchId)
-	// dispatchesAfter, err6 := s.service.GetAllDispatches(context.Background())
-	// for _, d := range dispatchesBefore {
-	// 	if d.Id == dispatchId {
-	// 		countBefore = d.CountOfSubscribers
-	// 	}
-	// }
-	// for _, d := range dispatchesAfter {
-	// 	if d.Id == dispatchId {
-	// 		countAfter = d.CountOfSubscribers
-	// 	}
-	// }
-	// s.NoError(err1)
-	// s.NoError(err2)
-	// s.ErrorIs(err3, services.UniqueViolationErr)
-	// s.ErrorIs(err4, services.InvalidArgumentErr)
-	// s.ErrorIs(err5, services.NotFoundErr)
-	// s.NoError(err6)
-	// s.Equal(2, countAfter-countBefore)
+	s.NoError(s.service.SubscribeForDispatch(ctx, email, dispatchId))
+	subscribers, err := s.getSubscribersOfDispatch(ctx, dispatchId)
+
+	s.NoError(err)
+	s.True(slices.Contains(subscribers, email))
 }
 
 func (s *DispatchServiceSuite) Test_SubscribeForDispatch_UserAlreadySubscribedForThisDispatch() {
 	email := "email_2@gmail.com"
 	dispatchId := services.USD_UAH_DISPATCH_ID
-	s.NoError(s.service.SubscribeForDispatch(context.Background(), email, dispatchId))
+	ctx := context.Background()
+
+	s.NoError(s.service.SubscribeForDispatch(ctx, email, dispatchId))
 	s.ErrorIs(
-		s.service.SubscribeForDispatch(context.Background(), email, dispatchId),
+		s.service.SubscribeForDispatch(ctx, email, dispatchId),
 		services.UniqueViolationErr,
 	)
 }
