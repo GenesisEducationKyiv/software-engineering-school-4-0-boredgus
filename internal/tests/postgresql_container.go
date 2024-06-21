@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"path"
+	"runtime"
 	"time"
 
 	"github.com/testcontainers/testcontainers-go"
@@ -19,24 +21,24 @@ const (
 
 type PostgresContainer struct {
 	*postgres.PostgresContainer
-	ConnectionString string
+	ConnectionString  string
+	testDataDirectory string
 }
 
 func (c *PostgresContainer) ExecuteSQLFiles(ctx context.Context, filenames ...string) error {
 	var buffer bytes.Buffer
 	for _, filename := range filenames {
-		filenameWithExtension := fmt.Sprintf("/%s.sql", filename)
+		filenameWithExtension := fmt.Sprintf("%s.sql", filename)
+		localFilePath := path.Join(c.testDataDirectory, filenameWithExtension)
+		targetFilePath := path.Join("data", filenameWithExtension)
 
-		err := c.PostgresContainer.CopyFileToContainer(
-			ctx,
-			fmt.Sprintf("./testdata%s", filenameWithExtension),
-			filenameWithExtension, 64)
+		err := c.PostgresContainer.CopyFileToContainer(ctx, localFilePath, targetFilePath, 64)
 		if err != nil {
 			return err
 		}
 
 		_, reader, err := c.PostgresContainer.Exec(ctx,
-			[]string{"psql", "-U", Username, "-d", Database, "-a", "-f", filenameWithExtension})
+			[]string{"psql", "-U", Username, "-d", Database, "-a", "-f", localFilePath})
 		if err != nil {
 			return err
 		}
@@ -45,7 +47,7 @@ func (c *PostgresContainer) ExecuteSQLFiles(ctx context.Context, filenames ...st
 		if _, err = buffer.ReadFrom(reader); err != nil {
 			return err
 		}
-		fmt.Printf("\n> EXECUTED FILE %s:\n\n%s\n\n", filenameWithExtension, buffer.String())
+		fmt.Printf("\n> EXECUTED FILE %s:\n\n%s\n\n", localFilePath, buffer.String())
 	}
 
 	return nil
@@ -70,8 +72,11 @@ func CreatePostgresContainer(ctx context.Context) (*PostgresContainer, error) {
 		return nil, err
 	}
 
+	_, filename, _, _ := runtime.Caller(0)
+
 	return &PostgresContainer{
 		PostgresContainer: pgContainer,
 		ConnectionString:  connStr,
+		testDataDirectory: path.Join(path.Dir(filename), "testdata"),
 	}, nil
 }
