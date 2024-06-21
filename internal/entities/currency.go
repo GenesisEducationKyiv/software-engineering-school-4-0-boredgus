@@ -1,5 +1,7 @@
 package entities
 
+import "strings"
+
 type Currency string
 
 const (
@@ -7,21 +9,22 @@ const (
 	UkrainianHryvnia Currency = "UAH"
 )
 
-var SupportedCurrencies = []Currency{AmericanDollar, UkrainianHryvnia}
+var SupportedCurrencies = map[Currency]struct{}{
+	AmericanDollar:   {},
+	UkrainianHryvnia: {},
+}
 
 func (c Currency) IsSupported() bool {
-	for _, cur := range SupportedCurrencies {
-		if c == cur {
-			return true
-		}
-	}
+	_, ok := SupportedCurrencies[c]
 
-	return false
+	return ok
 }
-func FromString(data []string) []Currency {
+
+// CurrenciesFromString converts []string to []Currency.
+func CurrenciesFromString(data []string) []Currency {
 	res := make([]Currency, len(data))
 	for i, v := range data {
-		res[i] = Currency(v)
+		res[i] = Currency(strings.ToUpper(v))
 	}
 
 	return res
