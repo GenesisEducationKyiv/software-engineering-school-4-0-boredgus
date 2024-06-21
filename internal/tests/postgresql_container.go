@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"log"
 	"path"
 	"runtime"
 	"time"
@@ -30,7 +31,7 @@ func (c *PostgresContainer) ExecuteSQLFiles(ctx context.Context, filenames ...st
 	for _, filename := range filenames {
 		filenameWithExtension := fmt.Sprintf("%s.sql", filename)
 		localFilePath := path.Join(c.testDataDirectory, filenameWithExtension)
-		targetFilePath := path.Join("data", filenameWithExtension)
+		targetFilePath := path.Join("scripts", filenameWithExtension)
 
 		err := c.PostgresContainer.CopyFileToContainer(ctx, localFilePath, targetFilePath, 64)
 		if err != nil {
@@ -47,7 +48,7 @@ func (c *PostgresContainer) ExecuteSQLFiles(ctx context.Context, filenames ...st
 		if _, err = buffer.ReadFrom(reader); err != nil {
 			return err
 		}
-		fmt.Printf("\n> EXECUTED FILE %s:\n\n%s\n\n", localFilePath, buffer.String())
+		log.Default().Printf("\n> EXECUTED FILE %s:\n\n%s\n\n", targetFilePath, buffer.String())
 	}
 
 	return nil
