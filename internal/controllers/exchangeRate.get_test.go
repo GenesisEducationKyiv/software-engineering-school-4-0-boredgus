@@ -2,22 +2,23 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"subscription-api/internal/entities"
+	"strconv"
 	client_mocks "subscription-api/internal/mocks/clients"
 	controllers_mocks "subscription-api/internal/mocks/controllers"
 	"subscription-api/internal/services"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_GetExchangeRate_Controller(t *testing.T) {
 	type mocked struct {
-		ctx            context.Context
-		rates          map[string]float64
-		convertErr     error
-		responseStatus int
-		responseStr    string
+		ctx                    context.Context
+		expectedRates          map[string]float64
+		expectedConvertErr     error
+		expectedResponseStatus int
+		expectedResponseStr    string
 	}
 
 	csClientMock := client_mocks.NewCurrencyServiceClient(t)
@@ -30,11 +31,11 @@ func Test_GetExchangeRate_Controller(t *testing.T) {
 			Convert(m.ctx, services.ConvertCurrencyParams{
 				Base:   "USD",
 				Target: []string{"UAH"},
-			}).Once().NotBefore(contextCall).Return(m.rates, m.convertErr)
+			}).Once().NotBefore(contextCall).Return(m.expectedRates, m.expectedConvertErr)
 		statusCall := contextMock.EXPECT().
-			Status(m.responseStatus).NotBefore(convertCall).Maybe()
+			Status(m.expectedResponseStatus).NotBefore(convertCall).Maybe()
 		stringCall := contextMock.EXPECT().
-			String(m.responseStatus, m.responseStr).NotBefore(convertCall).Maybe()
+			String(m.expectedResponseStatus, m.expectedResponseStr).NotBefore(convertCall).Maybe()
 
 		return func() {
 			contextCall.Unset()
@@ -44,28 +45,27 @@ func Test_GetExchangeRate_Controller(t *testing.T) {
 		}
 	}
 	ctx := context.Background()
-	uahRate := 30
+	uahRate := 30.0
 
 	tests := []struct {
 		name   string
 		mocked *mocked
 	}{
 		{
-			name: "failed to convert currency",
+			name: "failed: got error from currency service",
 			mocked: &mocked{
-				ctx:            ctx,
-				convertErr:     fmt.Errorf("some-err"),
-				responseStatus: http.StatusInternalServerError,
+				ctx:                    ctx,
+				expectedConvertErr:     assert.AnError,
+				expectedResponseStatus: http.StatusInternalServerError,
 			},
 		},
 		{
 			name: "successfuly got exchange rate",
 			mocked: &mocked{
-				ctx: ctx,
-				rates: map[string]float64{
-					string(entities.UkrainianHryvnia): float64(uahRate)},
-				responseStr:    strconv.Itoa(uahRate),
-				responseStatus: http.StatusOK,
+				ctx:                    ctx,
+				expectedRates:          map[string]float64{"UAH": uahRate},
+				expectedResponseStr:    strconv.FormatFloat(uahRate, 'g', 7, 64),
+				expectedResponseStatus: http.StatusOK,
 			},
 		},
 	}

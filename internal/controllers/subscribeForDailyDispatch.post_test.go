@@ -2,41 +2,41 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	client_mocks "subscription-api/internal/mocks/clients"
 	controllers_mocks "subscription-api/internal/mocks/controllers"
 	"subscription-api/internal/services"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func Test_SubscribeForDailyDispatch_Controller(t *testing.T) {
 	type mocked struct {
-		bindErr        error
-		ctx            context.Context
-		subscribeErr   error
-		responseStatus int
-		responseStr    string
+		expectedBindErr        error
+		ctx                    context.Context
+		expectedSubscribeErr   error
+		expectedResponseStatus int
+		expecteResponseStr     string
 	}
 	dsClientMock := client_mocks.NewDispatchServiceClient(t)
 	contextMock := controllers_mocks.NewContext(t)
 
 	setup := func(m *mocked) func() {
 		bindCall := contextMock.EXPECT().
-			BindJSON(mock.Anything).Once().Return(m.bindErr)
+			BindJSON(mock.Anything).Once().Return(m.expectedBindErr)
 		stringCall := contextMock.EXPECT().
-			String(m.responseStatus, m.responseStr).NotBefore(bindCall).Maybe()
+			String(m.expectedResponseStatus, m.expecteResponseStr).NotBefore(bindCall).Maybe()
 		contextCall := contextMock.EXPECT().
 			Context().Once().NotBefore(bindCall).Return(m.ctx)
 		subscribeCall := dsClientMock.EXPECT().
 			SubscribeForDispatch(m.ctx, "", services.USD_UAH_DISPATCH_ID).Once().NotBefore(contextCall).
-			Return(m.subscribeErr)
+			Return(m.expectedSubscribeErr)
 		statusCall := contextMock.EXPECT().
-			Status(m.responseStatus).NotBefore(subscribeCall).Maybe()
+			Status(m.expectedResponseStatus).NotBefore(subscribeCall).Maybe()
 
 		return func() {
 			bindCall.Unset()
@@ -47,37 +47,36 @@ func Test_SubscribeForDailyDispatch_Controller(t *testing.T) {
 		}
 	}
 
-	someErr := fmt.Errorf("some err")
 	tests := []struct {
 		name   string
 		mocked *mocked
 	}{
 		{
-			name: "invalid data provided",
+			name: "failed: got an error from BindJSON",
 			mocked: &mocked{
-				bindErr:        someErr,
-				responseStr:    "invalid data provided",
-				responseStatus: http.StatusBadRequest,
+				expectedBindErr:        assert.AnError,
+				expecteResponseStr:     "invalid data provided",
+				expectedResponseStatus: http.StatusBadRequest,
 			},
 		},
 		{
-			name: "user already subsccribed for this dispatch",
+			name: "failed: user already subsccribed for this dispatch",
 			mocked: &mocked{
-				subscribeErr:   grpc.Errorf(codes.AlreadyExists, ""),
-				responseStatus: http.StatusConflict,
+				expectedSubscribeErr:   status.Error(codes.AlreadyExists, ""),
+				expectedResponseStatus: http.StatusConflict,
 			},
 		},
 		{
-			name: "internal server error occured",
+			name: "failed: got unknown error from SubscribeForDispatch",
 			mocked: &mocked{
-				subscribeErr:   someErr,
-				responseStatus: http.StatusInternalServerError,
+				expectedSubscribeErr:   assert.AnError,
+				expectedResponseStatus: http.StatusInternalServerError,
 			},
 		},
 		{
-			name: "successfuly subscribed or daily dispatch",
+			name: "successfuly subscribed",
 			mocked: &mocked{
-				responseStatus: http.StatusOK,
+				expectedResponseStatus: http.StatusOK,
 			},
 		},
 	}
