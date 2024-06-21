@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	"net/http"
+	"strconv"
 
 	"subscription-api/internal/entities"
 	"subscription-api/internal/services"
@@ -25,5 +25,5 @@ func GetExchangeRate(ctx Context, cs CurrencyService) {
 
 		return
 	}
-	ctx.String(http.StatusOK, fmt.Sprint(res[to]))
+	ctx.String(http.StatusOK, strconv.FormatFloat(res[to], 'g', 7, 64))
 }
