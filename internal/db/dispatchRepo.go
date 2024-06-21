@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"strings"
 	"subscription-api/internal/entities"
@@ -48,7 +47,7 @@ const getSubscribersOfDispatchQ string = `
 	from subs."currency_dispatches" cd
 	left join subs."currency_subscriptions" cs
 	on cs.dispatch_id = cd.id
-	left join users u 
+	left join subs."users" u 
 	on cs.user_id = u.id
 	where cd.u_id = $1;
 `
@@ -59,14 +58,13 @@ func (r *DispatchRepo) GetSubscribersOfDispatch(ctx context.Context, d DB, dispa
 	if d.IsError(err, InvalidTextRepresentation) {
 		return result, fmt.Errorf("%w: incorrect format for uuid", services.InvalidArgumentErr)
 	}
+
 	for rows.Next() {
-		var email sql.NullString
+		var email string
 		if err := rows.Scan(&email); err != nil {
 			return result, fmt.Errorf("failed to scan row: %w", err)
 		}
-		if email.Valid {
-			result = append(result, email.String)
-		}
+		result = append(result, email)
 	}
 
 	return result, nil
