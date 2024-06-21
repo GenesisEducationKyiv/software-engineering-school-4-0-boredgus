@@ -3,14 +3,13 @@ package dispatch_service
 import (
 	"bytes"
 	"context"
+	"errors"
 	"html/template"
 	"subscription-api/config"
 	db "subscription-api/internal/db"
 	"subscription-api/internal/entities"
 	"subscription-api/internal/mailing"
 	"subscription-api/internal/services"
-
-	"github.com/pkg/errors"
 )
 
 type Store interface {
@@ -108,15 +107,15 @@ func (s *dispatchService) parseHTMLTemplate(templateName string, data any) ([]by
 	templateFile := mailing.PathToTemplate(templateName + ".html")
 	tmpl, err := template.ParseFiles(templateFile)
 	if err != nil {
-		s.log.Errorf("failed to parse html template %s: %v", templateFile, err)
+		s.log.Errorf("failed to parse html template %s: %v", templateName, err)
 
-		return nil, errors.Wrapf(TemplateParseErr, "failed to parse html template %v: %v", templateFile, err)
+		return nil, errors.Join(TemplateParseErr, err)
 	}
 	var buffer bytes.Buffer
 	if err := tmpl.Execute(&buffer, data); err != nil {
-		s.log.Errorf("failed to execute html template %s: %v", templateFile, err)
+		s.log.Errorf("failed to execute html template %s: %v", templateName, err)
 
-		return nil, errors.Wrapf(TemplateParseErr, "failed to execute html template %v: %v", templateFile, err)
+		return nil, errors.Join(TemplateParseErr, err)
 	}
 
 	return buffer.Bytes(), nil

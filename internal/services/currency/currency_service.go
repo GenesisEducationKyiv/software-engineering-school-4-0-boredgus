@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"subscription-api/internal/entities"
 	"subscription-api/internal/services"
-
-	"github.com/pkg/errors"
 )
 
 type CurrencyAPIClient interface {
@@ -24,7 +22,7 @@ func NewCurrencyService(client CurrencyAPIClient) *currencyService {
 
 func (s *currencyService) Convert(ctx context.Context, params services.ConvertCurrencyParams) (map[string]float64, error) {
 	if len(params.Target) == 0 {
-		return nil, errors.Wrap(services.InvalidArgumentErr, "no target currencies provided")
+		return nil, fmt.Errorf("%w: no target currencies provided", services.InvalidArgumentErr)
 	}
 	for _, ccy := range entities.CurrenciesFromString(append(params.Target, params.Base)) {
 		if !ccy.IsSupported() {
