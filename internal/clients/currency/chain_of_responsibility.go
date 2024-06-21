@@ -1,6 +1,8 @@
 package currency_client
 
-import "context"
+import (
+	"context"
+)
 
 type (
 	CurrencyAPI interface {
@@ -29,11 +31,11 @@ func (ch *currencyAPIChain) SetNext(chain CurrencyAPIChain) {
 func (ch *currencyAPIChain) Convert(ctx context.Context, baseCcy string, targetCcies []string) (map[string]float64, error) {
 	rates, err := ch.api.Convert(ctx, baseCcy, targetCcies)
 	if err != nil {
-		if ch.next == nil {
-			return rates, err
+		if ch.next != nil {
+			return ch.next.Convert(ctx, baseCcy, targetCcies)
 		}
 
-		return ch.next.Convert(ctx, baseCcy, targetCcies)
+		return rates, err
 	}
 
 	return rates, nil
