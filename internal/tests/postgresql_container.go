@@ -38,7 +38,7 @@ func (c *PostgresContainer) ExecuteSQLFiles(ctx context.Context, filenames ...st
 		}
 
 		_, reader, err := c.PostgresContainer.Exec(ctx,
-			[]string{"psql", "-U", Username, "-d", Database, "-a", "-f", localFilePath})
+			[]string{"psql", "-U", Username, "-d", Database, "-a", "-f", targetFilePath})
 		if err != nil {
 			return err
 		}
