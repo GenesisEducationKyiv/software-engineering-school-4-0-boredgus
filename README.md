@@ -11,11 +11,11 @@ API allows:
 - __[mockery](https://vektra.github.io/mockery/latest/)__ for generation of interface mocks.
 - __[PostgreSQL](https://www.postgresql.org/)__ as main storage.
 - __[gRPC](https://grpc.io/)__ for inter-service communication.
-- __[ExchangeRate-API](https://www.exchangerate-api.com/)__ as third-party API for currency rate info.
+- __[ExchangeRate-API](https://www.exchangerate-api.com/)__, __[Currency Beacon API](https://currencybeacon.com/)__ and __[Free Currency API](https://github.com/fawazahmed0/exchange-api)__ as third-party APIs for currency rate info.
 
 ## Quick start
 
-1. Copy example env file with  command below:
+1. Copy example env file with command below:
 ```
 cp ./.env.example ./.env
 ```
