@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"html/template"
 	"subscription-api/config"
 	db "subscription-api/internal/db"
@@ -110,13 +109,13 @@ func (s *dispatchService) parseHTMLTemplate(templateName string, data any) ([]by
 	if err != nil {
 		s.log.Errorf("failed to parse html template %s: %v", templateName, err)
 
-		return nil, fmt.Errorf("%w: failed to parse html template %v: %w", TemplateParseErr, templateName, err)
+		return nil, errors.Join(TemplateParseErr, err)
 	}
 	var buffer bytes.Buffer
 	if err := tmpl.Execute(&buffer, data); err != nil {
 		s.log.Errorf("failed to execute html template %s: %v", templateName, err)
 
-		return nil, fmt.Errorf("%w: failed to execute html template %v: %w", TemplateParseErr, templateName, err)
+		return nil, errors.Join(TemplateParseErr, err)
 	}
 
 	return buffer.Bytes(), nil
