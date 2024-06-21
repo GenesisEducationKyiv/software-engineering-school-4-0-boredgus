@@ -49,7 +49,7 @@ const getSubscribersOfDispatchQ string = `
 	on cs.dispatch_id = cd.id
 	left join subs."users" u 
 	on cs.user_id = u.id
-	where cd.u_id = $1;
+	where cd.u_id = $1 and u.email is not null;
 `
 
 func (r *DispatchRepo) GetSubscribersOfDispatch(ctx context.Context, d DB, dispatchId string) ([]string, error) {
