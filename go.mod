@@ -4,6 +4,7 @@ go 1.22.1
 
 require (
 	github.com/caarlos0/env/v9 v9.0.0
+	github.com/gin-contrib/timeout v1.0.1
 	github.com/go-mail/mail v2.3.1+incompatible
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/testcontainers/testcontainers-go v0.31.0
@@ -35,7 +36,6 @@ require (
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
-	github.com/gin-contrib/timeout v1.0.1 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.20.0 // indirect
