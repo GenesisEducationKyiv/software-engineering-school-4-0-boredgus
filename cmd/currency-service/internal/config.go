@@ -13,6 +13,7 @@ type envVars struct {
 	CurrencyServiceAddress string      `env:"CURRENCY_SERVICE_ADDRESS"`
 	CurrencyServicePort    string      `env:"CURRENCY_SERVICE_PORT"`
 	ExchangeCurrencyAPIKey string      `env:"EXCHANGE_CURRENCY_API_KEY"`
+	CurrencyBeaconAPIKey   string      `env:"CURRENCY_BEACON_API_KEY"`
 }
 
 func Env() (*envVars, error) {
