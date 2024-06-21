@@ -37,6 +37,10 @@ func main() {
 		env.PostgreSQLConnString,
 		sql.PostgeSQLMigrationsUp(logger),
 	))
+
+	utils.PanicOnError(err, "failed toconnect to postgresql db")
+	defer postgresqlDB.Close()
+
 	store := store.NewStore(postgresqlDB, db.IsPqError)
 
 	// creation of mailman

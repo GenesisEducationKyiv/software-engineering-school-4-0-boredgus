@@ -2,7 +2,6 @@ package dispatch_service
 
 import (
 	"context"
-	"fmt"
 	"subscription-api/internal/db"
 	"subscription-api/internal/entities"
 	e "subscription-api/internal/entities"
@@ -25,8 +24,8 @@ func Test_DispatchService_GetAllDispatches(t *testing.T) {
 		ctx context.Context
 	}
 	type mocked struct {
-		dispatches    []services.DispatchData
-		getDsptchsErr error
+		dispatchesFromRepo  []services.DispatchData
+		getAllDispatchesErr error
 	}
 
 	storeMock := db_mocks.NewStore()
@@ -34,7 +33,7 @@ func Test_DispatchService_GetAllDispatches(t *testing.T) {
 
 	setup := func(m mocked, a args) func() {
 		getCall := dispatchRepoMock.EXPECT().GetAllDispatches(a.ctx, mock.Anything).
-			Maybe().Return(m.dispatches, m.getDsptchsErr)
+			Maybe().Return(m.dispatchesFromRepo, m.getAllDispatchesErr)
 
 		return func() {
 			getCall.Unset()
@@ -46,47 +45,47 @@ func Test_DispatchService_GetAllDispatches(t *testing.T) {
 		Label:              "label",
 		CountOfSubscribers: 2,
 	}}
-	someErr := fmt.Errorf("some err")
 	ctx := context.Background()
 	arguments := args{ctx: context.Background()}
 	tests := []struct {
-		name    string
-		args    args
-		mocked  mocked
-		want    []services.DispatchData
-		wantErr error
+		name           string
+		args           args
+		mockedValues   mocked
+		expectedResult []services.DispatchData
+		expectedErr    error
 	}{
 		{
-			name:    "failed to get dispatches",
-			args:    arguments,
-			mocked:  mocked{getDsptchsErr: someErr},
-			wantErr: someErr,
+			name:         "failed: got an error from GetAllDispatches",
+			args:         arguments,
+			mockedValues: mocked{getAllDispatchesErr: assert.AnError},
+			expectedErr:  assert.AnError,
 		},
 		{
-			name:   "success",
-			args:   arguments,
-			mocked: mocked{dispatches: dispatches},
-			want:   dispatches,
+			name:           "successfuly got all dispatches",
+			args:           arguments,
+			mockedValues:   mocked{dispatchesFromRepo: dispatches},
+			expectedResult: dispatches,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cleanup := setup(tt.mocked, tt.args)
+			cleanup := setup(tt.mockedValues, tt.args)
 			defer cleanup()
 
 			s := &dispatchService{
 				store:        storeMock,
 				dispatchRepo: dispatchRepoMock,
 			}
-			got, err := s.GetAllDispatches(ctx)
+			actualResult, actualErr := s.GetAllDispatches(ctx)
 
-			assert.Equal(t, tt.want, got)
-			if tt.wantErr != nil {
-				assert.ErrorIs(t, err, tt.wantErr)
+			assert.Equal(t, tt.expectedResult, actualResult)
+			if tt.expectedErr != nil {
+				assert.ErrorIs(t, actualErr, tt.expectedErr)
 
 				return
 			}
-			assert.Nil(t, err)
+			assert.Nil(t, actualErr)
 		})
 	}
 }
@@ -130,43 +129,40 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 		ctx:   context.Background(),
 		email: "example@gmail.com",
 	}
-	getDispatchErr := fmt.Errorf("get-dispatch-err")
-	createUserErr := fmt.Errorf("create-user-err")
-	createSubErr := fmt.Errorf("create-sub-err")
 
 	tests := []struct {
-		name    string
-		mocked  *mocked
-		args    *args
-		wantErr error
+		name         string
+		mockedValues *mocked
+		args         *args
+		expectedErr  error
 	}{
 		{
-			name:    "failed to get dispatch",
-			args:    &a,
-			mocked:  &mocked{getDispatchErr: getDispatchErr},
-			wantErr: getDispatchErr,
+			name:         "failed: got error from GetDispatchByID",
+			args:         &a,
+			mockedValues: &mocked{getDispatchErr: assert.AnError},
+			expectedErr:  assert.AnError,
 		},
 		{
-			name:    "user already subscribed for such dispatch",
-			args:    &a,
-			mocked:  &mocked{createUserErr: createUserErr},
-			wantErr: createUserErr,
+			name:         "failed: user already subscribed for this dispatch",
+			args:         &a,
+			mockedValues: &mocked{createUserErr: assert.AnError},
+			expectedErr:  assert.AnError,
 		},
 		{
-			name:    "failed to create subscription",
-			args:    &a,
-			mocked:  &mocked{createSubErr: createSubErr},
-			wantErr: createSubErr,
+			name:         "failed: got an error from CreateSubscription",
+			args:         &a,
+			mockedValues: &mocked{createSubErr: assert.AnError},
+			expectedErr:  assert.AnError,
 		},
 		{
-			name:   "success",
-			args:   &a,
-			mocked: &mocked{},
+			name:         "successfuly subscribed for a dispatch",
+			args:         &a,
+			mockedValues: &mocked{},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cleanup := setup(tt.mocked, tt.args)
+			cleanup := setup(tt.mockedValues, tt.args)
 			defer cleanup()
 			s := &dispatchService{
 				store:        storeMock,
@@ -175,13 +171,13 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 				dispatchRepo: dispatchRepoMock,
 			}
 
-			err := s.SubscribeForDispatch(tt.args.ctx, tt.args.email, tt.args.dispatchId)
-			if tt.wantErr != nil {
-				assert.ErrorIs(t, err, tt.wantErr)
+			actualErr := s.SubscribeForDispatch(tt.args.ctx, tt.args.email, tt.args.dispatchId)
+			if tt.expectedErr != nil {
+				assert.ErrorIs(t, actualErr, tt.expectedErr)
 
 				return
 			}
-			assert.Nil(t, err)
+			assert.Nil(t, actualErr)
 		})
 	}
 }
@@ -203,7 +199,7 @@ func Test_DispatchService_SendDispatch(t *testing.T) {
 	}
 
 	storeMock := db_mocks.NewStore()
-	loggerMock := config_mocks.NewLogger(t)
+	loggerMock := config_mocks.NewLogger()
 	dispatchRepoMock := repo_mocks.NewDispatchRepo(t)
 	csClientMock := client_mocks.NewCurrencyServiceClient(t)
 	mailmanMock := mailing_mocks.NewMailman(t)
@@ -226,15 +222,12 @@ func Test_DispatchService_SendDispatch(t *testing.T) {
 				Subject:  m.dispatch.Label,
 				HTMLBody: string(m.parsedEmail),
 			}).Maybe().NotBefore(convertCall).Return(m.sendErr)
-		errorCall := loggerMock.EXPECT().
-			Errorf(mock.Anything, mock.Anything, mock.Anything, mock.Anything).Maybe()
 
 		return func() {
 			getDsptchCall.Unset()
 			getSubsCall.Unset()
 			convertCall.Unset()
 			sendCall.Unset()
-			errorCall.Unset()
 		}
 	}
 
@@ -262,80 +255,75 @@ func Test_DispatchService_SendDispatch(t *testing.T) {
 			TargetCurrencies: []string{"target"}},
 		CountOfSubscribers: 2,
 	}
-	getDispatchErr := fmt.Errorf("get-dispatch-err")
-	getSubsErr := fmt.Errorf("get-subs-err")
 	subscribers := []string{"sub1", "sub2"}
-	convertErr := fmt.Errorf("convert-err")
-	sendErr := fmt.Errorf("send-err")
 
 	tests := []struct {
-		name    string
-		args    *args
-		mocked  *mocked
-		wantErr error
+		name         string
+		args         *args
+		mockedValues *mocked
+		wantErr      error
 	}{
 		{
-			name:    "failed to get dispatch data",
-			args:    &a,
-			mocked:  &mocked{getDispatchErr: getDispatchErr},
-			wantErr: getDispatchErr,
+			name:         "failed: got an error from GetDispatchByID",
+			args:         &a,
+			mockedValues: &mocked{getDispatchErr: assert.AnError},
+			wantErr:      assert.AnError,
 		},
 		{
-			name: "failed to get subscribers of dispatch",
+			name:         "failed: get an error from GetSubscribersOfDispatch",
+			args:         &a,
+			mockedValues: &mocked{getSubsErr: assert.AnError},
+			wantErr:      assert.AnError,
+		},
+		{
+			name:         "success: there is no subscribers for dispatch",
+			args:         &a,
+			mockedValues: &mocked{},
+		},
+		{
+			name: "failed: got an error from Convert",
 			args: &a,
-			mocked: &mocked{
-				getSubsErr: getSubsErr,
-			},
-			wantErr: getSubsErr,
-		},
-		{
-			name:   "there is no subscribers for dispatch",
-			args:   &a,
-			mocked: &mocked{},
-		},
-		{
-			name: "failed to convert currencies",
-			args: &a,
-			mocked: &mocked{
+			mockedValues: &mocked{
 				subscribers: subscribers,
 				dispatch:    invalidDispatch,
-				convertErr:  convertErr,
+				convertErr:  assert.AnError,
 			},
-			wantErr: convertErr,
+			wantErr: assert.AnError,
 		},
 		{
-			name: "failed to parse email template",
+			name: "failed: got an error while parsing the template",
 			args: &a,
-			mocked: &mocked{
+			mockedValues: &mocked{
 				subscribers: subscribers,
 				dispatch:    invalidDispatch,
 			},
 			wantErr: TemplateParseErr,
 		},
 		{
-			name: "failed to send emails",
+			name: "failed: got an error from mailman",
 			args: &a,
-			mocked: &mocked{
+			mockedValues: &mocked{
 				subscribers: subscribers,
 				dispatch:    dispatch,
 				parsedEmail: []byte("<div><span>test template</span></div>"),
-				sendErr:     sendErr,
+				sendErr:     assert.AnError,
 			},
-			wantErr: sendErr,
+			wantErr: assert.AnError,
 		},
 		{
-			name: "success",
+			name: "successfuly sent",
 			args: &a,
-			mocked: &mocked{
+			mockedValues: &mocked{
 				subscribers: subscribers,
 				dispatch:    dispatch,
 				parsedEmail: []byte("<div><span>test template</span></div>"),
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cleanup := setup(tt.mocked, tt.args)
+			cleanup := setup(tt.mockedValues, tt.args)
 			defer cleanup()
 
 			s := &dispatchService{
@@ -345,14 +333,14 @@ func Test_DispatchService_SendDispatch(t *testing.T) {
 				csClient:     csClientMock,
 				log:          loggerMock,
 			}
-			err := s.SendDispatch(tt.args.ctx, tt.args.dispatchId)
+			actualErr := s.SendDispatch(tt.args.ctx, tt.args.dispatchId)
 
 			if tt.wantErr != nil {
-				assert.ErrorIs(t, err, tt.wantErr)
+				assert.ErrorIs(t, actualErr, tt.wantErr)
 
 				return
 			}
-			assert.Nil(t, err)
+			assert.Nil(t, actualErr)
 		})
 	}
 }

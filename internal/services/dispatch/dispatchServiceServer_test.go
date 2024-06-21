@@ -2,7 +2,6 @@ package dispatch_service
 
 import (
 	"context"
-	"fmt"
 	config_mocks "subscription-api/internal/mocks/config"
 	services_mocks "subscription-api/internal/mocks/services"
 	"subscription-api/internal/services"
@@ -10,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -21,22 +19,18 @@ func Test_DispatchServiceServer_SubscribeForDispatch(t *testing.T) {
 		req *grpc.SubscribeForDispatchRequest
 	}
 	type mocked struct {
-		subscribeErr error
+		expectedSubscribeErr error
 	}
 
 	dsMock := services_mocks.NewDispatchService(t)
-	loggerMock := config_mocks.NewLogger(t)
-	internalError := fmt.Errorf("internal-error")
+	loggerMock := config_mocks.NewLogger()
 	setup := func(m *mocked, a *args) func() {
 		dsCall := dsMock.EXPECT().
 			SubscribeForDispatch(a.ctx, a.req.Email, a.req.DispatchId).
-			Once().Return(m.subscribeErr)
-		logCall := loggerMock.EXPECT().
-			Infof(mock.Anything, mock.Anything, mock.Anything)
+			Once().Return(m.expectedSubscribeErr)
 
 		return func() {
 			dsCall.Unset()
-			logCall.Unset()
 		}
 	}
 
@@ -49,40 +43,41 @@ func Test_DispatchServiceServer_SubscribeForDispatch(t *testing.T) {
 	}
 
 	tests := []struct {
-		name    string
-		args    *args
-		mocked  *mocked
-		want    *grpc.SubscribeForDispatchResponse
-		wantErr error
+		name         string
+		args         *args
+		mockedValues *mocked
+		want         *grpc.SubscribeForDispatchResponse
+		wantErr      error
 	}{
 		{
-			name:    "user already subscribed for this dispatch",
-			args:    arguments,
-			mocked:  &mocked{subscribeErr: services.UniqueViolationErr},
-			wantErr: status.Error(codes.AlreadyExists, services.UniqueViolationErr.Error()),
+			name:         "failed: user already subscribed for this dispatch",
+			args:         arguments,
+			mockedValues: &mocked{expectedSubscribeErr: services.UniqueViolationErr},
+			wantErr:      status.Error(codes.AlreadyExists, services.UniqueViolationErr.Error()),
 		},
 		{
-			name:    "dispatch with such id does not exist",
-			args:    arguments,
-			mocked:  &mocked{subscribeErr: services.NotFoundErr},
-			wantErr: status.Error(codes.NotFound, services.NotFoundErr.Error()),
+			name:         "failed: dispatch with such id does not exist",
+			args:         arguments,
+			mockedValues: &mocked{expectedSubscribeErr: services.NotFoundErr},
+			wantErr:      status.Error(codes.NotFound, services.NotFoundErr.Error()),
 		},
 		{
-			name:    "internal error occured",
-			args:    arguments,
-			mocked:  &mocked{subscribeErr: internalError},
-			wantErr: status.Error(codes.Internal, internalError.Error()),
+			name:         "failed: got unknown error from SubscribeForDispatch",
+			args:         arguments,
+			mockedValues: &mocked{expectedSubscribeErr: assert.AnError},
+			wantErr:      status.Error(codes.Internal, assert.AnError.Error()),
 		},
 		{
-			name:   "success",
-			args:   arguments,
-			mocked: &mocked{},
-			want:   &grpc.SubscribeForDispatchResponse{},
+			name:         "successfuly subscribed for a dispatch",
+			args:         arguments,
+			mockedValues: &mocked{},
+			want:         &grpc.SubscribeForDispatchResponse{},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cleanup := setup(tt.mocked, tt.args)
+			cleanup := setup(tt.mockedValues, tt.args)
 			defer cleanup()
 
 			s := &dispatchServiceServer{
@@ -109,26 +104,22 @@ func Test_DispatchServiceServer_SendDispatch(t *testing.T) {
 		req *grpc.SendDispatchRequest
 	}
 	type mocked struct {
-		sendErr error
+		expectedSendErr error
 	}
 
 	dsMock := services_mocks.NewDispatchService(t)
-	loggerMock := config_mocks.NewLogger(t)
+	loggerMock := config_mocks.NewLogger()
 
 	setup := func(m *mocked, a *args) func() {
 		dsCall := dsMock.EXPECT().
 			SendDispatch(a.ctx, a.req.DispatchId).
-			Once().Return(m.sendErr)
-		logCall := loggerMock.EXPECT().
-			Infof(mock.Anything, mock.Anything, mock.Anything)
+			Once().Return(m.expectedSendErr)
 
 		return func() {
 			dsCall.Unset()
-			logCall.Unset()
 		}
 	}
 
-	internalError := fmt.Errorf("internal-error")
 	arguments := &args{
 		ctx: context.Background(),
 		req: &grpc.SendDispatchRequest{
@@ -137,34 +128,35 @@ func Test_DispatchServiceServer_SendDispatch(t *testing.T) {
 	}
 
 	tests := []struct {
-		name    string
-		args    *args
-		mocked  *mocked
-		want    *grpc.SendDispatchResponse
-		wantErr error
+		name             string
+		args             *args
+		mockedValues     *mocked
+		expectedResponse *grpc.SendDispatchResponse
+		expectedErr      error
 	}{
 		{
-			name:    "dispatch not found",
-			args:    arguments,
-			mocked:  &mocked{sendErr: services.NotFoundErr},
-			wantErr: status.Error(codes.NotFound, services.NotFoundErr.Error()),
+			name:         "failed: dispatch withsuch id does not exist",
+			args:         arguments,
+			mockedValues: &mocked{expectedSendErr: services.NotFoundErr},
+			expectedErr:  status.Error(codes.NotFound, services.NotFoundErr.Error()),
 		},
 		{
-			name:    "internal error occured",
-			args:    arguments,
-			mocked:  &mocked{sendErr: internalError},
-			wantErr: status.Error(codes.Internal, internalError.Error()),
+			name:         "failed: got unknown error from SendDispatch",
+			args:         arguments,
+			mockedValues: &mocked{expectedSendErr: assert.AnError},
+			expectedErr:  status.Error(codes.Internal, assert.AnError.Error()),
 		},
 		{
-			name:   "success",
-			args:   arguments,
-			mocked: &mocked{},
-			want:   &grpc.SendDispatchResponse{},
+			name:             "dispatch was successfuly sent",
+			args:             arguments,
+			mockedValues:     &mocked{},
+			expectedResponse: &grpc.SendDispatchResponse{},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cleanup := setup(tt.mocked, tt.args)
+			cleanup := setup(tt.mockedValues, tt.args)
 			defer cleanup()
 
 			s := &dispatchServiceServer{
@@ -172,15 +164,15 @@ func Test_DispatchServiceServer_SendDispatch(t *testing.T) {
 				logger:                             loggerMock,
 				UnimplementedDispatchServiceServer: grpc.UnimplementedDispatchServiceServer{},
 			}
-			got, err := s.SendDispatch(tt.args.ctx, tt.args.req)
+			actualResponse, actualErr := s.SendDispatch(tt.args.ctx, tt.args.req)
 
-			assert.Equal(t, tt.want, got)
-			if tt.wantErr != nil {
-				assert.ErrorIs(t, err, tt.wantErr)
+			assert.Equal(t, tt.expectedResponse, actualResponse)
+			if tt.expectedErr != nil {
+				assert.ErrorIs(t, actualErr, tt.expectedErr)
 
 				return
 			}
-			assert.Nil(t, err)
+			assert.Nil(t, actualErr)
 		})
 	}
 }
@@ -191,23 +183,19 @@ func Test_DispatchServiceServer_GetAllDispatches(t *testing.T) {
 		req *grpc.GetAllDispatchesRequest
 	}
 	type mocked struct {
-		dispatches []services.DispatchData
-		getErr     error
+		expectedDispatches []services.DispatchData
+		expectedGetErr     error
 	}
 
 	dsMock := services_mocks.NewDispatchService(t)
-	loggerMock := config_mocks.NewLogger(t)
-	internalError := fmt.Errorf("internal-error")
+	loggerMock := config_mocks.NewLogger()
 	setup := func(m *mocked, a *args) func() {
 		dsCall := dsMock.EXPECT().
 			GetAllDispatches(a.ctx).
-			Once().Return(m.dispatches, m.getErr)
-		logCall := loggerMock.EXPECT().
-			Infof(mock.Anything, mock.Anything, mock.Anything)
+			Once().Return(m.expectedDispatches, m.expectedGetErr)
 
 		return func() {
 			dsCall.Unset()
-			logCall.Unset()
 		}
 	}
 
@@ -226,38 +214,39 @@ func Test_DispatchServiceServer_GetAllDispatches(t *testing.T) {
 	}
 
 	tests := []struct {
-		name    string
-		args    *args
-		mocked  *mocked
-		want    *grpc.GetAllDispatchesResponse
-		wantErr error
+		name             string
+		args             *args
+		mockedValues     *mocked
+		expectedResponse *grpc.GetAllDispatchesResponse
+		expectedErr      error
 	}{
 		{
-			name:    "internal err",
-			args:    arguments,
-			mocked:  &mocked{getErr: internalError},
-			wantErr: status.Error(codes.Internal, internalError.Error()),
+			name:         "failed: got unknown error from GetAllDispatches",
+			args:         arguments,
+			mockedValues: &mocked{expectedGetErr: assert.AnError},
+			expectedErr:  status.Error(codes.Internal, assert.AnError.Error()),
 		},
 		{
-			name:   "there is no dispatches",
-			args:   arguments,
-			mocked: &mocked{},
-			want: &grpc.GetAllDispatchesResponse{
+			name:         "success: there is no dispatches",
+			args:         arguments,
+			mockedValues: &mocked{},
+			expectedResponse: &grpc.GetAllDispatchesResponse{
 				Dispatches: []*grpc.DispatchData{},
 			},
 		},
 		{
-			name:   "success",
-			args:   arguments,
-			mocked: &mocked{dispatches: dispatches},
-			want: &grpc.GetAllDispatchesResponse{
+			name:         "success: got all dispatches",
+			args:         arguments,
+			mockedValues: &mocked{expectedDispatches: dispatches},
+			expectedResponse: &grpc.GetAllDispatchesResponse{
 				Dispatches: dispatchProtos,
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cleanup := setup(tt.mocked, tt.args)
+			cleanup := setup(tt.mockedValues, tt.args)
 			defer cleanup()
 
 			s := &dispatchServiceServer{
@@ -265,15 +254,15 @@ func Test_DispatchServiceServer_GetAllDispatches(t *testing.T) {
 				logger:                             loggerMock,
 				UnimplementedDispatchServiceServer: grpc.UnimplementedDispatchServiceServer{},
 			}
-			got, err := s.GetAllDispatches(tt.args.ctx, tt.args.req)
+			actualResponse, actualErr := s.GetAllDispatches(tt.args.ctx, tt.args.req)
 
-			assert.Equal(t, tt.want, got)
-			if tt.wantErr != nil {
-				assert.ErrorIs(t, err, tt.wantErr)
+			assert.Equal(t, tt.expectedResponse, actualResponse)
+			if tt.expectedErr != nil {
+				assert.ErrorIs(t, actualErr, tt.expectedErr)
 
 				return
 			}
-			assert.Nil(t, err)
+			assert.Nil(t, actualErr)
 		})
 	}
 }

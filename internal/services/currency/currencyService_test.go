@@ -19,6 +19,7 @@ func Test_CurrencyService_Convert(t *testing.T) {
 		rates      map[string]float64
 		convertErr error
 	}
+
 	currencyAPIMock := client_mocks.NewCurrencyAPIClient(t)
 	setup := func(m mocked) func() {
 		apiCall := currencyAPIMock.EXPECT().Convert(mock.Anything, mock.Anything, mock.Anything).
@@ -29,53 +30,56 @@ func Test_CurrencyService_Convert(t *testing.T) {
 		}
 	}
 	rates := map[string]float64{"UAH": 30}
+
 	tests := []struct {
-		name    string
-		args    args
-		mocked  mocked
-		want    map[string]float64
-		wantErr error
+		name          string
+		args          args
+		mockedValues  mocked
+		expectedRates map[string]float64
+		expectedErr   error
 	}{
 		{
-			name:    "no target currencies provided",
-			args:    args{},
-			want:    nil,
-			wantErr: services.InvalidArgumentErr,
+			name:          "failed: no target currencies provided",
+			args:          args{},
+			expectedRates: nil,
+			expectedErr:   services.InvalidArgumentErr,
 		},
 		{
 			name: "failed: unsupported currency provided",
 			args: args{
 				params: services.ConvertCurrencyParams{Base: "invalid", Target: []string{"uah"}},
 			},
-			want:    nil,
-			wantErr: services.InvalidArgumentErr,
+			mockedValues:  mocked{convertErr: assert.AnError},
+			expectedRates: nil,
+			expectedErr:   services.InvalidArgumentErr,
 		},
 		{
 			name: "successfuly converted currency",
 			args: args{
-				params: services.ConvertCurrencyParams{Base: "USD", Target: []string{"UAH"}},
+				params: services.ConvertCurrencyParams{Base: "usd", Target: []string{"UAH"}},
 			},
-			mocked:  mocked{rates: rates},
-			want:    rates,
-			wantErr: nil,
+			mockedValues:  mocked{rates: rates},
+			expectedRates: rates,
+			expectedErr:   nil,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			clenup := setup(tt.mocked)
-			defer clenup()
+			cleanup := setup(tt.mockedValues)
+			defer cleanup()
 
-			s := &currencyService{
+			service := &currencyService{
 				currencyAPIClient: currencyAPIMock,
 			}
-			got, err := s.Convert(tt.args.ctx, tt.args.params)
-			assert.Equal(t, tt.want, got)
-			if tt.wantErr != nil {
-				assert.ErrorIs(t, err, tt.wantErr)
+			actualRates, actualErr := service.Convert(tt.args.ctx, tt.args.params)
+			assert.Equal(t, tt.expectedRates, actualRates)
+			if tt.expectedErr != nil {
+				assert.ErrorIs(t, actualErr, tt.expectedErr)
 
 				return
 			}
-			assert.Nil(t, err)
+			assert.Nil(t, actualErr)
 		})
 	}
 }
