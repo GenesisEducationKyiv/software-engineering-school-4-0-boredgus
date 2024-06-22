@@ -12,7 +12,7 @@ import (
 
 type freeCurrencyAPIClient struct {
 	httpClient *clients.HTTPClient
-	logger     config.Logger
+	log        responseLogger
 }
 
 const (
@@ -23,26 +23,8 @@ const (
 func NewFreeCurrencyAPIClient(httpClient *clients.HTTPClient, logger config.Logger) *freeCurrencyAPIClient {
 	return &freeCurrencyAPIClient{
 		httpClient: httpClient,
-		logger:     logger,
+		log:        buildResponseLogger(logger, ExchangeRateAPILabel),
 	}
-}
-
-func (c *freeCurrencyAPIClient) logResponse(status int, err error, data map[string]any) {
-	if err != nil {
-		c.logger.Error(responseParams{
-			Issuer:             FreeCurrencyAPILabel,
-			ResponseStatusCode: status,
-			Error:              err.Error(),
-			Data:               data,
-		})
-
-		return
-	}
-	c.logger.Info(responseParams{
-		Issuer:             FreeCurrencyAPILabel,
-		ResponseStatusCode: status,
-		Data:               data,
-	})
 }
 
 // Gets latest exchange rates for specified currencies.
@@ -59,12 +41,12 @@ func (c *freeCurrencyAPIClient) Convert(
 	requestData := map[string]any{"base": baseCcy, "target": targetCcies}
 	if resp.StatusCode == http.StatusNotFound {
 		err = fmt.Errorf("%w: %s", UnsupportedCurrencyErr, baseCcy)
-		c.logResponse(resp.StatusCode, err, requestData)
+		c.log(resp.StatusCode, err, requestData)
 
 		return nil, fmt.Errorf("%w: %s", UnsupportedCurrencyErr, baseCcy)
 	}
 	if resp.StatusCode != http.StatusOK {
-		c.logResponse(resp.StatusCode, ServiceIsUnaccessibleErr, requestData)
+		c.log(resp.StatusCode, ServiceIsUnaccessibleErr, requestData)
 
 		return nil, ServiceIsUnaccessibleErr
 	}
@@ -72,7 +54,7 @@ func (c *freeCurrencyAPIClient) Convert(
 	var result map[string]any
 	if err = utils.ParseJSON(resp.Body, &result); err != nil {
 		err = fmt.Errorf("failed to parse response: %w", err)
-		c.logResponse(resp.StatusCode, err, requestData)
+		c.log(resp.StatusCode, err, requestData)
 
 		return nil, err
 	}
@@ -88,7 +70,7 @@ func (c *freeCurrencyAPIClient) Convert(
 	}
 
 	requestData["rates"] = rates
-	c.logResponse(resp.StatusCode, nil, requestData)
+	c.log(resp.StatusCode, nil, requestData)
 
 	return rates, nil
 }

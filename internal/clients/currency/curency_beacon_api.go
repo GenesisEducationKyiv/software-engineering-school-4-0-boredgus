@@ -18,33 +18,15 @@ const (
 type currencyBeaconAPIClient struct {
 	httpClient *clients.HTTPClient
 	apiKey     string
-	logger     config.Logger
+	log        responseLogger
 }
 
 func NewCurrencyBeaconAPIClient(httpClient *clients.HTTPClient, apiKey string, logger config.Logger) *currencyBeaconAPIClient {
 	return &currencyBeaconAPIClient{
 		httpClient: httpClient,
 		apiKey:     apiKey,
-		logger:     logger,
+		log:        buildResponseLogger(logger, CurrencyBeaconAPILabel),
 	}
-}
-
-func (c *currencyBeaconAPIClient) logResponse(status int, err error, data map[string]any) {
-	if err != nil {
-		c.logger.Error(responseParams{
-			Issuer:             CurrencyBeaconAPILabel,
-			ResponseStatusCode: status,
-			Error:              err.Error(),
-			Data:               data,
-		})
-
-		return
-	}
-	c.logger.Info(responseParams{
-		Issuer:             CurrencyBeaconAPILabel,
-		ResponseStatusCode: status,
-		Data:               data,
-	})
 }
 
 // Gets latest exchange rates for specified currencies.
@@ -68,13 +50,13 @@ func (c *currencyBeaconAPIClient) Convert(
 		}
 
 		if err = utils.ParseJSON(resp.Body, &parsedBody); err != nil {
-			c.logResponse(resp.StatusCode, fmt.Errorf("failed to parse response: %w", err), requestData)
+			c.log(resp.StatusCode, fmt.Errorf("failed to parse response: %w", err), requestData)
 
 			return nil, ServiceIsUnaccessibleErr
 		}
 
 		err = fmt.Errorf(parsedBody.Meta.ErrorType)
-		c.logResponse(resp.StatusCode, err, requestData)
+		c.log(resp.StatusCode, err, requestData)
 
 		return nil, err
 	}
@@ -86,7 +68,7 @@ func (c *currencyBeaconAPIClient) Convert(
 		// It's ok that on parse error we return UnsupportedCurrencyErr.
 		// When unsupported currency is passed as base currency, API returns empty array as rates value.
 		err := fmt.Errorf("%w: %s", UnsupportedCurrencyErr, baseCcy)
-		c.logResponse(resp.StatusCode, err, requestData)
+		c.log(resp.StatusCode, err, requestData)
 
 		return nil, err
 	}
@@ -100,7 +82,7 @@ func (c *currencyBeaconAPIClient) Convert(
 	}
 
 	requestData["rates"] = rates
-	c.logResponse(resp.StatusCode, nil, requestData)
+	c.log(resp.StatusCode, nil, requestData)
 
 	return rates, nil
 }

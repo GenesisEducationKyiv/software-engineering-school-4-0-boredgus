@@ -18,14 +18,14 @@ const (
 type ExchangeRateAPIClient struct {
 	apiKey     string
 	httpClient *clients.HTTPClient
-	logger     config.Logger
+	log        responseLogger
 }
 
 func NewExchangeRateAPIClient(httpClient *clients.HTTPClient, apiKey string, logger config.Logger) *ExchangeRateAPIClient {
 	return &ExchangeRateAPIClient{
 		apiKey:     apiKey,
 		httpClient: httpClient,
-		logger:     logger,
+		log:        buildResponseLogger(logger, ExchangeRateAPILabel),
 	}
 }
 
@@ -37,24 +37,6 @@ var exchangeRateAPIErrors = map[string]string{
 	"invalid-key":       "invalid API key provided",
 	"inactive-account":  "email address of account is not confirmed",
 	"quota-reached":     "account has reached the the number of requests allowed by plan of subscription",
-}
-
-func (c *ExchangeRateAPIClient) logResponse(status int, err error, data map[string]any) {
-	if err != nil {
-		c.logger.Error(responseParams{
-			Issuer:             ExchangeRateAPIBasePath,
-			ResponseStatusCode: status,
-			Error:              err.Error(),
-			Data:               data,
-		})
-
-		return
-	}
-	c.logger.Info(responseParams{
-		Issuer:             ExchangeRateAPIBasePath,
-		ResponseStatusCode: status,
-		Data:               data,
-	})
 }
 
 // Gets latest exchange rates for specified currencies.
@@ -74,13 +56,13 @@ func (c *ExchangeRateAPIClient) Convert(
 	}
 	if err = utils.ParseJSON(resp.Body, &parsedBody); err != nil {
 		err = fmt.Errorf("failed to parse body: %w", err)
-		c.logResponse(resp.StatusCode, err, requestData)
+		c.log(resp.StatusCode, err, requestData)
 
 		return nil, err
 	}
 	if errorMsg, ok := exchangeRateAPIErrors[parsedBody.ErrorType]; ok {
 		err = fmt.Errorf("%w: %v", services.FailedPreconditionErr, errorMsg)
-		c.logResponse(resp.StatusCode, err, requestData)
+		c.log(resp.StatusCode, err, requestData)
 
 		return nil, err
 	}
@@ -91,7 +73,7 @@ func (c *ExchangeRateAPIClient) Convert(
 	}
 
 	requestData["rates"] = rates
-	c.logResponse(resp.StatusCode, nil, requestData)
+	c.log(resp.StatusCode, nil, requestData)
 
 	return rates, nil
 }
