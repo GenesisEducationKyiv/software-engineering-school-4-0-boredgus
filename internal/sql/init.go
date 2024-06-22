@@ -22,11 +22,13 @@ func initMigrations(dialect string, db *sql.DB) error {
 //go:embed postgres/*.sql
 var potgresqlMigrations embed.FS
 
-func PostgeSQLMigrationsUp(scheme string, l goose.Logger) func(db *sql.DB) error {
+func PostgeSQLMigrationsUp(l goose.Logger) func(db *sql.DB) error {
 	return func(db *sql.DB) error {
-		goose.SetLogger(l)
+		if l != nil {
+			goose.SetLogger(l)
+		}
 		goose.SetBaseFS(potgresqlMigrations)
-		goose.SetTableName(fmt.Sprintf("%s.goose_db_version", scheme))
+		goose.SetTableName("public.goose_db_version")
 
 		return initMigrations(string(goose.DialectPostgres), db)
 	}

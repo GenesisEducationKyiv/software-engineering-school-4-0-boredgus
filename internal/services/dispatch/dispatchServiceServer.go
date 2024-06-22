@@ -45,7 +45,7 @@ func (s *dispatchServiceServer) SendDispatch(ctx context.Context, req *grpc.Send
 	s.log("SendDispatch", req.String())
 	err := s.service.SendDispatch(ctx, req.DispatchId)
 	if errors.Is(err, services.NotFoundErr) {
-		return nil, status.Error(codes.Canceled, err.Error())
+		return nil, status.Error(codes.NotFound, err.Error())
 	}
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -65,6 +65,9 @@ func (s *dispatchServiceServer) GetAllDispatches(ctx context.Context, req *grpc.
 	}
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
+	}
+	if len(allDispatches) == 0 {
+		return &grpc.GetAllDispatchesResponse{Dispatches: []*grpc.DispatchData{}}, nil
 	}
 
 	dispatches := make([]*grpc.DispatchData, 0, len(allDispatches))

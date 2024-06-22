@@ -12,6 +12,10 @@ type Email struct {
 	HTMLBody string
 }
 
+type Mailman interface {
+	Send(e Email) error
+}
+
 type Dialer interface {
 	DialAndSend(m ...*mail.Message) error
 }

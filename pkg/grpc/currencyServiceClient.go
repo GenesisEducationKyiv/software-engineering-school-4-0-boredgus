@@ -8,6 +8,10 @@ import (
 	"google.golang.org/grpc"
 )
 
+type CurrencyServiceClient interface {
+	Convert(ctx context.Context, params services.ConvertCurrencyParams) (map[string]float64, error)
+}
+
 type currencyServiceClient struct {
 	client grpc_client.CurrencyServiceClient
 }

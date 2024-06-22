@@ -5,9 +5,17 @@ mockname: "{{.InterfaceName}}"
 filename: "mock_{{.InterfaceName}}.go"
 
 packages:
-  subscription-api/config:
+  subscription-api/internal/controllers:
+    interfaces: 
+      Context:
+  subscription-api/internal/db:
     interfaces:
-      Logger:
+      DB:
+        config:
+          with-expecter: false
+  subscription-api/internal/mailing:
+    interfaces:
+      Mailman:
   subscription-api/internal/services:
     interfaces:
       CurrencyService:
@@ -33,7 +41,16 @@ packages:
         config:
           dir: "internal/mocks/repo"
           outpkg: "repo_mocks"
-      Store:
+  subscription-api/pkg/grpc:
+    interfaces:
+      CurrencyServiceClient:
         config:
-          dir: "internal/mocks/db"
-          outpkg: "db_mocks"
+          dir: "internal/mocks/clients"
+          outpkg: "client_mocks"
+      DispatchServiceClient:
+        config:
+          dir: "internal/mocks/clients"
+          outpkg: "client_mocks"
+        
+
+

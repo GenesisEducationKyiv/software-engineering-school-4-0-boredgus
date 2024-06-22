@@ -35,10 +35,12 @@ func main() {
 	lis, err := net.Listen("tcp", url)
 	utils.PanicOnError(err, fmt.Sprintf("failed to listen %s", url))
 
-	postgresqlDB := utils.Must(db.NewPostrgreSQL(
+	postgresqlDB, err := db.NewPostrgreSQL(
 		env.PostgreSQLConnString,
-		sql.PostgeSQLMigrationsUp("public", logger),
-	))
+		sql.PostgeSQLMigrationsUp(logger),
+	)
+	utils.PanicOnError(err, "failed toconnect to postgresql db")
+	defer postgresqlDB.Close()
 
 	store := store.NewStore(postgresqlDB, db.IsPqError)
 

@@ -8,6 +8,12 @@ import (
 	"google.golang.org/grpc"
 )
 
+type DispatchServiceClient interface {
+	SubscribeForDispatch(ctx context.Context, email, dispatchId string) error
+	SendDispatch(ctx context.Context, dispatchId string) error
+	GetAllDispatches(ctx context.Context) ([]services.DispatchData, error)
+}
+
 type dispatchServiceClient struct {
 	client dispatch_client.DispatchServiceClient
 }

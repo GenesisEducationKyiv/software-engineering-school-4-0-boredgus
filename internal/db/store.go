@@ -15,17 +15,30 @@ const (
 
 type ErrorCheckFunc func(error, Error) bool
 
+type WithTransaction interface {
+	BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
+}
+type Database interface {
+	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
+	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
+	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
+}
+type DatabaseWithTransaction interface {
+	Database
+	WithTransaction
+}
+
 type DB interface {
 	IsError(err error, errCode Error) bool
-	DB() *sql.DB
+	DB() Database
 }
 
 type store struct {
-	database   *sql.DB
+	database   DatabaseWithTransaction
 	checkError ErrorCheckFunc
 }
 
-func NewStore(db *sql.DB, errorF ErrorCheckFunc) *store {
+func NewStore(db DatabaseWithTransaction, errorF ErrorCheckFunc) *store {
 	return &store{database: db, checkError: errorF}
 }
 
@@ -49,6 +62,6 @@ func (s *store) IsError(err error, errCode Error) bool {
 	return s.checkError(err, errCode)
 }
 
-func (s *store) DB() *sql.DB {
+func (s *store) DB() Database {
 	return s.database
 }

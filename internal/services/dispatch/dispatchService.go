@@ -101,19 +101,21 @@ func (s *dispatchService) SubscribeForDispatch(ctx context.Context, email, dispa
 	return nil
 }
 
+var TemplateParseErr = errors.New("template error")
+
 func (s *dispatchService) parseHTMLTemplate(templateName string, data any) ([]byte, error) {
 	templateFile := mailing.PathToTemplate(templateName + ".html")
 	tmpl, err := template.ParseFiles(templateFile)
 	if err != nil {
-		s.log.Errorf("failed to parse html template %s: %v", templateFile, err)
+		s.log.Errorf("failed to parse html template %s: %v", templateName, err)
 
-		return nil, err
+		return nil, errors.Join(TemplateParseErr, err)
 	}
 	var buffer bytes.Buffer
 	if err := tmpl.Execute(&buffer, data); err != nil {
-		s.log.Errorf("failed to execute html template %s: %v", templateFile, err)
+		s.log.Errorf("failed to execute html template %s: %v", templateName, err)
 
-		return nil, err
+		return nil, errors.Join(TemplateParseErr, err)
 	}
 
 	return buffer.Bytes(), nil
@@ -132,9 +134,6 @@ func (s *dispatchService) SendDispatch(ctx context.Context, dispatchId string) e
 		dsptch, err := s.dispatchRepo.GetDispatchByID(ctx, d, dispatchId)
 		if err != nil {
 			return err
-		}
-		if dsptch.CountOfSubscribers == 0 {
-			return nil
 		}
 		dispatch = dsptch
 		subscribers, err = s.dispatchRepo.GetSubscribersOfDispatch(ctx, d, dispatchId)

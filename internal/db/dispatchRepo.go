@@ -47,9 +47,9 @@ const getSubscribersOfDispatchQ string = `
 	from subs."currency_dispatches" cd
 	left join subs."currency_subscriptions" cs
 	on cs.dispatch_id = cd.id
-	left join users u 
+	left join subs."users" u 
 	on cs.user_id = u.id
-	where cd.u_id = $1;
+	where cd.u_id = $1 and u.email is not null;
 `
 
 func (r *DispatchRepo) GetSubscribersOfDispatch(ctx context.Context, d DB, dispatchId string) ([]string, error) {
@@ -58,6 +58,7 @@ func (r *DispatchRepo) GetSubscribersOfDispatch(ctx context.Context, d DB, dispa
 	if d.IsError(err, InvalidTextRepresentation) {
 		return result, fmt.Errorf("%w: incorrect format for uuid", services.InvalidArgumentErr)
 	}
+
 	for rows.Next() {
 		var email string
 		if err := rows.Scan(&email); err != nil {
@@ -70,7 +71,7 @@ func (r *DispatchRepo) GetSubscribersOfDispatch(ctx context.Context, d DB, dispa
 }
 
 const getAllDispatchesQ = `
-	select cd.u_id, cd.label, cd.template_name, cd.base_currency , cd.target_currencies, cd.send_at, count(cs.user_id) subs_count
+	select cd.u_id, cd.label, cd.send_at, count(cs.user_id) subs_count
 	from subs."currency_dispatches" cd
 	left join subs."currency_subscriptions" cs
 	on cs.dispatch_id = cd.id
