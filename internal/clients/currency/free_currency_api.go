@@ -43,7 +43,7 @@ func (c *freeCurrencyAPIClient) Convert(
 		err = fmt.Errorf("%w: %s", UnsupportedCurrencyErr, baseCcy)
 		c.log(resp.StatusCode, err, requestData)
 
-		return nil, fmt.Errorf("%w: %s", UnsupportedCurrencyErr, baseCcy)
+		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
 		c.log(resp.StatusCode, ServiceIsUnaccessibleErr, requestData)

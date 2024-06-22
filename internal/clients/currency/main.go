@@ -33,21 +33,18 @@ func (p responseParams) String() string {
 
 func buildResponseLogger(logger config.Logger, issuer string) responseLogger {
 	return func(status int, err error, data map[string]any) {
-		if err != nil {
-			logger.Error(responseParams{
-				Issuer:     issuer,
-				StatusCode: status,
-				Error:      err.Error(),
-				Data:       data,
-			})
-
-			return
-		}
-		logger.Info(responseParams{
+		params := responseParams{
 			Issuer:     issuer,
 			StatusCode: status,
 			Data:       data,
-		})
+		}
 
+		if err != nil {
+			params.Error = err.Error()
+			logger.Error(params)
+
+			return
+		}
+		logger.Info(params)
 	}
 }
