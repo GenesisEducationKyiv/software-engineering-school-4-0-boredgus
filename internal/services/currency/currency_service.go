@@ -2,6 +2,7 @@ package currency_service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"subscription-api/internal/entities"
 	"subscription-api/internal/services"
@@ -24,10 +25,9 @@ func (s *currencyService) Convert(ctx context.Context, params services.ConvertCu
 	if len(params.Target) == 0 {
 		return nil, fmt.Errorf("%w: no target currencies provided", services.InvalidArgumentErr)
 	}
-	for _, ccy := range entities.CurrenciesFromString(append(params.Target, params.Base)) {
-		if !ccy.IsSupported() {
-			return nil, fmt.Errorf("%w: currency %s is not supported", services.InvalidArgumentErr, ccy)
-		}
+
+	if err := entities.ValidateCurrencies(append(params.Target, params.Base)); err != nil {
+		return nil, errors.Join(services.InvalidArgumentErr, err)
 	}
 
 	return s.currencyAPIClient.Convert(ctx, params.Base, params.Target)

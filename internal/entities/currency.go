@@ -1,6 +1,10 @@
 package entities
 
-import "strings"
+import (
+	"fmt"
+	"slices"
+	"strings"
+)
 
 type Currency string
 
@@ -9,23 +13,22 @@ const (
 	UkrainianHryvnia Currency = "UAH"
 )
 
-var SupportedCurrencies = map[Currency]struct{}{
-	AmericanDollar:   {},
-	UkrainianHryvnia: {},
+// GetAllCurrencies returns all supported currencies
+func GetAllCurrencies() []Currency {
+	return []Currency{AmericanDollar, UkrainianHryvnia}
 }
 
-func (c Currency) IsSupported() bool {
-	_, ok := SupportedCurrencies[c]
+// ValidateCurrencies checks every element of passed array whether it is supported currency.
+func ValidateCurrencies(currencies []string) error {
+	allCurrencies := GetAllCurrencies()
 
-	return ok
-}
+	for _, ccy := range currencies {
+		currency := Currency(strings.ToUpper(ccy))
 
-// CurrenciesFromString converts []string to []Currency.
-func CurrenciesFromString(data []string) []Currency {
-	res := make([]Currency, len(data))
-	for i, v := range data {
-		res[i] = Currency(strings.ToUpper(v))
+		if !slices.Contains(allCurrencies, currency) {
+			return fmt.Errorf("%s is not supported currency", currency)
+		}
 	}
 
-	return res
+	return nil
 }
