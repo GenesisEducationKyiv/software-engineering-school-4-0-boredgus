@@ -49,6 +49,8 @@ func (c *ExchangeRateAPIClient) Convert(
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
+
 	requestData := map[string]any{"base": baseCcy, "target": targetCcies}
 	var parsedBody struct {
 		ErrorType string             `json:"error-type,omitempty"`

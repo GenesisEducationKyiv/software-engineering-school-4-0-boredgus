@@ -37,6 +37,7 @@ func (c *freeCurrencyAPIClient) Convert(
 	if err != nil {
 		return nil, fmt.Errorf("failed to perform request: %w", err)
 	}
+	defer resp.Body.Close()
 
 	requestData := map[string]any{"base": baseCcy, "target": targetCcies}
 	if resp.StatusCode == http.StatusNotFound {
