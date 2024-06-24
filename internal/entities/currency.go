@@ -6,26 +6,22 @@ import (
 	"strings"
 )
 
-type Currency string
-
 const (
-	AmericanDollar   Currency = "USD"
-	UkrainianHryvnia Currency = "UAH"
+	AmericanDollar   string = "USD"
+	UkrainianHryvnia string = "UAH"
 )
 
-// GetAllCurrencies returns all supported currencies
-func GetAllCurrencies() []Currency {
-	return []Currency{AmericanDollar, UkrainianHryvnia}
+var allSupportedCurrencies = []string{
+	AmericanDollar,
+	UkrainianHryvnia,
 }
 
 // ValidateCurrencies checks every element of passed array whether it is supported currency.
 func ValidateCurrencies(currencies []string) error {
-	allCurrencies := GetAllCurrencies()
-
 	for _, ccy := range currencies {
-		currency := Currency(strings.ToUpper(ccy))
+		currency := strings.ToUpper(ccy)
 
-		if !slices.Contains(allCurrencies, currency) {
+		if !slices.Contains(allSupportedCurrencies, currency) {
 			return fmt.Errorf("%s is not supported currency", currency)
 		}
 	}
