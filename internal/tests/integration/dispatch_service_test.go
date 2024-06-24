@@ -52,7 +52,6 @@ type (
 		pgContainer  *tests.PostgresContainer
 		dispatchRepo dispatch_service.DispatchRepo
 		dbConnection *sql.DB
-		store        Store
 
 		logger  config.Logger
 		mailman *stubs.MailmanStub
@@ -97,18 +96,18 @@ func (s *DispatchServiceSuite) SetupSuite() {
 	s.NoErrorf(err, "failed to create postgres container")
 	s.pgContainer = pgContainer
 
-	s.dispatchRepo = store.NewDispatchRepo()
 	dbConnection, err := db.NewPostrgreSQL(
 		s.pgContainer.ConnectionString,
 		sql_pkg.PostgeSQLMigrationsUp(nil),
 	)
 	s.NoError(err)
 	s.dbConnection = dbConnection
-	s.store = store.NewStore(dbConnection, db.IsPqError)
+	storage := store.NewStore(dbConnection, db.IsPqError)
+	s.dispatchRepo = store.NewDispatchRepo(storage)
 
 	serviceParams := &dispatch_service.DispatchServiceParams{
 		Logger:          s.logger,
-		Store:           s.store,
+		Store:           storage,
 		Mailman:         s.mailman,
 		CurrencyService: grpc_client.NewCurrencyServiceClient(connToCurrencyService),
 	}
@@ -160,7 +159,7 @@ func (s *DispatchServiceSuite) Test_SubscribeForDispatch_Success() {
 
 	s.NoError(s.dispatchService.SubscribeForDispatch(ctx, emailToSubscribe, dispatchID))
 
-	subscribers, err := s.dispatchRepo.GetSubscribersOfDispatch(ctx, s.store, dispatchID)
+	subscribers, err := s.dispatchRepo.GetSubscribersOfDispatch(ctx, dispatchID)
 	s.NoError(err)
 	s.True(slices.Contains(subscribers, emailToSubscribe))
 }

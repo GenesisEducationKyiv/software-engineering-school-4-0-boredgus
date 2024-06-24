@@ -8,10 +8,12 @@ import (
 	"subscription-api/internal/services"
 )
 
-type DispatchRepo struct{}
+type DispatchRepo struct {
+	db DB
+}
 
-func NewDispatchRepo() *DispatchRepo {
-	return &DispatchRepo{}
+func NewDispatchRepo(db DB) *DispatchRepo {
+	return &DispatchRepo{db: db}
 }
 
 const getDispatchByIdQ string = `
@@ -23,11 +25,11 @@ const getDispatchByIdQ string = `
 	group by cd.id;
 `
 
-func (r *DispatchRepo) GetDispatchByID(ctx context.Context, db DB, dispatchId string) (entities.CurrencyDispatch, error) {
+func (r *DispatchRepo) GetDispatchByID(ctx context.Context, dispatchId string) (entities.CurrencyDispatch, error) {
 	var dispatch entities.CurrencyDispatch
-	row := db.DB().QueryRowContext(ctx, getDispatchByIdQ, dispatchId)
+	row := r.db.QueryRowContext(ctx, getDispatchByIdQ, dispatchId)
 	err := row.Err()
-	if err != nil && db.IsError(err, InvalidTextRepresentation) {
+	if err != nil && r.db.IsError(err, InvalidTextRepresentation) {
 		return dispatch, fmt.Errorf("%w: incorrect format for uuid", services.InvalidArgumentErr)
 	}
 	if err != nil {
@@ -52,10 +54,10 @@ const getSubscribersOfDispatchQ string = `
 	where cd.u_id = $1 and u.email is not null;
 `
 
-func (r *DispatchRepo) GetSubscribersOfDispatch(ctx context.Context, d DB, dispatchId string) ([]string, error) {
+func (r *DispatchRepo) GetSubscribersOfDispatch(ctx context.Context, dispatchId string) ([]string, error) {
 	var result []string
-	rows, err := d.DB().QueryContext(ctx, getSubscribersOfDispatchQ, dispatchId)
-	if d.IsError(err, InvalidTextRepresentation) {
+	rows, err := r.db.QueryContext(ctx, getSubscribersOfDispatchQ, dispatchId)
+	if r.db.IsError(err, InvalidTextRepresentation) {
 		return result, fmt.Errorf("%w: incorrect format for uuid", services.InvalidArgumentErr)
 	}
 
@@ -78,9 +80,9 @@ const getAllDispatchesQ = `
 	group by cd.id;
 `
 
-func (r *DispatchRepo) GetAllDispatches(ctx context.Context, db DB) ([]services.DispatchData, error) {
+func (r *DispatchRepo) GetAllDispatches(ctx context.Context) ([]services.DispatchData, error) {
 	result := make([]services.DispatchData, 0, 5) // nolint:mnd
-	rows, err := db.DB().QueryContext(ctx, getAllDispatchesQ)
+	rows, err := r.db.QueryContext(ctx, getAllDispatchesQ)
 	if err != nil {
 		return nil, err
 	}

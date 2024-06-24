@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"database/sql"
-	"fmt"
 )
 
 type Error int
@@ -30,38 +29,30 @@ type DatabaseWithTransaction interface {
 
 type DB interface {
 	IsError(err error, errCode Error) bool
-	DB() Database
+	Database
 }
 
 type store struct {
-	database   DatabaseWithTransaction
+	db         Database
 	checkError ErrorCheckFunc
 }
 
-func NewStore(db DatabaseWithTransaction, errorF ErrorCheckFunc) *store {
-	return &store{database: db, checkError: errorF}
-}
-
-func (s *store) WithTx(ctx context.Context, f func(DB) error) error {
-	tx, err := s.database.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelDefault})
-	if err != nil {
-		return err
-	}
-	if err = f(s); err != nil {
-		if rbErr := tx.Rollback(); rbErr != nil {
-			return fmt.Errorf("failed to rollback transaction: %w: %w", err, rbErr)
-		}
-
-		return err
-	}
-
-	return tx.Commit()
+func NewStore(db Database, errorF ErrorCheckFunc) *store {
+	return &store{db: db, checkError: errorF}
 }
 
 func (s *store) IsError(err error, errCode Error) bool {
 	return s.checkError(err, errCode)
 }
 
-func (s *store) DB() Database {
-	return s.database
+func (s *store) QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row {
+	return s.db.QueryRowContext(ctx, query, args...)
+}
+
+func (s *store) QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
+	return s.db.QueryContext(ctx, query, args...)
+}
+
+func (s *store) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
+	return s.db.ExecContext(ctx, query, args...)
 }

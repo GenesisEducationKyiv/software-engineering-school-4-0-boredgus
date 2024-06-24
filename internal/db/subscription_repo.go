@@ -6,10 +6,12 @@ import (
 	"subscription-api/internal/services"
 )
 
-type subRepo struct{}
+type subRepo struct {
+	db DB
+}
 
-func NewSubRepo() *subRepo {
-	return &subRepo{}
+func NewSubRepo(db DB) *subRepo {
+	return &subRepo{db: db}
 }
 
 const subscribeForQ string = `
@@ -29,9 +31,9 @@ type SubscriptionData struct {
 	Email, Dispatch string
 }
 
-func (s *subRepo) CreateSubscription(ctx context.Context, d DB, args SubscriptionData) error {
-	_, err := d.DB().ExecContext(ctx, subscribeForQ, args.Email, args.Dispatch)
-	if d.IsError(err, UniqueViolation) {
+func (r *subRepo) CreateSubscription(ctx context.Context, args SubscriptionData) error {
+	_, err := r.db.ExecContext(ctx, subscribeForQ, args.Email, args.Dispatch)
+	if r.db.IsError(err, UniqueViolation) {
 		return fmt.Errorf("%w: user has already subscribed for this dispatch", services.UniqueViolationErr)
 	}
 

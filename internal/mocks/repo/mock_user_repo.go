@@ -4,7 +4,6 @@ package repo_mocks
 
 import (
 	context "context"
-	db "subscription-api/internal/db"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -22,17 +21,17 @@ func (_m *UserRepo) EXPECT() *UserRepo_Expecter {
 	return &UserRepo_Expecter{mock: &_m.Mock}
 }
 
-// CreateUser provides a mock function with given fields: ctx, _a1, email
-func (_m *UserRepo) CreateUser(ctx context.Context, _a1 db.DB, email string) error {
-	ret := _m.Called(ctx, _a1, email)
+// CreateUser provides a mock function with given fields: ctx, email
+func (_m *UserRepo) CreateUser(ctx context.Context, email string) error {
+	ret := _m.Called(ctx, email)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateUser")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, db.DB, string) error); ok {
-		r0 = rf(ctx, _a1, email)
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, email)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -47,15 +46,14 @@ type UserRepo_CreateUser_Call struct {
 
 // CreateUser is a helper method to define mock.On call
 //   - ctx context.Context
-//   - _a1 db.DB
 //   - email string
-func (_e *UserRepo_Expecter) CreateUser(ctx interface{}, _a1 interface{}, email interface{}) *UserRepo_CreateUser_Call {
-	return &UserRepo_CreateUser_Call{Call: _e.mock.On("CreateUser", ctx, _a1, email)}
+func (_e *UserRepo_Expecter) CreateUser(ctx interface{}, email interface{}) *UserRepo_CreateUser_Call {
+	return &UserRepo_CreateUser_Call{Call: _e.mock.On("CreateUser", ctx, email)}
 }
 
-func (_c *UserRepo_CreateUser_Call) Run(run func(ctx context.Context, _a1 db.DB, email string)) *UserRepo_CreateUser_Call {
+func (_c *UserRepo_CreateUser_Call) Run(run func(ctx context.Context, email string)) *UserRepo_CreateUser_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(db.DB), args[2].(string))
+		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
@@ -65,7 +63,7 @@ func (_c *UserRepo_CreateUser_Call) Return(_a0 error) *UserRepo_CreateUser_Call 
 	return _c
 }
 
-func (_c *UserRepo_CreateUser_Call) RunAndReturn(run func(context.Context, db.DB, string) error) *UserRepo_CreateUser_Call {
+func (_c *UserRepo_CreateUser_Call) RunAndReturn(run func(context.Context, string) error) *UserRepo_CreateUser_Call {
 	_c.Call.Return(run)
 	return _c
 }
