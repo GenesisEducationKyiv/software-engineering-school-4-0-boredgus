@@ -16,15 +16,17 @@ var allSupportedCurrencies = []string{
 	UkrainianHryvnia,
 }
 
-// ValidateCurrencies checks every element of passed array whether it is supported currency.
-func ValidateCurrencies(currencies []string) error {
-	for _, ccy := range currencies {
+// MakeCurrencies validates provided data whether it is supportedd currency and returns .
+func MakeCurrencies(currencies []string) ([]string, error) {
+	ccies := make([]string, len(currencies))
+	for i, ccy := range currencies {
 		currency := strings.ToUpper(ccy)
 
 		if !slices.Contains(allSupportedCurrencies, currency) {
-			return fmt.Errorf("%s is not supported currency", currency)
+			return nil, fmt.Errorf("%s is not supported currency", currency)
 		}
+		ccies[i] = currency
 	}
 
-	return nil
+	return ccies, nil
 }

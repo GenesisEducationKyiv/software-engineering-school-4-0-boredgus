@@ -26,9 +26,10 @@ func (s *currencyService) Convert(ctx context.Context, params services.ConvertCu
 		return nil, fmt.Errorf("%w: no target currencies provided", services.InvalidArgumentErr)
 	}
 
-	if err := entities.ValidateCurrencies(append(params.Target, params.Base)); err != nil {
+	ccies, err := entities.MakeCurrencies(append(params.Target, params.Base))
+	if err != nil {
 		return nil, errors.Join(services.InvalidArgumentErr, err)
 	}
 
-	return s.currencyAPIClient.Convert(ctx, params.Base, params.Target)
+	return s.currencyAPIClient.Convert(ctx, ccies[0], ccies[1:])
 }
