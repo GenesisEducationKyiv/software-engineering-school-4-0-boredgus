@@ -41,28 +41,26 @@ func main() {
 	utils.PanicOnError(err, "failed toconnect to postgresql db")
 	defer postgresqlDB.Close()
 
-	store := store.NewStore(postgresqlDB, db.IsPqError)
+	storage := store.NewStore(postgresqlDB, db.IsPqError)
 
-	// creation of mailman
-	mailman := mailing.NewMailman(mailing.SMTPParams{
+	smtpParams := mailing.SMTPParams{
 		Host:     env.SMTPHost,
 		Port:     env.SMTPPort,
 		Email:    env.SMTPEmail,
 		Name:     env.SMTPUsername,
 		Password: env.SMTPPassword,
-	})
+	}
 
 	// initialization of dispatch service server
-	serviceParams := &dispatch_service.DispatchServiceParams{
-		Store:           store,
-		Logger:          logger,
-		Mailman:         mailman,
-		CurrencyService: grpc_client.NewCurrencyServiceClient(currencyServiceConn),
-	}
-	dispatchServiceServer := dispatch_service.NewDispatchServiceServer(
-		dispatch_service.NewDispatchService(serviceParams),
+	dispatchService := dispatch_service.NewDispatchService(
 		logger,
+		mailing.NewMailman(smtpParams),
+		grpc_client.NewCurrencyServiceClient(currencyServiceConn),
+		store.NewUserRepo(storage),
+		store.NewSubRepo(storage),
+		store.NewDispatchRepo(storage),
 	)
+	dispatchServiceServer := dispatch_service.NewDispatchServiceServer(dispatchService, logger)
 
 	// starting of grpc server
 	server := grpc.NewServer()

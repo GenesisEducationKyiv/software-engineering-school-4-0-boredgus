@@ -105,14 +105,14 @@ func (s *DispatchServiceSuite) SetupSuite() {
 	storage := store.NewStore(dbConnection, db.IsPqError)
 	s.dispatchRepo = store.NewDispatchRepo(storage)
 
-	serviceParams := &dispatch_service.DispatchServiceParams{
-		Logger:          s.logger,
-		Store:           storage,
-		Mailman:         s.mailman,
-		CurrencyService: grpc_client.NewCurrencyServiceClient(connToCurrencyService),
-	}
-
-	s.dispatchService = dispatch_service.NewDispatchService(serviceParams)
+	s.dispatchService = dispatch_service.NewDispatchService(
+		s.logger,
+		s.mailman,
+		grpc_client.NewCurrencyServiceClient(connToCurrencyService),
+		store.NewUserRepo(storage),
+		store.NewSubRepo(storage),
+		s.dispatchRepo,
+	)
 }
 
 func (s *DispatchServiceSuite) TearDownSuite() {

@@ -48,21 +48,21 @@ type dispatchService struct {
 	csClient     CurrencyServiceClient
 }
 
-type DispatchServiceParams struct {
-	Store           Store
-	Logger          config.Logger
-	Mailman         Mailman
-	CurrencyService CurrencyServiceClient
-}
-
-func NewDispatchService(params *DispatchServiceParams) *dispatchService {
+func NewDispatchService(
+	logger config.Logger,
+	mailman Mailman,
+	currencyService CurrencyServiceClient,
+	userRepo UserRepo,
+	subRepo SubRepo,
+	dispatchRepo DispatchRepo,
+) *dispatchService {
 	return &dispatchService{
-		userRepo:     db.NewUserRepo(params.Store),
-		subRepo:      db.NewSubRepo(params.Store),
-		dispatchRepo: db.NewDispatchRepo(params.Store),
-		mailman:      params.Mailman,
-		csClient:     params.CurrencyService,
-		log:          params.Logger,
+		userRepo:     userRepo,
+		subRepo:      subRepo,
+		dispatchRepo: dispatchRepo,
+		mailman:      mailman,
+		csClient:     currencyService,
+		log:          logger,
 	}
 }
 
