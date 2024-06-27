@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package main;
+option go_package = "./";
+
+// import "google/protobuf/timestamp.proto";
+
+service DispatchService {
+  rpc SubscribeForDispatch(SubscribeForDispatchRequest) returns (SubscribeForDispatchResponse) {}
+  rpc SendDispatch(SendDispatchRequest) returns (SendDispatchResponse) {}
+  rpc GetAllDispatches(GetAllDispatchesRequest) returns (GetAllDispatchesResponse) {}
+}
+
+message SubscribeForDispatchRequest {
+  string email = 1;
+  string dispatch_id = 2;
+}
+
+message SubscribeForDispatchResponse {}
+
+message SendDispatchRequest {
+  string dispatch_id = 1;
+}
+
+message SendDispatchResponse {}
+
+message GetAllDispatchesRequest {}
+
+message DispatchData {
+  string id = 1;
+  // string baseCurrency = 2;
+  // repeated string targetCurrencies = 3;
+  string send_at = 4;
+  int64 countOfSubscribers = 5;
+  string label = 6;
+}
+
+message GetAllDispatchesResponse {
+  repeated DispatchData dispatches = 1;
+}
