@@ -45,15 +45,19 @@ func Test_CurrencyService_Convert(t *testing.T) {
 			expectedErr:   services.InvalidArgumentErr,
 		},
 		{
-			name:          "failed: error from Convert",
-			args:          args{},
+			name: "failed: unsupported currency provided",
+			args: args{
+				params: services.ConvertCurrencyParams{Base: "invalid", Target: []string{"uah"}},
+			},
 			mockedValues:  mocked{convertErr: assert.AnError},
 			expectedRates: nil,
 			expectedErr:   services.InvalidArgumentErr,
 		},
 		{
-			name:          "successfuly converted currency",
-			args:          args{params: services.ConvertCurrencyParams{Target: []string{"UAH"}}},
+			name: "successfuly converted currency",
+			args: args{
+				params: services.ConvertCurrencyParams{Base: "usd", Target: []string{"UAH"}},
+			},
 			mockedValues:  mocked{rates: rates},
 			expectedRates: rates,
 			expectedErr:   nil,

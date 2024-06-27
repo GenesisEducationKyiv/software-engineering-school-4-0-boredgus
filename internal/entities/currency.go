@@ -1,28 +1,32 @@
 package entities
 
-type Currency string
-
-const (
-	AmericanDollar   Currency = "USD"
-	UkrainianHryvnia Currency = "UAH"
+import (
+	"fmt"
+	"slices"
+	"strings"
 )
 
-var SupportedCurrencies = []Currency{AmericanDollar, UkrainianHryvnia}
+const (
+	AmericanDollar   string = "USD"
+	UkrainianHryvnia string = "UAH"
+)
 
-func (c Currency) IsSupported() bool {
-	for _, cur := range SupportedCurrencies {
-		if c == cur {
-			return true
-		}
-	}
-
-	return false
+var allSupportedCurrencies = []string{
+	AmericanDollar,
+	UkrainianHryvnia,
 }
-func FromString(data []string) []Currency {
-	res := make([]Currency, len(data))
-	for i, v := range data {
-		res[i] = Currency(v)
+
+// MakeCurrencies validates provided data whether it is supportedd currency and returns .
+func MakeCurrencies(currencies []string) ([]string, error) {
+	ccies := make([]string, len(currencies))
+	for i, ccy := range currencies {
+		currency := strings.ToUpper(ccy)
+
+		if !slices.Contains(allSupportedCurrencies, currency) {
+			return nil, fmt.Errorf("%s is not supported currency", currency)
+		}
+		ccies[i] = currency
 	}
 
-	return res
+	return ccies, nil
 }

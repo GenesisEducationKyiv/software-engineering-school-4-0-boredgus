@@ -22,17 +22,17 @@ func (_m *SubRepo) EXPECT() *SubRepo_Expecter {
 	return &SubRepo_Expecter{mock: &_m.Mock}
 }
 
-// CreateSubscription provides a mock function with given fields: ctx, _a1, args
-func (_m *SubRepo) CreateSubscription(ctx context.Context, _a1 db.DB, args db.SubscriptionData) error {
-	ret := _m.Called(ctx, _a1, args)
+// CreateSubscription provides a mock function with given fields: ctx, args
+func (_m *SubRepo) CreateSubscription(ctx context.Context, args db.SubscriptionData) error {
+	ret := _m.Called(ctx, args)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateSubscription")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, db.DB, db.SubscriptionData) error); ok {
-		r0 = rf(ctx, _a1, args)
+	if rf, ok := ret.Get(0).(func(context.Context, db.SubscriptionData) error); ok {
+		r0 = rf(ctx, args)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -47,15 +47,14 @@ type SubRepo_CreateSubscription_Call struct {
 
 // CreateSubscription is a helper method to define mock.On call
 //   - ctx context.Context
-//   - _a1 db.DB
 //   - args db.SubscriptionData
-func (_e *SubRepo_Expecter) CreateSubscription(ctx interface{}, _a1 interface{}, args interface{}) *SubRepo_CreateSubscription_Call {
-	return &SubRepo_CreateSubscription_Call{Call: _e.mock.On("CreateSubscription", ctx, _a1, args)}
+func (_e *SubRepo_Expecter) CreateSubscription(ctx interface{}, args interface{}) *SubRepo_CreateSubscription_Call {
+	return &SubRepo_CreateSubscription_Call{Call: _e.mock.On("CreateSubscription", ctx, args)}
 }
 
-func (_c *SubRepo_CreateSubscription_Call) Run(run func(ctx context.Context, _a1 db.DB, args db.SubscriptionData)) *SubRepo_CreateSubscription_Call {
+func (_c *SubRepo_CreateSubscription_Call) Run(run func(ctx context.Context, args db.SubscriptionData)) *SubRepo_CreateSubscription_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(db.DB), args[2].(db.SubscriptionData))
+		run(args[0].(context.Context), args[1].(db.SubscriptionData))
 	})
 	return _c
 }
@@ -65,7 +64,7 @@ func (_c *SubRepo_CreateSubscription_Call) Return(_a0 error) *SubRepo_CreateSubs
 	return _c
 }
 
-func (_c *SubRepo_CreateSubscription_Call) RunAndReturn(run func(context.Context, db.DB, db.SubscriptionData) error) *SubRepo_CreateSubscription_Call {
+func (_c *SubRepo_CreateSubscription_Call) RunAndReturn(run func(context.Context, db.SubscriptionData) error) *SubRepo_CreateSubscription_Call {
 	_c.Call.Return(run)
 	return _c
 }

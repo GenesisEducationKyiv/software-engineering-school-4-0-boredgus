@@ -6,10 +6,12 @@ import (
 	"subscription-api/internal/services"
 )
 
-type UserRepo struct{}
+type UserRepo struct {
+	db DB
+}
 
-func NewUserRepo() *UserRepo {
-	return &UserRepo{}
+func NewUserRepo(db DB) *UserRepo {
+	return &UserRepo{db: db}
 }
 
 const createUserQ string = `
@@ -17,9 +19,9 @@ const createUserQ string = `
 	values ($1);
 `
 
-func (r *UserRepo) CreateUser(ctx context.Context, d DB, email string) error {
-	_, err := d.DB().ExecContext(ctx, createUserQ, email)
-	if d.IsError(err, UniqueViolation) {
+func (r *UserRepo) CreateUser(ctx context.Context, email string) error {
+	_, err := r.db.ExecContext(ctx, createUserQ, email)
+	if r.db.IsError(err, UniqueViolation) {
 		return fmt.Errorf("%w: user with such email already exists", services.UniqueViolationErr)
 	}
 

@@ -8,7 +8,6 @@ import (
 	"subscription-api/internal/mailing"
 	client_mocks "subscription-api/internal/mocks/clients"
 	config_mocks "subscription-api/internal/mocks/config"
-	db_mocks "subscription-api/internal/mocks/db"
 	mailing_mocks "subscription-api/internal/mocks/mailing"
 	repo_mocks "subscription-api/internal/mocks/repo"
 	"subscription-api/internal/services"
@@ -16,7 +15,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
 func Test_DispatchService_GetAllDispatches(t *testing.T) {
@@ -28,11 +26,10 @@ func Test_DispatchService_GetAllDispatches(t *testing.T) {
 		getAllDispatchesErr error
 	}
 
-	storeMock := db_mocks.NewStore()
 	dispatchRepoMock := repo_mocks.NewDispatchRepo(t)
 
 	setup := func(m mocked, a args) func() {
-		getCall := dispatchRepoMock.EXPECT().GetAllDispatches(a.ctx, mock.Anything).
+		getCall := dispatchRepoMock.EXPECT().GetAllDispatches(a.ctx).
 			Maybe().Return(m.dispatchesFromRepo, m.getAllDispatchesErr)
 
 		return func() {
@@ -74,7 +71,6 @@ func Test_DispatchService_GetAllDispatches(t *testing.T) {
 			defer cleanup()
 
 			s := &dispatchService{
-				store:        storeMock,
 				dispatchRepo: dispatchRepoMock,
 			}
 			actualResult, actualErr := s.GetAllDispatches(ctx)
@@ -102,20 +98,20 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 		createSubErr   error
 	}
 
-	storeMock := db_mocks.NewStore()
 	dispatchRepoMock := repo_mocks.NewDispatchRepo(t)
 	userRepoMock := repo_mocks.NewUserRepo(t)
 	subRepoMock := repo_mocks.NewSubRepo(t)
 	setup := func(m *mocked, a *args) func() {
 		getDsptchCall := dispatchRepoMock.EXPECT().
-			GetDispatchByID(a.ctx, mock.Anything, a.dispatchId).
+			GetDispatchByID(a.ctx, a.dispatchId).
 			Maybe().Return(e.CurrencyDispatch{}, m.getDispatchErr)
 		createUserCall := userRepoMock.EXPECT().
-			CreateUser(a.ctx, mock.Anything, a.email).
+			CreateUser(a.ctx, a.email).
 			Maybe().NotBefore(getDsptchCall).Return(m.createUserErr)
 		createSubCall := subRepoMock.EXPECT().
-			CreateSubscription(a.ctx, mock.Anything, db.SubscriptionData{
-				Email: a.email,
+			CreateSubscription(a.ctx, db.SubscriptionData{
+				Email:    a.email,
+				Dispatch: a.dispatchId,
 			}).Maybe().NotBefore(createUserCall).Return(m.createSubErr)
 
 		return func() {
@@ -165,7 +161,6 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 			cleanup := setup(tt.mockedValues, tt.args)
 			defer cleanup()
 			s := &dispatchService{
-				store:        storeMock,
 				userRepo:     userRepoMock,
 				subRepo:      subRepoMock,
 				dispatchRepo: dispatchRepoMock,
@@ -198,7 +193,6 @@ func Test_DispatchService_SendDispatch(t *testing.T) {
 		sendErr        error
 	}
 
-	storeMock := db_mocks.NewStore()
 	loggerMock := config_mocks.NewLogger()
 	dispatchRepoMock := repo_mocks.NewDispatchRepo(t)
 	csClientMock := client_mocks.NewCurrencyServiceClient(t)
@@ -206,10 +200,10 @@ func Test_DispatchService_SendDispatch(t *testing.T) {
 
 	setup := func(m *mocked, a *args) func() {
 		getDsptchCall := dispatchRepoMock.EXPECT().
-			GetDispatchByID(a.ctx, mock.Anything, a.dispatchId).
+			GetDispatchByID(a.ctx, a.dispatchId).
 			Maybe().Return(m.dispatch, m.getDispatchErr)
 		getSubsCall := dispatchRepoMock.EXPECT().
-			GetSubscribersOfDispatch(a.ctx, mock.Anything, a.dispatchId).
+			GetSubscribersOfDispatch(a.ctx, a.dispatchId).
 			Maybe().NotBefore(getDsptchCall).Return(m.subscribers, m.getSubsErr)
 		convertCall := csClientMock.EXPECT().
 			Convert(a.ctx, services.ConvertCurrencyParams{
@@ -270,22 +264,25 @@ func Test_DispatchService_SendDispatch(t *testing.T) {
 			wantErr:      assert.AnError,
 		},
 		{
-			name:         "failed: get an error from GetSubscribersOfDispatch",
-			args:         &a,
-			mockedValues: &mocked{getSubsErr: assert.AnError},
-			wantErr:      assert.AnError,
-		},
-		{
 			name:         "success: there is no subscribers for dispatch",
 			args:         &a,
 			mockedValues: &mocked{},
+		},
+		{
+			name: "failed: get an error from GetSubscribersOfDispatch",
+			args: &a,
+			mockedValues: &mocked{
+				dispatch:   dispatch,
+				getSubsErr: assert.AnError,
+			},
+			wantErr: assert.AnError,
 		},
 		{
 			name: "failed: got an error from Convert",
 			args: &a,
 			mockedValues: &mocked{
 				subscribers: subscribers,
-				dispatch:    invalidDispatch,
+				dispatch:    dispatch,
 				convertErr:  assert.AnError,
 			},
 			wantErr: assert.AnError,
@@ -327,7 +324,6 @@ func Test_DispatchService_SendDispatch(t *testing.T) {
 			defer cleanup()
 
 			s := &dispatchService{
-				store:        storeMock,
 				dispatchRepo: dispatchRepoMock,
 				mailman:      mailmanMock,
 				csClient:     csClientMock,

@@ -14,7 +14,7 @@ type CurrencyService interface {
 }
 
 func GetExchangeRate(ctx Context, cs CurrencyService) {
-	from, to := string(entities.AmericanDollar), string(entities.UkrainianHryvnia)
+	from, to := entities.AmericanDollar, entities.UkrainianHryvnia
 	res, err := cs.Convert(ctx.Context(),
 		services.ConvertCurrencyParams{
 			Base:   from,

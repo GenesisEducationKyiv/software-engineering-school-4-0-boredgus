@@ -13,21 +13,22 @@ import (
 )
 
 type Store interface {
-	WithTx(ctx context.Context, f func(db.DB) error) error
+	db.Database
+	IsError(error, db.Error) bool
 }
 
 type UserRepo interface {
-	CreateUser(ctx context.Context, db db.DB, email string) error
+	CreateUser(ctx context.Context, email string) error
 }
 
 type SubRepo interface {
-	CreateSubscription(ctx context.Context, db db.DB, args db.SubscriptionData) error
+	CreateSubscription(ctx context.Context, args db.SubscriptionData) error
 }
 
 type DispatchRepo interface {
-	GetDispatchByID(ctx context.Context, db db.DB, dispatchId string) (entities.CurrencyDispatch, error)
-	GetSubscribersOfDispatch(ctx context.Context, db db.DB, dispatchId string) ([]string, error)
-	GetAllDispatches(ctx context.Context, db db.DB) ([]services.DispatchData, error)
+	GetDispatchByID(ctx context.Context, dispatchId string) (entities.CurrencyDispatch, error)
+	GetSubscribersOfDispatch(ctx context.Context, dispatchId string) ([]string, error)
+	GetAllDispatches(ctx context.Context) ([]services.DispatchData, error)
 }
 
 type Mailman interface {
@@ -40,7 +41,6 @@ type CurrencyServiceClient interface {
 
 type dispatchService struct {
 	log          config.Logger
-	store        Store
 	userRepo     UserRepo
 	subRepo      SubRepo
 	dispatchRepo DispatchRepo
@@ -48,57 +48,40 @@ type dispatchService struct {
 	csClient     CurrencyServiceClient
 }
 
-type DispatchServiceParams struct {
-	Store           Store
-	Logger          config.Logger
-	Mailman         Mailman
-	CurrencyService CurrencyServiceClient
-}
-
-func NewDispatchService(params *DispatchServiceParams) *dispatchService {
+func NewDispatchService(
+	logger config.Logger,
+	mailman Mailman,
+	currencyService CurrencyServiceClient,
+	userRepo UserRepo,
+	subRepo SubRepo,
+	dispatchRepo DispatchRepo,
+) *dispatchService {
 	return &dispatchService{
-		store:        params.Store,
-		userRepo:     db.NewUserRepo(),
-		subRepo:      db.NewSubRepo(),
-		dispatchRepo: db.NewDispatchRepo(),
-		mailman:      params.Mailman,
-		csClient:     params.CurrencyService,
-		log:          params.Logger,
+		userRepo:     userRepo,
+		subRepo:      subRepo,
+		dispatchRepo: dispatchRepo,
+		mailman:      mailman,
+		csClient:     currencyService,
+		log:          logger,
 	}
 }
 
 func (s *dispatchService) GetAllDispatches(ctx context.Context) ([]services.DispatchData, error) {
-	var dispatches []services.DispatchData
-	err := s.store.WithTx(ctx, func(db db.DB) error {
-		d, err := s.dispatchRepo.GetAllDispatches(ctx, db)
-		if err != nil {
-			return err
-		}
-		dispatches = d
-
-		return nil
-	})
-
-	return dispatches, err
+	return s.dispatchRepo.GetAllDispatches(ctx)
 }
 
 func (s *dispatchService) SubscribeForDispatch(ctx context.Context, email, dispatchId string) error {
-	if err := s.store.WithTx(ctx, func(d db.DB) error {
-		_, err := s.dispatchRepo.GetDispatchByID(ctx, d, dispatchId)
-		if err != nil {
-			return err
-		}
-
-		if err = s.userRepo.CreateUser(ctx, d, email); err != nil && !errors.Is(err, services.UniqueViolationErr) {
-			return err
-		}
-
-		return s.subRepo.CreateSubscription(ctx, d, db.SubscriptionData{Email: email, Dispatch: dispatchId})
-	}); err != nil {
+	_, err := s.dispatchRepo.GetDispatchByID(ctx, dispatchId)
+	if err != nil {
 		return err
 	}
-	// TODO: send welcome email
-	return nil
+
+	if err = s.userRepo.CreateUser(ctx, email); err != nil && !errors.Is(err, services.UniqueViolationErr) {
+		return err
+	}
+
+	// TODO: send welcome email if creation of subscription was successful
+	return s.subRepo.CreateSubscription(ctx, db.SubscriptionData{Email: email, Dispatch: dispatchId})
 }
 
 var TemplateParseErr = errors.New("template error")
@@ -127,23 +110,17 @@ type ExchangeRateTemplateParams struct {
 }
 
 func (s *dispatchService) SendDispatch(ctx context.Context, dispatchId string) error {
-	var dispatch entities.CurrencyDispatch
-	var subscribers []string
-
-	if err := s.store.WithTx(ctx, func(d db.DB) error {
-		dsptch, err := s.dispatchRepo.GetDispatchByID(ctx, d, dispatchId)
-		if err != nil {
-			return err
-		}
-		dispatch = dsptch
-		subscribers, err = s.dispatchRepo.GetSubscribersOfDispatch(ctx, d, dispatchId)
-
-		return err
-	}); err != nil {
+	dispatch, err := s.dispatchRepo.GetDispatchByID(ctx, dispatchId)
+	if err != nil {
 		return err
 	}
-	if len(subscribers) == 0 {
+	if dispatch.CountOfSubscribers == 0 {
 		return nil
+	}
+
+	subscribers, err := s.dispatchRepo.GetSubscribersOfDispatch(ctx, dispatchId)
+	if err != nil {
+		return err
 	}
 
 	curencyRates, err := s.csClient.Convert(ctx, services.ConvertCurrencyParams{
