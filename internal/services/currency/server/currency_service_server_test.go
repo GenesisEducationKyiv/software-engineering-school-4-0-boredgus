@@ -1,11 +1,11 @@
-package currency_service
+package currency_server
 
 import (
 	"context"
 	config_mocks "subscription-api/internal/mocks/config"
 	s_mocks "subscription-api/internal/mocks/services"
 	s "subscription-api/internal/services"
-	grpc "subscription-api/internal/services/currency/grpc"
+	grpc "subscription-api/internal/services/currency/server/grpc"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

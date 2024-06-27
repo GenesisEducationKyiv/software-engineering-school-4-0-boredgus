@@ -17,7 +17,8 @@ import (
 	"testing"
 
 	currency_service "subscription-api/internal/services/currency"
-	currency_grpc "subscription-api/internal/services/currency/grpc"
+	currency_server "subscription-api/internal/services/currency/server"
+	currency_grpc "subscription-api/internal/services/currency/server/grpc"
 	dispatch_service "subscription-api/internal/services/dispatch"
 
 	grpc_client "subscription-api/pkg/grpc"
@@ -68,7 +69,7 @@ func (s *DispatchServiceSuite) startCurrencyServiceServer(url string) {
 	server := grpc.NewServer()
 	currency_grpc.RegisterCurrencyServiceServer(
 		server,
-		currency_service.NewCurrencyServiceServer(currencyService, s.logger),
+		currency_server.NewCurrencyServiceServer(currencyService, s.logger),
 	)
 	s.currencyServiceServer = server
 
