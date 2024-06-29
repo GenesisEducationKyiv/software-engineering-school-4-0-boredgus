@@ -7,6 +7,12 @@ import (
 )
 
 func TestArchitectureDependencyViolationFor(t *testing.T) {
+	externalInterfaces := []string{
+		"go.uber.org/zap",
+		"github.com/gin-gonic/gin",
+		"github.com/lib/pq",
+	}
+
 	tests := []struct {
 		name                         string
 		basePackage                  string
@@ -29,9 +35,7 @@ func TestArchitectureDependencyViolationFor(t *testing.T) {
 				"subscription-api/internal/tests/...",
 				"subscription-api/internal/tests/...",
 			},
-			notAllowedDirectDependencies: []string{
-				"go.uber.org/zap",
-			},
+			notAllowedDirectDependencies: externalInterfaces,
 		},
 		{
 			name:        "clients",
@@ -42,9 +46,7 @@ func TestArchitectureDependencyViolationFor(t *testing.T) {
 				"subscription-api/internal/services/dispatch/grpc",
 				"subscription-api/internal/services/currency/grpc",
 			},
-			notAllowedDirectDependencies: []string{
-				"go.uber.org/zap",
-			},
+			notAllowedDirectDependencies: externalInterfaces,
 		},
 		{
 			name:        "services",
@@ -55,9 +57,7 @@ func TestArchitectureDependencyViolationFor(t *testing.T) {
 				"subscription-api/internal/services/dispatch/grpc",
 				"subscription-api/internal/services/currency/grpc",
 			},
-			notAllowedDirectDependencies: []string{
-				"go.uber.org/zap",
-			},
+			notAllowedDirectDependencies: externalInterfaces,
 		},
 		{
 			name:        "dispatch service",
@@ -68,9 +68,7 @@ func TestArchitectureDependencyViolationFor(t *testing.T) {
 				"subscription-api/internal/services/dispatch/server",
 				"subscription-api/internal/services/dispatch/server/grpc",
 			},
-			notAllowedDirectDependencies: []string{
-				"go.uber.org/zap",
-			},
+			notAllowedDirectDependencies: externalInterfaces,
 		},
 		{
 			name:        "dispatch service server",
@@ -79,9 +77,7 @@ func TestArchitectureDependencyViolationFor(t *testing.T) {
 				"subscription-api/cmd/...",
 				"subscription-api/internal/controllers/...",
 			},
-			notAllowedDirectDependencies: []string{
-				"go.uber.org/zap",
-			},
+			notAllowedDirectDependencies: externalInterfaces,
 		},
 		{
 			name:        "currency service",
@@ -92,9 +88,7 @@ func TestArchitectureDependencyViolationFor(t *testing.T) {
 				"subscription-api/internal/services/currency/server",
 				"subscription-api/internal/services/currency/server/grpc",
 			},
-			notAllowedDirectDependencies: []string{
-				"go.uber.org/zap",
-			},
+			notAllowedDirectDependencies: externalInterfaces,
 		},
 		{
 			name:        "dispatch currency server",
@@ -103,9 +97,7 @@ func TestArchitectureDependencyViolationFor(t *testing.T) {
 				"subscription-api/cmd/...",
 				"subscription-api/internal/controllers/...",
 			},
-			notAllowedDirectDependencies: []string{
-				"go.uber.org/zap",
-			},
+			notAllowedDirectDependencies: externalInterfaces,
 		},
 		{
 			name:        "controllers",
@@ -116,9 +108,7 @@ func TestArchitectureDependencyViolationFor(t *testing.T) {
 				"google.golang.org/grpc",
 				"github.com/gin-gonic/gin",
 			},
-			notAllowedDirectDependencies: []string{
-				"go.uber.org/zap",
-			},
+			notAllowedDirectDependencies: externalInterfaces,
 		},
 	}
 
