@@ -1,11 +1,11 @@
-package currency_service
+package currency_server
 
 import (
 	"context"
 	"errors"
 	"subscription-api/config"
 	"subscription-api/internal/services"
-	currency_grpc "subscription-api/internal/services/currency/grpc"
+	currency_grpc "subscription-api/internal/services/currency/server/grpc"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

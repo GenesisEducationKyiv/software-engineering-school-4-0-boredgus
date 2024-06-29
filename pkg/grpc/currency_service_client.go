@@ -3,7 +3,7 @@ package grpc
 import (
 	"context"
 	"subscription-api/internal/services"
-	grpc_client "subscription-api/internal/services/currency/grpc"
+	grpc_client "subscription-api/internal/services/currency/server/grpc"
 
 	"google.golang.org/grpc"
 )

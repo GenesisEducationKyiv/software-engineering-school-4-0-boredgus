@@ -8,7 +8,8 @@ import (
 	store "subscription-api/internal/db"
 	"subscription-api/internal/mailing"
 	dispatch_service "subscription-api/internal/services/dispatch"
-	dispatch_grpc "subscription-api/internal/services/dispatch/grpc"
+	dispatch_server "subscription-api/internal/services/dispatch/server"
+	dispatch_grpc "subscription-api/internal/services/dispatch/server/grpc"
 	"subscription-api/internal/sql"
 	"subscription-api/pkg/db"
 
@@ -60,7 +61,7 @@ func main() {
 		store.NewSubRepo(storage),
 		store.NewDispatchRepo(storage),
 	)
-	dispatchServiceServer := dispatch_service.NewDispatchServiceServer(dispatchService, logger)
+	dispatchServiceServer := dispatch_server.NewDispatchServiceServer(dispatchService, logger)
 
 	// starting of grpc server
 	server := grpc.NewServer()

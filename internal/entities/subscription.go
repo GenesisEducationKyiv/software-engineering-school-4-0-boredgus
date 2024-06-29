@@ -1,7 +1,6 @@
 package entities
 
 import (
-	grpc "subscription-api/internal/services/dispatch/grpc"
 	"time"
 )
 
@@ -20,12 +19,3 @@ type Dispatch[T any] struct {
 }
 
 type CurrencyDispatch Dispatch[CurrencyDispatchDetails]
-
-func (d CurrencyDispatch) ToProto() *grpc.DispatchData {
-	return &grpc.DispatchData{
-		Id:                 d.Id,
-		Label:              d.Label,
-		SendAt:             d.SendAt.Format(time.TimeOnly),
-		CountOfSubscribers: int64(d.CountOfSubscribers),
-	}
-}

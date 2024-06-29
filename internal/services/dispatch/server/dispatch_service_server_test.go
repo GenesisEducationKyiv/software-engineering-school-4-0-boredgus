@@ -1,11 +1,11 @@
-package dispatch_service
+package dispatch_server
 
 import (
 	"context"
 	config_mocks "subscription-api/internal/mocks/config"
 	services_mocks "subscription-api/internal/mocks/services"
 	"subscription-api/internal/services"
-	grpc "subscription-api/internal/services/dispatch/grpc"
+	grpc "subscription-api/internal/services/dispatch/server/grpc"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -210,7 +210,7 @@ func Test_DispatchServiceServer_GetAllDispatches(t *testing.T) {
 	}}
 	dispatchProtos := make([]*grpc.DispatchData, 0, len(dispatches))
 	for _, d := range dispatches {
-		dispatchProtos = append(dispatchProtos, d.ToProto())
+		dispatchProtos = append(dispatchProtos, ToProtoDispatch(d))
 	}
 
 	tests := []struct {
