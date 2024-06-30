@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/pkg/logger"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/pkg/utils"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/config"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/parser"
 )
 
 type freeCurrencyAPIClient struct {
@@ -20,7 +20,7 @@ const (
 	FreeCurrencyAPIBasePath = "http://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api"
 )
 
-func NewFreeCurrencyAPIClient(httpClient *HTTPClient, logger logger.Logger) *freeCurrencyAPIClient {
+func NewFreeCurrencyAPIClient(httpClient *HTTPClient, logger config.Logger) *freeCurrencyAPIClient {
 	return &freeCurrencyAPIClient{
 		httpClient: httpClient,
 		log:        buildResponseLogger(logger, ExchangeRateAPILabel),
@@ -53,7 +53,7 @@ func (c *freeCurrencyAPIClient) Convert(
 	}
 
 	var result map[string]any
-	if err = utils.ParseJSON(resp.Body, &result); err != nil {
+	if err = parser.ParseJSON(resp.Body, &result); err != nil {
 		err = fmt.Errorf("failed to parse response: %w", err)
 		c.log(resp.StatusCode, err, requestData)
 

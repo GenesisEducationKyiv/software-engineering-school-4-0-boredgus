@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/config"
 	grpc_gen "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/grpc/gen"
 
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/pkg/logger"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/service"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -19,10 +19,10 @@ type CurrencyService interface {
 type currencyServiceServer struct {
 	grpc_gen.UnimplementedCurrencyServiceServer
 	service CurrencyService
-	logger  logger.Logger
+	logger  config.Logger
 }
 
-func NewCurrencyServiceServer(s CurrencyService, l logger.Logger) *currencyServiceServer {
+func NewCurrencyServiceServer(s CurrencyService, l config.Logger) *currencyServiceServer {
 	return &currencyServiceServer{service: s, logger: l}
 }
 

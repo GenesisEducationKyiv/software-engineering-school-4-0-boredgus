@@ -5,10 +5,10 @@ import (
 	"testing"
 
 	grpc_gen "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/grpc/gen"
+	logger_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/mocks/logger"
 	service_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/mocks/service"
 	service "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/service"
 
-	logger_mocks "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/pkg/logger/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/codes"
@@ -25,7 +25,7 @@ func Test_CurrencyServiceServer_Convert(t *testing.T) {
 	}
 
 	csMock := service_mock.NewCurrencyService(t)
-	loggerMock := logger_mocks.NewLogger()
+	loggerMock := logger_mock.NewLogger()
 	setup := func(m *mocked, args service.ConvertCurrencyParams) func() {
 		csCall := csMock.EXPECT().Convert(mock.Anything, args).Return(m.rates, m.convertErr).Once()
 

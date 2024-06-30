@@ -1,20 +1,20 @@
 name: subscription-api
 
 services:
-  api:
-    container_name: ${API_ADDRESS}
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.subscription-api
-    ports:
-      - ${API_PORT}:${API_PORT}
-    env_file:
-      - ${ENV_FILE}
-    depends_on:
-      currency-service:
-        condition: service_started
-      dispatch-service:
-        condition: service_started
+  # api:
+  #   container_name: ${API_ADDRESS}
+  #   build:
+  #     context: .
+  #     dockerfile: docker/Dockerfile.subscription-api
+  #   ports:
+  #     - ${API_PORT}:${API_PORT}
+  #   env_file:
+  #     - ${ENV_FILE}
+  #   depends_on:
+  #     currency-service:
+  #       condition: service_started
+  #     dispatch-service:
+  #       condition: service_started
     
   currency-service:
     container_name: ${CURRENCY_SERVICE_ADDRESS}
@@ -29,8 +29,8 @@ services:
   dispatch-service:
     container_name: ${DISPATCH_SERVICE_ADDRESS}
     build:
-      context:  .
-      dockerfile: docker/Dockerfile.dispatch-service
+      context:  ./service/dispatch./
+      dockerfile: Dockerfile
     ports:
       - ${DISPATCH_SERVICE_PORT}:${DISPATCH_SERVICE_PORT}
     env_file:
@@ -42,18 +42,18 @@ services:
         condition: service_healthy
       
 
-  dispatch-daemon:
-    container_name: ${DISPATCH_DAEMON_ADDRESS}
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.dispatch-daemon
-    ports:
-      - ${DISPATCH_DAEMON_PORT}:${DISPATCH_DAEMON_PORT}
-    env_file:
-      - ${ENV_FILE}
-    depends_on:
-      dispatch-service:
-        condition: service_started
+  # dispatch-daemon:
+  #   container_name: ${DISPATCH_DAEMON_ADDRESS}
+  #   build:
+  #     context: .
+  #     dockerfile: docker/Dockerfile.dispatch-daemon
+  #   ports:
+  #     - ${DISPATCH_DAEMON_PORT}:${DISPATCH_DAEMON_PORT}
+  #   env_file:
+  #     - ${ENV_FILE}
+  #   depends_on:
+  #     dispatch-service:
+  #       condition: service_started
 
   
   database:

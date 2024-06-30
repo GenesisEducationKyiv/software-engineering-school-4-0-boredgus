@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/pkg/logger"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/pkg/utils"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/config"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/parser"
 )
 
 const (
@@ -21,7 +21,7 @@ type currencyBeaconAPIClient struct {
 	log        responseLogger
 }
 
-func NewCurrencyBeaconAPIClient(httpClient *HTTPClient, apiKey string, logger logger.Logger) *currencyBeaconAPIClient {
+func NewCurrencyBeaconAPIClient(httpClient *HTTPClient, apiKey string, logger config.Logger) *currencyBeaconAPIClient {
 	return &currencyBeaconAPIClient{
 		httpClient: httpClient,
 		apiKey:     apiKey,
@@ -50,7 +50,7 @@ func (c *currencyBeaconAPIClient) Convert(
 			} `json:"meta,omitempty"`
 		}
 
-		if err = utils.ParseJSON(resp.Body, &parsedBody); err != nil {
+		if err = parser.ParseJSON(resp.Body, &parsedBody); err != nil {
 			c.log(resp.StatusCode, fmt.Errorf("failed to parse response: %w", err), requestData)
 
 			return nil, ServiceIsUnaccessibleErr
@@ -65,7 +65,7 @@ func (c *currencyBeaconAPIClient) Convert(
 	var parsedBodyWithRates struct {
 		Rates map[string]float64 `json:"rates"`
 	}
-	if err = utils.ParseJSON(resp.Body, &parsedBodyWithRates); err != nil {
+	if err = parser.ParseJSON(resp.Body, &parsedBodyWithRates); err != nil {
 		// It's ok that on parse error we return UnsupportedCurrencyErr.
 		// When unsupported currency is passed as base currency, API returns empty array as rates value.
 		err := fmt.Errorf("%w: %s", UnsupportedCurrencyErr, baseCcy)

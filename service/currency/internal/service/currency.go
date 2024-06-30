@@ -5,9 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/pkg/entities"
-	// "subscription-api/internal/entities"
-	// "subscription-api/internal/services"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/entities"
 )
 
 var (

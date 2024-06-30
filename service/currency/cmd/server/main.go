@@ -6,18 +6,18 @@ import (
 
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/clients"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/clients/chain"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/config"
 	grpc_gen "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/grpc/gen"
 	grpc_server "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/grpc/server"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/service"
 
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/pkg/logger"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/pkg/utils"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/shared/utils"
 	"google.golang.org/grpc"
 )
 
 func main() {
-	env := utils.Must(GetEnv())
-	logger := logger.InitLogger(env.Mode, logger.WithProcess("currency-service"))
+	env := utils.Must(config.GetEnv())
+	logger := config.InitLogger(env.Mode, config.WithProcess("currency-service"))
 	defer logger.Flush()
 
 	// initialization of currency API clients

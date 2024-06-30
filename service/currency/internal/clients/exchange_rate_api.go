@@ -5,10 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/pkg/logger"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/config"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/parser"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/service"
-
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/pkg/utils"
 )
 
 const (
@@ -22,7 +21,7 @@ type ExchangeRateAPIClient struct {
 	log        responseLogger
 }
 
-func NewExchangeRateAPIClient(httpClient *HTTPClient, apiKey string, logger logger.Logger) *ExchangeRateAPIClient {
+func NewExchangeRateAPIClient(httpClient *HTTPClient, apiKey string, logger config.Logger) *ExchangeRateAPIClient {
 	return &ExchangeRateAPIClient{
 		apiKey:     apiKey,
 		httpClient: httpClient,
@@ -57,7 +56,7 @@ func (c *ExchangeRateAPIClient) Convert(
 		ErrorType string             `json:"error-type,omitempty"`
 		Rates     map[string]float64 `json:"conversion_rates,omitempty"`
 	}
-	if err = utils.ParseJSON(resp.Body, &parsedBody); err != nil {
+	if err = parser.ParseJSON(resp.Body, &parsedBody); err != nil {
 		err = fmt.Errorf("failed to parse body: %w", err)
 		c.log(resp.StatusCode, err, requestData)
 

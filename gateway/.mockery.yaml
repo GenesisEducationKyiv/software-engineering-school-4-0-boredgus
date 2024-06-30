@@ -1,0 +1,25 @@
+with-expecter: true
+outpkg: "{{.PackageName}}_mocks"
+dir: "internal/mocks/{{.PackageName}}"
+mockname: "{{.InterfaceName}}"
+filename: "mock_{{ .InterfaceName | snakecase }}.go"
+
+packages:
+  github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/controllers:
+    interfaces:
+      CurrencyService:
+        config:
+          dir: "internal/mocks/service"
+          outpkg: "service_mock"
+      DispatchService:
+        config:
+          dir: "internal/mocks/service"
+          outpkg: "service_mock"
+      Context:
+        config:
+          dir: "internal/mocks/context"
+          outpkg: "context_mock"
+
+        
+
+
