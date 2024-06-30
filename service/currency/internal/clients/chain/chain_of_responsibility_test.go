@@ -1,10 +1,10 @@
-package currency_client
+package chain
 
 import (
 	"context"
-	client_mocks "subscription-api/internal/mocks/clients"
 	"testing"
 
+	client_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/mocks/client"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,8 +21,8 @@ func Test_CurrencyAPIChain_Convert(t *testing.T) {
 		secondaryAPIErr   error
 	}
 
-	primaryAPIMock := client_mocks.NewCurrencyAPIClient(t)
-	secondaryAPIMock := client_mocks.NewCurrencyAPIClient(t)
+	primaryAPIMock := client_mock.NewCurrencyAPIClient(t)
+	secondaryAPIMock := client_mock.NewCurrencyAPIClient(t)
 	secondaryChain := NewCurrencyAPIChain(secondaryAPIMock)
 
 	setup := func(m *mocked, a *args) func() {

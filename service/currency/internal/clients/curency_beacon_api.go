@@ -1,13 +1,13 @@
-package currency_client
+package clients
 
 import (
 	"context"
 	"fmt"
 	"net/http"
 	"strings"
-	"subscription-api/config"
-	"subscription-api/internal/clients"
-	"subscription-api/pkg/utils"
+
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/pkg/logger"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/pkg/utils"
 )
 
 const (
@@ -16,12 +16,12 @@ const (
 )
 
 type currencyBeaconAPIClient struct {
-	httpClient *clients.HTTPClient
+	httpClient *HTTPClient
 	apiKey     string
 	log        responseLogger
 }
 
-func NewCurrencyBeaconAPIClient(httpClient *clients.HTTPClient, apiKey string, logger config.Logger) *currencyBeaconAPIClient {
+func NewCurrencyBeaconAPIClient(httpClient *HTTPClient, apiKey string, logger logger.Logger) *currencyBeaconAPIClient {
 	return &currencyBeaconAPIClient{
 		httpClient: httpClient,
 		apiKey:     apiKey,

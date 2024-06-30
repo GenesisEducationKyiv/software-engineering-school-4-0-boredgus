@@ -1,9 +1,10 @@
-package currency_client
+package clients
 
 import (
 	"encoding/json"
 	"errors"
-	"subscription-api/config"
+
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/pkg/logger"
 )
 
 var (
@@ -31,7 +32,7 @@ func (p responseParams) String() string {
 	return string(marshalledData)
 }
 
-func buildResponseLogger(logger config.Logger, issuer string) responseLogger {
+func buildResponseLogger(logger logger.Logger, issuer string) responseLogger {
 	return func(status int, err error, data map[string]any) {
 		params := responseParams{
 			Issuer:     issuer,

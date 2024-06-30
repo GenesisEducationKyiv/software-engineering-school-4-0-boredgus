@@ -1,4 +1,4 @@
-package currency_client
+package chain
 
 import (
 	"context"

@@ -1,17 +1,17 @@
-package currency_client
+package clients
 
 import (
 	"context"
 	"fmt"
 	"net/http"
 	"strings"
-	"subscription-api/config"
-	"subscription-api/internal/clients"
-	"subscription-api/pkg/utils"
+
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/pkg/logger"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/pkg/utils"
 )
 
 type freeCurrencyAPIClient struct {
-	httpClient *clients.HTTPClient
+	httpClient *HTTPClient
 	log        responseLogger
 }
 
@@ -20,7 +20,7 @@ const (
 	FreeCurrencyAPIBasePath = "http://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api"
 )
 
-func NewFreeCurrencyAPIClient(httpClient *clients.HTTPClient, logger config.Logger) *freeCurrencyAPIClient {
+func NewFreeCurrencyAPIClient(httpClient *HTTPClient, logger logger.Logger) *freeCurrencyAPIClient {
 	return &freeCurrencyAPIClient{
 		httpClient: httpClient,
 		log:        buildResponseLogger(logger, ExchangeRateAPILabel),

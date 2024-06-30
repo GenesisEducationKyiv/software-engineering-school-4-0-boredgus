@@ -1,11 +1,10 @@
-package currency_service
+package service
 
 import (
 	"context"
-	client_mocks "subscription-api/internal/mocks/clients"
-	"subscription-api/internal/services"
 	"testing"
 
+	client_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/mocks/client"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -13,14 +12,14 @@ import (
 func Test_CurrencyService_Convert(t *testing.T) {
 	type args struct {
 		ctx    context.Context
-		params services.ConvertCurrencyParams
+		params ConvertCurrencyParams
 	}
 	type mocked struct {
 		rates      map[string]float64
 		convertErr error
 	}
 
-	currencyAPIMock := client_mocks.NewCurrencyAPIClient(t)
+	currencyAPIMock := client_mock.NewCurrencyAPIClient(t)
 	setup := func(m mocked) func() {
 		apiCall := currencyAPIMock.EXPECT().Convert(mock.Anything, mock.Anything, mock.Anything).
 			Return(m.rates, m.convertErr)
@@ -42,21 +41,21 @@ func Test_CurrencyService_Convert(t *testing.T) {
 			name:          "failed: no target currencies provided",
 			args:          args{},
 			expectedRates: nil,
-			expectedErr:   services.InvalidArgumentErr,
+			expectedErr:   InvalidArgumentErr,
 		},
 		{
 			name: "failed: unsupported currency provided",
 			args: args{
-				params: services.ConvertCurrencyParams{Base: "invalid", Target: []string{"uah"}},
+				params: ConvertCurrencyParams{Base: "invalid", Target: []string{"uah"}},
 			},
 			mockedValues:  mocked{convertErr: assert.AnError},
 			expectedRates: nil,
-			expectedErr:   services.InvalidArgumentErr,
+			expectedErr:   InvalidArgumentErr,
 		},
 		{
 			name: "successfuly converted currency",
 			args: args{
-				params: services.ConvertCurrencyParams{Base: "usd", Target: []string{"UAH"}},
+				params: ConvertCurrencyParams{Base: "usd", Target: []string{"UAH"}},
 			},
 			mockedValues:  mocked{rates: rates},
 			expectedRates: rates,

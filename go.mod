@@ -1,6 +1,6 @@
-module subscription-api
+module github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus
 
-go 1.22.1
+go 1.22.4
 
 require (
 	github.com/caarlos0/env/v9 v9.0.0

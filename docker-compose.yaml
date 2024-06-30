@@ -19,8 +19,8 @@ services:
   currency-service:
     container_name: ${CURRENCY_SERVICE_ADDRESS}
     build:
-      context:  .
-      dockerfile: docker/Dockerfile.currency-service
+      context:  ./service/currency/.
+      dockerfile: Dockerfile
     ports:
       - ${CURRENCY_SERVICE_PORT}:${CURRENCY_SERVICE_PORT}
     env_file:

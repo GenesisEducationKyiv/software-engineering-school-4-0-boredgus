@@ -1,13 +1,14 @@
-package currency_client
+package clients
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"subscription-api/config"
-	"subscription-api/internal/clients"
-	"subscription-api/internal/services"
-	"subscription-api/pkg/utils"
+
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/pkg/logger"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/service"
+
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/pkg/utils"
 )
 
 const (
@@ -17,11 +18,11 @@ const (
 
 type ExchangeRateAPIClient struct {
 	apiKey     string
-	httpClient *clients.HTTPClient
+	httpClient *HTTPClient
 	log        responseLogger
 }
 
-func NewExchangeRateAPIClient(httpClient *clients.HTTPClient, apiKey string, logger config.Logger) *ExchangeRateAPIClient {
+func NewExchangeRateAPIClient(httpClient *HTTPClient, apiKey string, logger logger.Logger) *ExchangeRateAPIClient {
 	return &ExchangeRateAPIClient{
 		apiKey:     apiKey,
 		httpClient: httpClient,
@@ -63,7 +64,7 @@ func (c *ExchangeRateAPIClient) Convert(
 		return nil, err
 	}
 	if errorMsg, ok := exchangeRateAPIErrors[parsedBody.ErrorType]; ok {
-		err = fmt.Errorf("%w: %v", services.FailedPreconditionErr, errorMsg)
+		err = fmt.Errorf("%w: %v", service.FailedPreconditionErr, errorMsg)
 		c.log(resp.StatusCode, err, requestData)
 
 		return nil, err
