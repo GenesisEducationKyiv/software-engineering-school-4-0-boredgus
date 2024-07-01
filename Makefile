@@ -30,5 +30,20 @@ test-coverage:
 generate-grpc:
 	protoc --go_out=. --go_opt=paths=source_relative \
 		--go-grpc_out=. --go-grpc_opt=paths=source_relative \
-    service/currency/internal/grpc/gen/currency_service.proto \
+		service/currency/internal/grpc/gen/currency_service.proto \
+		service/dispatch/internal/grpc/gen/dispatch_service.proto
+
+	protoc --go_out=./service/dispatch/internal/clients/currency/gen  \
+		--go-grpc_out=./service/dispatch/internal/clients/currency/gen \
+		service/currency/internal/grpc/gen/currency_service.proto
+
+	protoc --go_out=./dispatch/daemon/internal/clients/dispatch/gen  \
+		--go-grpc_out=./dispatch/daemon/internal/clients/dispatch/gen \
+		service/dispatch/internal/grpc/gen/dispatch_service.proto
+	
+	protoc --go_out=./gateway/internal/clients/currency/gen  \
+		--go-grpc_out=./gateway/internal/clients/currency/gen \
+		service/currency/internal/grpc/gen/currency_service.proto
+	protoc --go_out=./gateway/internal/clients/dispatch/gen  \
+		--go-grpc_out=./gateway/internal/clients/dispatch/gen \
 		service/dispatch/internal/grpc/gen/dispatch_service.proto

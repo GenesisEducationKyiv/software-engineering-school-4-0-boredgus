@@ -1,9 +1,8 @@
 go 1.22.4
 
 use (
-  ./shared
   ./gateway
-	./currency
-	./dispatch
-	./daemon
+	./service/currency
+	./service/dispatch
+	./daemon/dispatch
 )

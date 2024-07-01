@@ -8,7 +8,7 @@ RUN go mod download
 
 COPY . /app/
 
-RUN go build -o /bin/server ./cmd/server/main.go
+RUN go build -o /bin/daemon ./cmd/daemon/main.go
 
 
 # STEP 2: run binary executable
@@ -16,6 +16,6 @@ FROM scratch
 
 WORKDIR /
 
-COPY --from=build /bin/server /server
+COPY --from=build /bin/daemon /daemon
 
-ENTRYPOINT [ "/server" ]
+ENTRYPOINT [ "/daemon" ]
