@@ -13,6 +13,7 @@ func Test_CurrencyService_Convert(t *testing.T) {
 	type args struct {
 		ctx    context.Context
 		params ConvertCurrencyParams
+		unused int
 	}
 	type mocked struct {
 		rates      map[string]float64
