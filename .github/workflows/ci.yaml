@@ -25,6 +25,7 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: v1.58
+          working-directory: ${{ matrix.modules }}
   
   tests:
     name: tests
