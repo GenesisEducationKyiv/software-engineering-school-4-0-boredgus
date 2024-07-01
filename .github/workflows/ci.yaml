@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        modules: ['./gateway','service/dispatch','./service/currency','./daemon/dispatch']
+        modules: ['gateway','service/dispatch','service/currency','daemon/dispatch']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
