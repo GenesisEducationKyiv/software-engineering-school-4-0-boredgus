@@ -1,0 +1,22 @@
+with-expecter: true
+outpkg: "{{.PackageName}}_mock"
+dir: "internal/mocks/{{.PackageName}}"
+mockname: "{{.InterfaceName}}"
+filename: "mock_{{ .InterfaceName | snakecase }}.go"
+
+packages:
+
+  github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/service:
+    interfaces:
+      CurrencyAPIClient:
+        config:
+          dir: "internal/mocks/client"
+          outpkg: "client_mock"
+
+  github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/grpc/server:
+    interfaces:
+      CurrencyService:
+        config:
+          dir: "internal/mocks/service"
+          outpkg: "service_mock"
+

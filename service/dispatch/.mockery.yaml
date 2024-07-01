@@ -1,0 +1,42 @@
+with-expecter: true
+outpkg: "{{.PackageName}}_mock"
+dir: "internal/mocks/{{.PackageName}}"
+mockname: "{{.InterfaceName}}"
+filename: "mock_{{ .InterfaceName | snakecase }}.go"
+
+packages:
+  # subscription-api/internal/db:
+  #   interfaces:
+  #     DB:
+  github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service:
+    interfaces:
+      Mailman:
+        config:
+          dir: "internal/mocks/mailing"
+          outpkg: "mailing_mock"
+      UserRepo:
+        config:
+          dir: "internal/mocks/repo"
+          outpkg: "repo_mock"
+      SubRepo:
+        config:
+          dir: "internal/mocks/repo"
+          outpkg: "repo_mock"
+      DispatchRepo:
+        config:
+          dir: "internal/mocks/repo"
+          outpkg: "repo_mock"
+  github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps:
+    interfaces:
+      CurrencyServiceClient:
+        config: 
+          dir: "internal/mocks/client"
+          outpkg: "client_mock"
+    
+  github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/grpc/server:
+    interfaces:
+      DispatchService:
+        config: 
+          dir: "internal/mocks/service"
+          outpkg: "service_mock"
+
