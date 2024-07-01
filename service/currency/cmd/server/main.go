@@ -14,14 +14,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-func must[T interface{}](value T, err error) T {
-	if err != nil {
-		panic(err)
-	}
-
-	return value
-}
-
 func panicOnError(err error, msg string) {
 	if err != nil {
 		panic(fmt.Sprintf("%s: %v", msg, err.Error()))
