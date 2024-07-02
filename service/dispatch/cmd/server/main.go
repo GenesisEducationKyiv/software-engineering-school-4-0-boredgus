@@ -10,7 +10,7 @@ import (
 	grpc_gen "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/grpc/gen"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/grpc/server"
 
-	currency_client "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/pkg/grpc/client"
+	currency_client "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/clients/currency"
 
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/config"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mailing"
