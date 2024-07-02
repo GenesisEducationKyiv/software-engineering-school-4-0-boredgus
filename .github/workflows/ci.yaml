@@ -26,6 +26,7 @@ jobs:
         with:
           version: v1.58
           working-directory: ${{ matrix.modules }}
+          args: "--config .golangci.yaml"
   
   tests:
     name: tests
