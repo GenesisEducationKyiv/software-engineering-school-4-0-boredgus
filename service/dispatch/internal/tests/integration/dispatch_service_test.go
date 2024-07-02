@@ -20,15 +20,6 @@ import (
 )
 
 type (
-	CurrencyServiceServer interface {
-		Stop()
-	}
-
-	Store interface {
-		repo.DB
-		// service.Store
-	}
-
 	DispatchService interface {
 		GetAllDispatches(ctx context.Context) ([]deps.DispatchData, error)
 		SubscribeForDispatch(ctx context.Context, email, dispatchId string) error

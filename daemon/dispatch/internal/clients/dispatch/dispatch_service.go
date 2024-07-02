@@ -50,10 +50,10 @@ func (c *dispatchServiceClient) GetAllDispatches(ctx context.Context) ([]Dispatc
 		return nil, err
 	}
 
-	return protoToDispatchData(resp.Dispatches), nil
+	return protoToDispatch(resp.Dispatches), nil
 }
 
-func protoToDispatchData(dispatches []*grpc_gen.DispatchData) []Dispatch {
+func protoToDispatch(dispatches []*grpc_gen.DispatchData) []Dispatch {
 	convertedDispatches := make([]Dispatch, 0, len(dispatches))
 	for _, dispatch := range dispatches {
 		convertedDispatches = append(convertedDispatches, Dispatch{

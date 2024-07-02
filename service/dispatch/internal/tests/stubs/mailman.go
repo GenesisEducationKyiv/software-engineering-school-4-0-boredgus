@@ -1,8 +1,6 @@
 package stubs
 
 import (
-	// "subscription-api/internal/mailing"
-
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps"
 	"github.com/stretchr/testify/mock"
 )

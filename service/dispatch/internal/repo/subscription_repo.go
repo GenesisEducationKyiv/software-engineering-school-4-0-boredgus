@@ -8,12 +8,12 @@ import (
 	service_errors "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/err"
 )
 
-type subRepo struct {
+type subscriptionRepo struct {
 	db DB
 }
 
-func NewSubRepo(db DB) *subRepo {
-	return &subRepo{db: db}
+func NewSubRepo(db DB) *subscriptionRepo {
+	return &subscriptionRepo{db: db}
 }
 
 const subscribeForQ string = `
@@ -29,7 +29,7 @@ const subscribeForQ string = `
 	;
 `
 
-func (r *subRepo) CreateSubscription(ctx context.Context, args deps.SubscriptionData) error {
+func (r *subscriptionRepo) CreateSubscription(ctx context.Context, args deps.SubscriptionData) error {
 	_, err := r.db.ExecContext(ctx, subscribeForQ, args.Email, args.Dispatch)
 	if r.db.IsError(err, UniqueViolation) {
 		return fmt.Errorf("%w: user has already subscribed for this dispatch", service_errors.UniqueViolationErr)

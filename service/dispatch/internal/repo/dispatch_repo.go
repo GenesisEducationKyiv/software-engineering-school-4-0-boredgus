@@ -10,14 +10,12 @@ import (
 	service_errors "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/err"
 )
 
-type (
-	DispatchRepo struct {
-		db DB
-	}
-)
+type dispatchRepo struct {
+	db DB
+}
 
-func NewDispatchRepo(db DB) *DispatchRepo {
-	return &DispatchRepo{db: db}
+func NewDispatchRepo(db DB) *dispatchRepo {
+	return &dispatchRepo{db: db}
 }
 
 const getDispatchByIdQ string = `
@@ -29,7 +27,7 @@ const getDispatchByIdQ string = `
 	group by cd.id;
 `
 
-func (r *DispatchRepo) GetDispatchByID(ctx context.Context, dispatchId string) (entities.CurrencyDispatch, error) {
+func (r *dispatchRepo) GetDispatchByID(ctx context.Context, dispatchId string) (entities.CurrencyDispatch, error) {
 	var dispatch entities.CurrencyDispatch
 	row := r.db.QueryRowContext(ctx, getDispatchByIdQ, dispatchId)
 	err := row.Err()
@@ -58,7 +56,7 @@ const getSubscribersOfDispatchQ string = `
 	where cd.u_id = $1 and u.email is not null;
 `
 
-func (r *DispatchRepo) GetSubscribersOfDispatch(ctx context.Context, dispatchId string) ([]string, error) {
+func (r *dispatchRepo) GetSubscribersOfDispatch(ctx context.Context, dispatchId string) ([]string, error) {
 	var result []string
 	rows, err := r.db.QueryContext(ctx, getSubscribersOfDispatchQ, dispatchId)
 	if r.db.IsError(err, InvalidTextRepresentation) {
@@ -84,7 +82,7 @@ const getAllDispatchesQ = `
 	group by cd.id;
 `
 
-func (r *DispatchRepo) GetAllDispatches(ctx context.Context) ([]deps.DispatchData, error) {
+func (r *dispatchRepo) GetAllDispatches(ctx context.Context) ([]deps.DispatchData, error) {
 	result := make([]deps.DispatchData, 0, 5) // nolint:mnd
 	rows, err := r.db.QueryContext(ctx, getAllDispatchesQ)
 	if err != nil {

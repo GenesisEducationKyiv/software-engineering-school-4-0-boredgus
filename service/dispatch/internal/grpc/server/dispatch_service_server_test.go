@@ -212,7 +212,7 @@ func Test_DispatchServiceServer_GetAllDispatches(t *testing.T) {
 	}}
 	dispatchProtos := make([]*grpc_gen.DispatchData, 0, len(dispatches))
 	for _, d := range dispatches {
-		dispatchProtos = append(dispatchProtos, ToProtoDispatch(d))
+		dispatchProtos = append(dispatchProtos, toProtoDispatch(d))
 	}
 
 	tests := []struct {

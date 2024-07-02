@@ -82,13 +82,13 @@ func (s *dispatchServiceServer) GetAllDispatches(ctx context.Context, req *grpc_
 
 	dispatches := make([]*grpc_gen.DispatchData, 0, len(allDispatches))
 	for _, dsptch := range allDispatches {
-		dispatches = append(dispatches, ToProtoDispatch(dsptch))
+		dispatches = append(dispatches, toProtoDispatch(dsptch))
 	}
 
 	return &grpc_gen.GetAllDispatchesResponse{Dispatches: dispatches}, nil
 }
 
-func ToProtoDispatch(data deps.DispatchData) *grpc_gen.DispatchData {
+func toProtoDispatch(data deps.DispatchData) *grpc_gen.DispatchData {
 	return &grpc_gen.DispatchData{
 		Id:                 data.Id,
 		Label:              data.Label,
