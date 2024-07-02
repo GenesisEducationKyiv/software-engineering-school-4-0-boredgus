@@ -5,21 +5,14 @@ import (
 	"fmt"
 	"strings"
 
-	db "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/db"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/entities"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps"
 	service_errors "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/err"
 )
 
 type (
 	DispatchRepo struct {
 		db DB
-	}
-
-	DispatchData struct {
-		Id                 string
-		Label              string
-		SendAt             string
-		CountOfSubscribers int
 	}
 )
 
@@ -40,7 +33,7 @@ func (r *DispatchRepo) GetDispatchByID(ctx context.Context, dispatchId string) (
 	var dispatch entities.CurrencyDispatch
 	row := r.db.QueryRowContext(ctx, getDispatchByIdQ, dispatchId)
 	err := row.Err()
-	if err != nil && r.db.IsError(err, db.InvalidTextRepresentation) {
+	if err != nil && r.db.IsError(err, InvalidTextRepresentation) {
 		return dispatch, fmt.Errorf("%w: incorrect format for uuid", service_errors.InvalidArgumentErr)
 	}
 	if err != nil {
@@ -68,7 +61,7 @@ const getSubscribersOfDispatchQ string = `
 func (r *DispatchRepo) GetSubscribersOfDispatch(ctx context.Context, dispatchId string) ([]string, error) {
 	var result []string
 	rows, err := r.db.QueryContext(ctx, getSubscribersOfDispatchQ, dispatchId)
-	if r.db.IsError(err, db.InvalidTextRepresentation) {
+	if r.db.IsError(err, InvalidTextRepresentation) {
 		return result, fmt.Errorf("%w: incorrect format for uuid", service_errors.InvalidArgumentErr)
 	}
 
@@ -91,14 +84,14 @@ const getAllDispatchesQ = `
 	group by cd.id;
 `
 
-func (r *DispatchRepo) GetAllDispatches(ctx context.Context) ([]DispatchData, error) {
-	result := make([]DispatchData, 0, 5) // nolint:mnd
+func (r *DispatchRepo) GetAllDispatches(ctx context.Context) ([]deps.DispatchData, error) {
+	result := make([]deps.DispatchData, 0, 5) // nolint:mnd
 	rows, err := r.db.QueryContext(ctx, getAllDispatchesQ)
 	if err != nil {
 		return nil, err
 	}
 	for rows.Next() {
-		var dispatch DispatchData
+		var dispatch deps.DispatchData
 		if err := rows.Scan(&dispatch.Id, &dispatch.Label, &dispatch.SendAt, &dispatch.CountOfSubscribers); err != nil {
 			return result, fmt.Errorf("failed to scan currency dispatch: %w", err)
 		}

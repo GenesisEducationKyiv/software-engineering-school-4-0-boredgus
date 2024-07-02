@@ -8,61 +8,27 @@ import (
 	"html/template"
 
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/config"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/db"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/entities"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mailing"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/repo"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/emails"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps"
 	service_errors "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/err"
 )
 
-type (
-	DispatchService interface {
-		GetAllDispatches(ctx context.Context) ([]repo.DispatchData, error)
-		SubscribeForDispatch(ctx context.Context, email, dispatchId string) error
-		SendDispatch(ctx context.Context, dispatchId string) error
-	}
-
-	Store interface {
-		repo.Database
-		IsError(error, db.Error) bool
-	}
-
-	UserRepo interface {
-		CreateUser(ctx context.Context, email string) error
-	}
-
-	SubRepo interface {
-		CreateSubscription(ctx context.Context, args repo.SubscriptionData) error
-	}
-
-	DispatchRepo interface {
-		GetDispatchByID(ctx context.Context, dispatchId string) (entities.CurrencyDispatch, error)
-		GetSubscribersOfDispatch(ctx context.Context, dispatchId string) ([]string, error)
-		GetAllDispatches(ctx context.Context) ([]repo.DispatchData, error)
-	}
-
-	Mailman interface {
-		Send(email mailing.Email) error
-	}
-
-	dispatchService struct {
-		log          config.Logger
-		userRepo     UserRepo
-		subRepo      SubRepo
-		dispatchRepo DispatchRepo
-		mailman      Mailman
-		csClient     deps.CurrencyServiceClient
-	}
-)
+type dispatchService struct {
+	log          config.Logger
+	userRepo     deps.UserRepo
+	subRepo      deps.SubRepo
+	dispatchRepo deps.DispatchRepo
+	mailman      deps.Mailman
+	csClient     deps.CurrencyServiceClient
+}
 
 func NewDispatchService(
 	logger config.Logger,
-	mailman Mailman,
+	mailman deps.Mailman,
 	currencyService deps.CurrencyServiceClient,
-	userRepo UserRepo,
-	subRepo SubRepo,
-	dispatchRepo DispatchRepo,
+	userRepo deps.UserRepo,
+	subRepo deps.SubRepo,
+	dispatchRepo deps.DispatchRepo,
 ) *dispatchService {
 	return &dispatchService{
 		userRepo:     userRepo,
@@ -74,7 +40,7 @@ func NewDispatchService(
 	}
 }
 
-func (s *dispatchService) GetAllDispatches(ctx context.Context) ([]repo.DispatchData, error) {
+func (s *dispatchService) GetAllDispatches(ctx context.Context) ([]deps.DispatchData, error) {
 	return s.dispatchRepo.GetAllDispatches(ctx)
 }
 
@@ -89,13 +55,13 @@ func (s *dispatchService) SubscribeForDispatch(ctx context.Context, email, dispa
 	}
 
 	// TODO: send welcome email if creation of subscription was successful
-	return s.subRepo.CreateSubscription(ctx, repo.SubscriptionData{Email: email, Dispatch: dispatchId})
+	return s.subRepo.CreateSubscription(ctx, deps.SubscriptionData{Email: email, Dispatch: dispatchId})
 }
 
 var TemplateParseErr = errors.New("template error")
 
 func (s *dispatchService) parseHTMLTemplate(templateName string, data any) ([]byte, error) {
-	templateFile := mailing.PathToTemplate(templateName + ".html")
+	templateFile := emails.PathToTemplate(templateName + ".html")
 	tmpl, err := template.ParseFiles(templateFile)
 	if err != nil {
 		s.log.Errorf("failed to parse html template %s: %v", templateName, err)
@@ -144,7 +110,7 @@ func (s *dispatchService) SendDispatch(ctx context.Context, dispatchId string) e
 		return err
 	}
 
-	return s.mailman.Send(mailing.Email{
+	return s.mailman.Send(deps.Email{
 		To:       subscribers,
 		Subject:  dispatch.Label,
 		HTMLBody: string(htmlContent),

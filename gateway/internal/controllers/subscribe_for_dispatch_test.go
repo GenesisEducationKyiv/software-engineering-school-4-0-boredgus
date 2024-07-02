@@ -5,13 +5,12 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/clients/dispatch"
 	context_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/mocks/context"
 	service_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/mocks/service"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func Test_SubscribeForDailyDispatch_Controller(t *testing.T) {
@@ -62,7 +61,7 @@ func Test_SubscribeForDailyDispatch_Controller(t *testing.T) {
 		{
 			name: "failed: user already subsccribed for this dispatch",
 			mocked: &mocked{
-				expectedSubscribeErr:   status.Error(codes.AlreadyExists, ""),
+				expectedSubscribeErr:   dispatch.SubscriptionToDispatchAlreadyExistsErr,
 				expectedResponseStatus: http.StatusConflict,
 			},
 		},

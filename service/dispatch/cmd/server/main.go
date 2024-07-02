@@ -12,8 +12,8 @@ import (
 
 	currency_client "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/clients/currency"
 
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/clients/mailman"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/config"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mailing"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/repo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -49,7 +49,7 @@ func main() {
 
 	storage := repo.NewStore(postgresqlDB, db.IsPqError)
 
-	smtpParams := mailing.SMTPParams{
+	smtpParams := mailman.SMTPParams{
 		Host:     env.SMTPHost,
 		Port:     env.SMTPPort,
 		Email:    env.SMTPEmail,
@@ -60,7 +60,7 @@ func main() {
 	// initialization of dispatch service server
 	dispatchService := service.NewDispatchService(
 		logger,
-		mailing.NewMailman(smtpParams),
+		mailman.NewMailman(smtpParams),
 		currency_client.NewCurrencyServiceClient(currencyServiceConn),
 		repo.NewUserRepo(storage),
 		repo.NewSubRepo(storage),

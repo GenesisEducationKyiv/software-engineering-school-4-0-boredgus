@@ -1,4 +1,4 @@
-package mailing
+package emails
 
 import (
 	"path/filepath"
@@ -13,5 +13,5 @@ func init() {
 }
 
 func PathToTemplate(filename string) string {
-	return filepath.Join(basePath, "emails", filename)
+	return filepath.Join(basePath, "templates", filename)
 }

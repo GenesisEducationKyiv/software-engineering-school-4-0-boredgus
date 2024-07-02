@@ -8,13 +8,13 @@ import (
 
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/config"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/db"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mailing"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/repo"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps"
 	service_err "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/err"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/tests"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/tests/stubs"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/tests/testdata"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/tests"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/tests/stubs"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/tests/testdata"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
@@ -26,16 +26,22 @@ type (
 
 	Store interface {
 		repo.DB
-		service.Store
+		// service.Store
+	}
+
+	DispatchService interface {
+		GetAllDispatches(ctx context.Context) ([]deps.DispatchData, error)
+		SubscribeForDispatch(ctx context.Context, email, dispatchId string) error
+		SendDispatch(ctx context.Context, dispatchId string) error
 	}
 
 	DispatchServiceSuite struct {
 		suite.Suite
 		ctx             context.Context
-		dispatchService service.DispatchService
+		dispatchService DispatchService
 
 		pgContainer  *tests.PostgresContainer
-		dispatchRepo service.DispatchRepo
+		dispatchRepo deps.DispatchRepo
 		dbConnection *sql.DB
 
 		logger  config.Logger
@@ -103,7 +109,7 @@ func (s *DispatchServiceSuite) Test_SendDispatch() {
 	s.NoError(s.dispatchService.SendDispatch(ctx, testdata.USD_UAH_DISPATCH_ID))
 
 	s.Equal(1, len(s.mailman.Calls))
-	actualEmailReceivers := s.mailman.Calls[0].Arguments.Get(0).(mailing.Email).To
+	actualEmailReceivers := s.mailman.Calls[0].Arguments.Get(0).(deps.Email).To
 	expectedEmailReceivers := testdata.SubscribersOfUSDUAHDispatch
 	s.Equal(actualEmailReceivers, expectedEmailReceivers)
 }

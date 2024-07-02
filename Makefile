@@ -4,7 +4,9 @@ start:
 	ENV_FILE=${ENV_FILE} docker compose -f docker-compose.yaml --env-file ${ENV_FILE} up
 
 generate-mocks:
-	mockery --config=config/.mockery.yaml
+	mockery --config=./gateway/.mockery.yaml
+	mockery --config=./service/currency/.mockery.yaml
+	mockery --config=./service/dispatch/.mockery.yaml
 
 lint:
 	golangci-lint run -c .golangci.yaml \

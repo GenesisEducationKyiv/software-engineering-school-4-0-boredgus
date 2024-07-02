@@ -1,0 +1,96 @@
+version: 1
+threshold:
+  compliance: 100
+  coverage: 40
+dependenciesRules:
+  - package: "**.internal/clients.*"
+    shouldOnlyDependsOn:
+      internal:
+        - "**.internal/clients.*.gen.*"
+        - "**.internal/entities.**"
+        - "**.internal/service.**"
+    shouldNotDependsOn: 
+      internal:
+        - "**.internal/grpc.**"
+        - "**.internal/mailing.**"
+        - "**.internal/mocks.**"
+        - "**.internal/repo.**"
+        - "**.internal/tests.**"
+
+  - package: "**.internal/entities.**"
+    shouldNotDependsOn: 
+      internal: 
+        - "**.internal/clients.**"
+        - "**.internal/config.**"
+        - "**.internal/db.**"
+        - "**.internal/grpc.**"
+        - "**.internal/mailing.**"
+        - "**.internal/mocks.**"
+        - "**.internal/repo.**"
+        - "**.internal/service.**"
+        - "**.internal/tests.**"
+
+  - package: "**.internal/grpc/server"
+    shouldOnlyDependsOn: 
+      internal: 
+        - "**.internal/entities.**"
+        - "**.internal/config.**"
+        - "**.internal/repo.**"
+        - "**.internal/service.**"
+        - "**.internal/grpc/gen"
+      external:
+        - "google.golang.org/grpc"
+    shouldNotDependsOn: 
+      internal: 
+        - "**.internal/clients.**"
+        - "**.internal/db.**"
+        - "**.internal/mailing.**"
+        - "**.internal/mocks.**"
+        - "**.internal/repo.**"
+        - "**.internal/tests.**"
+
+  - package: "**.internal/emails"
+    shouldOnlyDependsOn: 
+      internal: 
+        - "**.internal/entities.**"
+        - "**.internal/config.**"
+        - "**.internal/service.**"
+    shouldNotDependsOn: 
+      internal: 
+        - "**.internal/grpc.**"
+        - "**.internal/db.**"
+        - "**.internal/mocks.**"
+        - "**.internal/repo.**"
+        - "**.internal/tests.**"
+
+  - package: "**.internal/repo"
+    shouldOnlyDependsOn: 
+      internal: 
+        - "**.internal/entities.**"
+        - "**.internal/config.**"
+        - "**.internal/service.**"
+      external:
+        - "database/sql"
+    shouldNotDependsOn: 
+      internal: 
+        - "**.internal/clients.**"
+        - "**.internal/db.**"
+        - "**.internal/grpc.**"
+        - "**.internal/emails.**"
+        - "**.internal/mocks.**"
+        - "**.internal/tests.**"
+
+  - package: "**.internal/service"
+    shouldOnlyDependsOn: 
+      internal: 
+        - "**.internal/entities.**"
+        - "**.internal/config.**"
+        - "**.internal/service.*"
+        - "**.internal/emails.**"
+    shouldNotDependsOn: 
+      internal: 
+        - "**.internal/clients.**"
+        - "**.internal/db.**"
+        - "**.internal/grpc.**"
+        - "**.internal/mocks.**"
+        - "**.internal/tests.**"

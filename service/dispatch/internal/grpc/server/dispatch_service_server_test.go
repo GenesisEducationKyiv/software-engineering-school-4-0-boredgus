@@ -8,7 +8,7 @@ import (
 
 	logger_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mocks/logger"
 	service_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mocks/service"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/repo"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps"
 	service_err "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/err"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
@@ -185,7 +185,7 @@ func Test_DispatchServiceServer_GetAllDispatches(t *testing.T) {
 		req *grpc_gen.GetAllDispatchesRequest
 	}
 	type mocked struct {
-		expectedDispatches []repo.DispatchData
+		expectedDispatches []deps.DispatchData
 		expectedGetErr     error
 	}
 
@@ -205,7 +205,7 @@ func Test_DispatchServiceServer_GetAllDispatches(t *testing.T) {
 		ctx: context.Background(),
 		req: &grpc_gen.GetAllDispatchesRequest{},
 	}
-	dispatches := []repo.DispatchData{{
+	dispatches := []deps.DispatchData{{
 		Id:                 "id",
 		Label:              "label",
 		CountOfSubscribers: 2,

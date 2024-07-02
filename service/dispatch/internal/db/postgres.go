@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/repo"
 	"github.com/lib/pq"
 )
 
@@ -28,12 +29,12 @@ const (
 	InvalidTextRepresentationError                = pq.ErrorCode("22P02") // 'invalid_text_representation'
 )
 
-var pqErrors = map[Error]pq.ErrorCode{
-	UniqueViolation:           UniqueViolationError,
-	InvalidTextRepresentation: InvalidTextRepresentationError,
+var pqErrors = map[repo.Error]pq.ErrorCode{
+	repo.UniqueViolation:           UniqueViolationError,
+	repo.InvalidTextRepresentation: InvalidTextRepresentationError,
 }
 
-func IsPqError(err error, errCode Error) bool {
+func IsPqError(err error, errCode repo.Error) bool {
 	pqErr, ok := err.(*pq.Error)
 	if !ok || pqErr.Code != pqErrors[errCode] {
 		return false

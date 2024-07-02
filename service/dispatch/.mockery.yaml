@@ -5,11 +5,12 @@ mockname: "{{.InterfaceName}}"
 filename: "mock_{{ .InterfaceName | snakecase }}.go"
 
 packages:
-  # subscription-api/internal/db:
-  #   interfaces:
-  #     DB:
-  github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service:
+  github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps:
     interfaces:
+      CurrencyServiceClient:
+        config: 
+          dir: "internal/mocks/client"
+          outpkg: "client_mock"
       Mailman:
         config:
           dir: "internal/mocks/mailing"
@@ -26,12 +27,6 @@ packages:
         config:
           dir: "internal/mocks/repo"
           outpkg: "repo_mock"
-  github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps:
-    interfaces:
-      CurrencyServiceClient:
-        config: 
-          dir: "internal/mocks/client"
-          outpkg: "client_mock"
     
   github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/grpc/server:
     interfaces:

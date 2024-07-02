@@ -1,0 +1,57 @@
+version: 1
+threshold:
+  compliance: 100
+  coverage: 40
+dependenciesRules:
+  - package: "**.internal/clients.*"
+    shouldOnlyDependsOn:
+      internal:
+        - "**.internal/config.**"
+        - "**.internal/entities.**"
+        - "**.internal/service.**"
+        - "**.internal/parser.**"
+    shouldNotDependsOn: 
+      internal:
+        - "**.internal/grpc.**"
+        - "**.internal/mocks.**"
+
+  - package: "**.internal/entities.**"
+    shouldNotDependsOn: 
+      internal: 
+        - "**.internal/clients.**"
+        - "**.internal/config.**"
+        - "**.internal/grpc.**"
+        - "**.internal/mocks.**"
+        - "**.internal/service"
+        - "**.internal/parser.**"
+
+  - package: "**.internal/grpc/server"
+    shouldOnlyDependsOn: 
+      internal: 
+        - "**.internal/entities.**"
+        - "**.internal/config.**"
+        - "**.internal/service"
+        - "**.internal/grpc/gen"
+      external:
+        - "google.golang.org/grpc"
+    shouldNotDependsOn: 
+      internal: 
+        - "**.internal/clients.**"
+        - "**.internal/mocks.**"
+
+  - package: "**.internal/service"
+    shouldOnlyDependsOn: 
+      internal: 
+        - "**.internal/entities.**"
+        - "**.internal/config.**"
+        - "**.internal/service"
+        - "**.internal/grpc/gen"
+      external:
+        - "google.golang.org/grpc"
+    shouldNotDependsOn: 
+      internal: 
+        - "**.internal/clients.**"
+        - "**.internal/mocks.**"
+
+
+

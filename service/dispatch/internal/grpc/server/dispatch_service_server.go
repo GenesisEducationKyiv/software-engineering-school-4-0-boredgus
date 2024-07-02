@@ -5,10 +5,10 @@ import (
 	"errors"
 
 	grpc_gen "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/grpc/gen"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps"
 	service_errors "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/err"
 
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/config"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/repo"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -17,7 +17,7 @@ type (
 	DispatchService interface {
 		SubscribeForDispatch(ctx context.Context, email, dispatch string) error
 		SendDispatch(ctx context.Context, dispatch string) error
-		GetAllDispatches(ctx context.Context) ([]repo.DispatchData, error)
+		GetAllDispatches(ctx context.Context) ([]deps.DispatchData, error)
 	}
 
 	dispatchServiceServer struct {
@@ -88,7 +88,7 @@ func (s *dispatchServiceServer) GetAllDispatches(ctx context.Context, req *grpc_
 	return &grpc_gen.GetAllDispatchesResponse{Dispatches: dispatches}, nil
 }
 
-func ToProtoDispatch(data repo.DispatchData) *grpc_gen.DispatchData {
+func ToProtoDispatch(data deps.DispatchData) *grpc_gen.DispatchData {
 	return &grpc_gen.DispatchData{
 		Id:                 data.Id,
 		Label:              data.Label,

@@ -1,4 +1,4 @@
-package db
+package repo
 
 type Error int
 

@@ -3,8 +3,6 @@ package repo
 import (
 	"context"
 	"database/sql"
-
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/db"
 )
 
 type WithTransaction interface {
@@ -21,20 +19,20 @@ type DatabaseWithTransaction interface {
 }
 
 type DB interface {
-	IsError(err error, errCode db.Error) bool
+	IsError(err error, errCode Error) bool
 	Database
 }
 
 type store struct {
 	db         Database
-	checkError db.ErrorCheckFunc
+	checkError ErrorCheckFunc
 }
 
-func NewStore(db Database, errorF db.ErrorCheckFunc) *store {
+func NewStore(db Database, errorF ErrorCheckFunc) *store {
 	return &store{db: db, checkError: errorF}
 }
 
-func (s *store) IsError(err error, errCode db.Error) bool {
+func (s *store) IsError(err error, errCode Error) bool {
 	return s.checkError(err, errCode)
 }
 
