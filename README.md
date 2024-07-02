@@ -28,8 +28,8 @@ make start
 ```
 
 
-## Architecture
-![desired achitecture](docs/architecture.png)
+## System design
+![system design](docs/system-design.png)
 
 ### Processes
 
@@ -55,6 +55,11 @@ schedules them, and invokes their sending.
 
 5. _[not implemented yet]_ ___Rate Daemon___ is an automatic process that invokes \
 updating of exchange rates.
+
+
+## Application architecture
+
+![application architecture](docs/application-architecture.jpg)
 
 
 ## ER diagram

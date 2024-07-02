@@ -6,6 +6,7 @@ require (
 	github.com/caarlos0/env/v9 v9.0.0
 	github.com/gin-contrib/timeout v1.0.1
 	github.com/go-mail/mail v2.3.1+incompatible
+	github.com/matthewmcnew/archtest v0.0.0-20191104172020-f1b53a45c22d
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/testcontainers/testcontainers-go v0.31.0
 	google.golang.org/grpc v1.64.0

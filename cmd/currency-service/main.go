@@ -8,7 +8,8 @@ import (
 	"subscription-api/internal/clients"
 	currency_client "subscription-api/internal/clients/currency"
 	currency_service "subscription-api/internal/services/currency"
-	currency_grpc "subscription-api/internal/services/currency/grpc"
+	currency_server "subscription-api/internal/services/currency/server"
+	currency_grpc "subscription-api/internal/services/currency/server/grpc"
 	"subscription-api/pkg/utils"
 
 	"google.golang.org/grpc"
@@ -35,7 +36,7 @@ func main() {
 
 	// initalization currency service server
 	currencyService := currency_service.NewCurrencyService(exchangeRateAPIClient)
-	currencyServiceServer := currency_service.NewCurrencyServiceServer(
+	currencyServiceServer := currency_server.NewCurrencyServiceServer(
 		currencyService,
 		logger,
 	)

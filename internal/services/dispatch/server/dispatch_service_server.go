@@ -1,11 +1,11 @@
-package dispatch_service
+package dispatch_server
 
 import (
 	"context"
 	"errors"
 	"subscription-api/config"
 	"subscription-api/internal/services"
-	grpc "subscription-api/internal/services/dispatch/grpc"
+	grpc "subscription-api/internal/services/dispatch/server/grpc"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -72,8 +72,17 @@ func (s *dispatchServiceServer) GetAllDispatches(ctx context.Context, req *grpc.
 
 	dispatches := make([]*grpc.DispatchData, 0, len(allDispatches))
 	for _, dsptch := range allDispatches {
-		dispatches = append(dispatches, dsptch.ToProto())
+		dispatches = append(dispatches, ToProtoDispatch(dsptch))
 	}
 
 	return &grpc.GetAllDispatchesResponse{Dispatches: dispatches}, nil
+}
+
+func ToProtoDispatch(data services.DispatchData) *grpc.DispatchData {
+	return &grpc.DispatchData{
+		Id:                 data.Id,
+		Label:              data.Label,
+		SendAt:             data.SendAt,
+		CountOfSubscribers: int64(data.CountOfSubscribers),
+	}
 }

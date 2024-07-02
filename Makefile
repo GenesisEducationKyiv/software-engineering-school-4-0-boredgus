@@ -19,5 +19,5 @@ test-coverage:
 generate-grpc:
 	protoc --go_out=. --go_opt=paths=source_relative \
 		--go-grpc_out=. --go-grpc_opt=paths=source_relative \
-    internal/services/currency/grpc/currencyService.proto \
-		internal/services/dispatch/grpc/dispatchService.proto
+    internal/services/currency/server/grpc/currency_service.proto \
+		internal/services/dispatch/server/grpc/dispatch_service.proto
