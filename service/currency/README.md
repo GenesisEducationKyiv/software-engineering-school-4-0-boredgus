@@ -7,3 +7,9 @@ Allows to convert one currency to one or more others (e.g. ( USD, [EUR,UAH] ) ->
 ## Architecture
 
 ![service-architecture](./docs/service-architecture.jpg)
+
+## Tests
+
+There are implemented:
+- unit tests
+- dependency tests

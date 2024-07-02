@@ -60,33 +60,6 @@ updating of exchange rates.
 3. [Currency Service](./service/currency)
 4. [Dispatch Service](./service/dispatch)
 
-
-## ER diagram
-
-![ER diagram](docs/er-diagram.png)
-
-1. User can subscribe for one or more dispatches.
-2. User has own table in case there will need to save more data about him.
-3. Dispatch specifies when to send it and what to send in it.
-4. Zero, one or more users can be subscribers of same dispatch.
-5. Dispatch is related to currency, but it is possible that in the future there will be \
-another type of dispatch.
-
-I assumed that each user can have multiple subscriptions and multiple users can be subscribed\
-to one dispatch (many-to-many relationship).
-
-There is no information in the task about ability to customize time of dispatch sending \
-(just period - once a day), so I set it default for all subscribers, based on KISS. \
-But it is possible to customize it later if there will be necessity.
-
-## Tests
-
-There are implemented:
-- unit tests for business logic for `gateway`, `curency service` and `dispatch service`
-- integration tests for `dispatch service`
-- dependency tests for `gateway`, `curency service` and `dispatch service`
-
-
 ## TODO
 1. Implement rate daemon
 2. Send welcome email when user subscribes for dispatch
