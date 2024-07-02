@@ -20,9 +20,7 @@ linters-settings:
     threshold: 100
   mnd:
     ignored-files:
-      - 'tests/'
-    ignored-functions:
-      - 'timeout.WithTimeout'
+      - 'internal/tests/'
 
 issues:
   max-same-issues: 50

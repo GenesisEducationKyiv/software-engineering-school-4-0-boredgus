@@ -9,11 +9,11 @@ generate-mocks:
 	mockery --config=./service/dispatch/.mockery.yaml
 
 lint:
-	golangci-lint run -c .golangci.yaml \
-		./service/dispatch/... \
-		./service/currency/... \
-		./daemon/dispatch/... \
-		./gateway/...
+	golangci-lint run -c ./gateway/.golangci.yaml ./gateway/...
+	golangci-lint run -c ./service/dispatch/.golangci.yaml ./service/dispatch/...
+	golangci-lint run -c ./service/currency/.golangci.yaml ./service/currency/...
+	golangci-lint run -c ./daemon/dispatch/.golangci.yaml ./daemon/dispatch/... 
+		
 
 test:
 	go test \
