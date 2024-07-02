@@ -55,10 +55,10 @@ schedules them, and invokes their sending.
 updating of exchange rates.
 
 #### Per service documentation
-1. ![Dispatch Daemon](./daemon/dispatch)
-2. ![Gateway](./gateway)
-3. ![Currency Service](./service/currency)
-4. ![Dispatch Service](./service/dispatch)
+1. [Dispatch Daemon](./daemon/dispatch)
+2. [Gateway](./gateway)
+3. [Currency Service](./service/currency)
+4. [Dispatch Service](./service/dispatch)
 
 
 ## ER diagram
