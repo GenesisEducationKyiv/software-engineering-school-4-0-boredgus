@@ -9,7 +9,7 @@ type MailmanStub struct {
 	mock.Mock
 }
 
-// Creates a mock for interface mailing.Mailman.
+// Creates a mock for interface Mailman.
 func NewMailmanStub() *MailmanStub {
 	return &MailmanStub{}
 }
