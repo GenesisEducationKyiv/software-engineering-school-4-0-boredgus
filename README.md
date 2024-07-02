@@ -20,9 +20,9 @@ API allows:
 cp ./.env.example ./.env
 ```
 2. Get API key from [third-API](https://app.exchangerate-api.com/) and set to `EXCHANGE_CURRENCY_API_KEY` value in `.env`.
-3. Get app password from Google ([instruction](https://support.google.com/mail/answer/185833?hl=en)) and set to `SMTP_PASSWORD` value in `.env`.
-4. Update `SMTP_EMAIL` and `SMTP_USERNAME` values in `.env`.
-5. Start project with command below:
+3. Update `SMTP_EMAIL` and `SMTP_USERNAME` values in `.env`.
+4. Get app password from Google ([instruction](https://support.google.com/mail/answer/185833?hl=en)) and set to `SMTP_PASSWORD` value in `.env`.
+5. Start project with command (uses docker) below:
 ```
 make start
 ```
@@ -33,11 +33,9 @@ make start
 
 ### Processes
 
-Keeping in mind 6th factor __Processes__ of _12-factor App_ I splitted app functionality into \
-5 separate processes:
+Keeping in mind 6th factor __Processes__ of _12-factor App_ I splitted app functionality into separate processes:
 
-
-1. ___API___ is an entry point for external users of `SubscriptionAPI`. It is web server and\
+1. ___Gateway___ is an entry point for external users of `SubscriptionAPI`. It is web server and\
 makes requests via gRPC to services for required functionality. For now it allows \
 to get exchange rate USD/UAH and subscribe user for daily dispatch of USD/UAH exchange rate.
 
@@ -56,10 +54,11 @@ schedules them, and invokes their sending.
 5. _[not implemented yet]_ ___Rate Daemon___ is an automatic process that invokes \
 updating of exchange rates.
 
-
-## Application architecture
-
-![application architecture](docs/application-architecture.jpg)
+#### Per service documentation
+1. ![Dispatch Daemon](./daemon/dispatch/README.md)
+2. ![Gateway](./gateway/README.md)
+3. ![Currency Service](./service/currency/README.md)
+4. ![Dispatch Service](./service/dispatch/README.md)
 
 
 ## ER diagram
@@ -81,8 +80,11 @@ There is no information in the task about ability to customize time of dispatch 
 But it is possible to customize it later if there will be necessity.
 
 ## Tests
-There are implemented unit tests for some business logic. In perspective I will cover \
-all business logic with unit and functional tests.
+
+There are implemented:
+- unit tests for business logic for `gateway`, `curency service` and `dispatch service`
+- integration tests for `dispatch service`
+- dependency tests for `gateway`, `curency service` and `dispatch service`
 
 
 ## TODO

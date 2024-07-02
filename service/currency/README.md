@@ -2,7 +2,7 @@
 
 ## Description
 
-Allows to convert one currency to one or more others (e.g. (USD,[EUR,UAH]) -> [euro-rate,uah-rate]).
+Allows to convert one currency to one or more others (e.g. ( USD, [EUR,UAH] ) -> [euro-rate,uah-rate]).
 
 ## Architecture
 
