@@ -4,8 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/clients/dispatch"
 )
 
 type DispatchService interface {
@@ -27,7 +26,7 @@ func SubscribeForDailyDispatch(ctx Context, ds DispatchService) {
 	}
 
 	err := ds.SubscribeForDispatch(ctx.Context(), params.Email, USD_UAH_DISPATCH_ID)
-	if status.Code(err) == codes.AlreadyExists {
+	if err == dispatch.SubscriptionToDispatchAlreadyExistsErr {
 		ctx.Status(http.StatusConflict)
 
 		return
