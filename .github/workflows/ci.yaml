@@ -38,12 +38,13 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
-      - name: Go to module
-        run: cd ${{ matrix.modules }}
       - name: Unit & integration tests 
-        run: go test ./... -coverprofile="test-coverage.txt" -covermode count
+        run: |
+          cd ${{ matrix.modules }}
+          go test ./... -coverprofile="test-coverage.txt" -covermode count
       - name: Dependency tests
         run: |
+          cd ${{ matrix.modules }}
           go install -v github.com/fdaines/arch-go@latest
           arch-go -v
   
