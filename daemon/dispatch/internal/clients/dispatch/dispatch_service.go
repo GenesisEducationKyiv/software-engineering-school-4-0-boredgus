@@ -55,14 +55,14 @@ func (c *dispatchServiceClient) GetAllDispatches(ctx context.Context) ([]Dispatc
 
 func protoToDispatchData(dispatches []*grpc_gen.DispatchData) []Dispatch {
 	convertedDispatches := make([]Dispatch, 0, len(dispatches))
-	// for _, dispatch := range dispatches {
-	// 	convertedDispatches = append(convertedDispatches, DispatchData{
-	// 		Id:                 dispatch.Id,
-	// 		Label:              dispatch.Label,
-	// 		SendAt:             dispatch.SendAt,
-	// 		CountOfSubscribers: int(dispatch.CountOfSubscribers),
-	// 	})
-	// }
+	for _, dispatch := range dispatches {
+		convertedDispatches = append(convertedDispatches, Dispatch{
+			Id:                 dispatch.Id,
+			Label:              dispatch.Label,
+			SendAt:             dispatch.SendAt,
+			CountOfSubscribers: int(dispatch.CountOfSubscribers),
+		})
+	}
 
 	return convertedDispatches
 }
