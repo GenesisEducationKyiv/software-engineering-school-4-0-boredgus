@@ -39,8 +39,8 @@ generate-grpc:
 		--go-grpc_out=./service/dispatch/internal/clients/currency/gen \
 		service/currency/internal/grpc/gen/currency_service.proto
 
-	protoc --go_out=./dispatch/daemon/internal/clients/dispatch/gen  \
-		--go-grpc_out=./dispatch/daemon/internal/clients/dispatch/gen \
+	protoc --go_out=./daemon/dispatch/internal/clients/dispatch/gen  \
+		--go-grpc_out=./daemon/dispatch/internal/clients/dispatch/gen \
 		service/dispatch/internal/grpc/gen/dispatch_service.proto
 	
 	protoc --go_out=./gateway/internal/clients/currency/gen  \
