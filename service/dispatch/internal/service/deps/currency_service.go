@@ -42,6 +42,6 @@ type (
 	}
 
 	CurrencyServiceClient interface {
-		Convert(ctx context.Context, base string, target []string) (map[string]float64, error)
+		Convert(ctx context.Context, baseCcye string, targetCcies []string) (map[string]float64, error)
 	}
 )

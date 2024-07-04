@@ -9,13 +9,6 @@ dependenciesRules:
         - "**.internal/clients.*.gen.*"
         - "**.internal/entities.**"
         - "**.internal/service.**"
-    shouldNotDependsOn: 
-      internal:
-        - "**.internal/grpc.**"
-        - "**.internal/mailing.**"
-        - "**.internal/mocks.**"
-        - "**.internal/repo.**"
-        - "**.internal/tests.**"
 
   - package: "**.internal/entities.**"
     shouldNotDependsOn: 
@@ -40,14 +33,6 @@ dependenciesRules:
         - "**.internal/grpc/gen"
       external:
         - "google.golang.org/grpc"
-    shouldNotDependsOn: 
-      internal: 
-        - "**.internal/clients.**"
-        - "**.internal/db.**"
-        - "**.internal/mailing.**"
-        - "**.internal/mocks.**"
-        - "**.internal/repo.**"
-        - "**.internal/tests.**"
 
   - package: "**.internal/emails"
     shouldOnlyDependsOn: 
@@ -55,13 +40,6 @@ dependenciesRules:
         - "**.internal/entities.**"
         - "**.internal/config.**"
         - "**.internal/service.**"
-    shouldNotDependsOn: 
-      internal: 
-        - "**.internal/grpc.**"
-        - "**.internal/db.**"
-        - "**.internal/mocks.**"
-        - "**.internal/repo.**"
-        - "**.internal/tests.**"
 
   - package: "**.internal/repo"
     shouldOnlyDependsOn: 
@@ -71,14 +49,6 @@ dependenciesRules:
         - "**.internal/service.**"
       external:
         - "database/sql"
-    shouldNotDependsOn: 
-      internal: 
-        - "**.internal/clients.**"
-        - "**.internal/db.**"
-        - "**.internal/grpc.**"
-        - "**.internal/emails.**"
-        - "**.internal/mocks.**"
-        - "**.internal/tests.**"
 
   - package: "**.internal/service"
     shouldOnlyDependsOn: 
@@ -87,10 +57,3 @@ dependenciesRules:
         - "**.internal/config.**"
         - "**.internal/service.*"
         - "**.internal/emails.**"
-    shouldNotDependsOn: 
-      internal: 
-        - "**.internal/clients.**"
-        - "**.internal/db.**"
-        - "**.internal/grpc.**"
-        - "**.internal/mocks.**"
-        - "**.internal/tests.**"

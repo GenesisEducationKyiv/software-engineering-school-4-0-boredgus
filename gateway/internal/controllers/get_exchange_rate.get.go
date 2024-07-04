@@ -7,7 +7,7 @@ import (
 )
 
 type CurrencyService interface {
-	Convert(ctx context.Context, base string, target []string) (map[string]float64, error)
+	Convert(ctx context.Context, baseCcy string, targetCcies []string) (map[string]float64, error)
 }
 
 func GetExchangeRate(ctx Context, cs CurrencyService) {
