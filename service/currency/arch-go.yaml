@@ -10,10 +10,6 @@ dependenciesRules:
         - "**.internal/entities.**"
         - "**.internal/service.**"
         - "**.internal/parser.**"
-    shouldNotDependsOn: 
-      internal:
-        - "**.internal/grpc.**"
-        - "**.internal/mocks.**"
 
   - package: "**.internal/entities.**"
     shouldNotDependsOn: 
@@ -34,10 +30,6 @@ dependenciesRules:
         - "**.internal/grpc/gen"
       external:
         - "google.golang.org/grpc"
-    shouldNotDependsOn: 
-      internal: 
-        - "**.internal/clients.**"
-        - "**.internal/mocks.**"
 
   - package: "**.internal/service"
     shouldOnlyDependsOn: 
@@ -48,10 +40,3 @@ dependenciesRules:
         - "**.internal/grpc/gen"
       external:
         - "google.golang.org/grpc"
-    shouldNotDependsOn: 
-      internal: 
-        - "**.internal/clients.**"
-        - "**.internal/mocks.**"
-
-
-

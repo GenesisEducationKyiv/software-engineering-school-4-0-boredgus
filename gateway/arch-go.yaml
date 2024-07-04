@@ -9,10 +9,6 @@ dependenciesRules:
         - "**.internal/clients.*.gen"
       external:
         - "google.golang.org/grpc"
-    shouldNotDependsOn: 
-      internal:
-        - "**.internal/mocks.**"
-        - "**.internal/controllers.**"
 
   - package: "**.internal/controllers.**"
     shouldOnlyDependsOn:
