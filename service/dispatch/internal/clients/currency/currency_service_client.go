@@ -24,10 +24,10 @@ func NewCurrencyServiceClient(conn grpc.ClientConnInterface) *currencyServiceCli
 	}
 }
 
-func (c *currencyServiceClient) Convert(ctx context.Context, base string, target []string) (map[string]float64, error) {
+func (c *currencyServiceClient) Convert(ctx context.Context, baseCcy string, targetCcies []string) (map[string]float64, error) {
 	resp, err := c.client.Convert(ctx, &grpc_gen.ConvertRequest{
-		BaseCurrency:     base,
-		TargetCurrencies: target,
+		BaseCurrency:     baseCcy,
+		TargetCurrencies: targetCcies,
 	})
 	if err != nil {
 		return nil, err
