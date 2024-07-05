@@ -36,7 +36,7 @@ func (s *currencyService) Convert(ctx context.Context, params ConvertCurrencyPar
 		return nil, fmt.Errorf("%w: no target currencies provided", InvalidArgumentErr)
 	}
 
-	ccies, err := entities.MakeCurrencies(append(params.Target, params.Base))
+	ccies, err := entities.MakeCurrencies(append([]string{params.Base}, params.Target...))
 	if err != nil {
 		return nil, errors.Join(InvalidArgumentErr, err)
 	}
