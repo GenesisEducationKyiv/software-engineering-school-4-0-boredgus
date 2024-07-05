@@ -1,11 +1,12 @@
-name: subscription-api
+name: subscription-api-dev
 
 services:
-  api:
+  gateway:
     container_name: ${API_ADDRESS}
-    build:
-      context: ./gateway
-      dockerfile: Dockerfile
+    image: golang:1.22-alpine
+    volumes:
+      - ./gateway:/app
+    command: sleep infinity
     ports:
       - ${API_PORT}:${API_PORT}
     env_file:
@@ -18,9 +19,10 @@ services:
     
   currency-service:
     container_name: ${CURRENCY_SERVICE_ADDRESS}
-    build:
-      context:  ./service/currency
-      dockerfile: Dockerfile
+    image: golang:1.22-alpine
+    volumes:
+      - ./service/currency:/app
+    command: sleep infinity
     ports:
       - ${CURRENCY_SERVICE_PORT}:${CURRENCY_SERVICE_PORT}
     env_file:
@@ -28,9 +30,10 @@ services:
 
   dispatch-service:
     container_name: ${DISPATCH_SERVICE_ADDRESS}
-    build:
-      context:  ./service/dispatch
-      dockerfile: Dockerfile
+    image: golang:1.22-alpine
+    volumes:
+      - ./service/dispatch:/app
+    command: sleep infinity
     ports:
       - ${DISPATCH_SERVICE_PORT}:${DISPATCH_SERVICE_PORT}
     env_file:
@@ -43,9 +46,10 @@ services:
   
   notifier-service:
     container_name: ${NOTIFIER_SERVICE_ADDRESS}
-    build:
-      context: ./service/notifier
-      dockerfile: Dockerfile
+    image: golang:1.22-alpine
+    volumes:
+      - ./service/notifier:/app
+    command: sleep infinity
     env_file:
       - ${ENV_FILE}
   

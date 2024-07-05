@@ -4,5 +4,5 @@ use (
   ./gateway
 	./service/currency
 	./service/dispatch
-	./daemon/dispatch
+	./service/notification
 )
