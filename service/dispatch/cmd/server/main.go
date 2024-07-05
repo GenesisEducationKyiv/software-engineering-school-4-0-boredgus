@@ -4,15 +4,14 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/broker"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/db"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service"
+	"github.com/nats-io/nats.go"
 
 	grpc_gen "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/grpc/gen"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/grpc/server"
 
-	currency_client "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/clients/currency"
-
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/clients/mailman"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/config"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/repo"
 	"google.golang.org/grpc"
@@ -49,22 +48,17 @@ func main() {
 
 	storage := repo.NewStore(postgresqlDB, db.IsPqError)
 
-	smtpParams := mailman.SMTPParams{
-		Host:     env.SMTPHost,
-		Port:     env.SMTPPort,
-		Email:    env.SMTPEmail,
-		Name:     env.SMTPUsername,
-		Password: env.SMTPPassword,
-	}
+	// connection to NATS broker
+	natsConnection, err := nats.Connect(env.BrokerURL, nats.Name("subscription_service"))
+	panicOnError(err, "failed to connect to broker")
 
 	// initialization of dispatch service server
 	dispatchService := service.NewDispatchService(
 		logger,
-		mailman.NewMailman(smtpParams),
-		currency_client.NewCurrencyServiceClient(currencyServiceConn),
 		repo.NewUserRepo(storage),
 		repo.NewSubRepo(storage),
 		repo.NewDispatchRepo(storage),
+		broker.NewNatsBroker(natsConnection),
 	)
 	dispatchServiceServer := server.NewDispatchServiceServer(dispatchService, logger)
 

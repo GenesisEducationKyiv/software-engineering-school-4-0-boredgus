@@ -16,7 +16,6 @@ import (
 type (
 	DispatchService interface {
 		SubscribeForDispatch(ctx context.Context, email, dispatch string) error
-		SendDispatch(ctx context.Context, dispatch string) error
 		GetAllDispatches(ctx context.Context) ([]deps.DispatchData, error)
 	}
 
@@ -49,19 +48,6 @@ func (s *dispatchServiceServer) SubscribeForDispatch(ctx context.Context, req *g
 	}
 
 	return &grpc_gen.SubscribeForDispatchResponse{}, nil
-}
-
-func (s *dispatchServiceServer) SendDispatch(ctx context.Context, req *grpc_gen.SendDispatchRequest) (*grpc_gen.SendDispatchResponse, error) {
-	s.log("SendDispatch", req.String())
-	err := s.service.SendDispatch(ctx, req.DispatchId)
-	if errors.Is(err, service_errors.NotFoundErr) {
-		return nil, status.Error(codes.NotFound, err.Error())
-	}
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	return &grpc_gen.SendDispatchResponse{}, nil
 }
 
 func (s *dispatchServiceServer) GetAllDispatches(ctx context.Context, req *grpc_gen.GetAllDispatchesRequest) (*grpc_gen.GetAllDispatchesResponse, error) {

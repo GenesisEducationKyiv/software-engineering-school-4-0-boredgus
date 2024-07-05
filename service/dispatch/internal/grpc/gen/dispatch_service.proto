@@ -3,11 +3,8 @@ syntax = "proto3";
 package main;
 option go_package = "./";
 
-// import "google/protobuf/timestamp.proto";
-
 service DispatchService {
   rpc SubscribeForDispatch(SubscribeForDispatchRequest) returns (SubscribeForDispatchResponse) {}
-  rpc SendDispatch(SendDispatchRequest) returns (SendDispatchResponse) {}
   rpc GetAllDispatches(GetAllDispatchesRequest) returns (GetAllDispatchesResponse) {}
 }
 
@@ -18,11 +15,6 @@ message SubscribeForDispatchRequest {
 
 message SubscribeForDispatchResponse {}
 
-message SendDispatchRequest {
-  string dispatch_id = 1;
-}
-
-message SendDispatchResponse {}
 
 message GetAllDispatchesRequest {}
 

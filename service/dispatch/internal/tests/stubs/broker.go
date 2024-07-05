@@ -5,16 +5,16 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type MailmanStub struct {
+type BrokerStub struct {
 	mock.Mock
 }
 
-// Creates a mock for interface Mailman.
-func NewMailmanStub() *MailmanStub {
-	return &MailmanStub{}
+func NewBrokerStub() *BrokerStub {
+	return &BrokerStub{}
 }
-func (m *MailmanStub) Send(email deps.Email) error {
-	args := m.Called(email)
+
+func (b *BrokerStub) CreateSubscription(sub deps.SubscriptionMsg) error {
+	args := b.Called(sub)
 	returnedErr := args.Get(0)
 
 	if returnedErr != nil {

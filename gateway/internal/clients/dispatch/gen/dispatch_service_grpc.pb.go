@@ -23,7 +23,6 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DispatchServiceClient interface {
 	SubscribeForDispatch(ctx context.Context, in *SubscribeForDispatchRequest, opts ...grpc.CallOption) (*SubscribeForDispatchResponse, error)
-	SendDispatch(ctx context.Context, in *SendDispatchRequest, opts ...grpc.CallOption) (*SendDispatchResponse, error)
 	GetAllDispatches(ctx context.Context, in *GetAllDispatchesRequest, opts ...grpc.CallOption) (*GetAllDispatchesResponse, error)
 }
 
@@ -44,15 +43,6 @@ func (c *dispatchServiceClient) SubscribeForDispatch(ctx context.Context, in *Su
 	return out, nil
 }
 
-func (c *dispatchServiceClient) SendDispatch(ctx context.Context, in *SendDispatchRequest, opts ...grpc.CallOption) (*SendDispatchResponse, error) {
-	out := new(SendDispatchResponse)
-	err := c.cc.Invoke(ctx, "/main.DispatchService/SendDispatch", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *dispatchServiceClient) GetAllDispatches(ctx context.Context, in *GetAllDispatchesRequest, opts ...grpc.CallOption) (*GetAllDispatchesResponse, error) {
 	out := new(GetAllDispatchesResponse)
 	err := c.cc.Invoke(ctx, "/main.DispatchService/GetAllDispatches", in, out, opts...)
@@ -67,7 +57,6 @@ func (c *dispatchServiceClient) GetAllDispatches(ctx context.Context, in *GetAll
 // for forward compatibility
 type DispatchServiceServer interface {
 	SubscribeForDispatch(context.Context, *SubscribeForDispatchRequest) (*SubscribeForDispatchResponse, error)
-	SendDispatch(context.Context, *SendDispatchRequest) (*SendDispatchResponse, error)
 	GetAllDispatches(context.Context, *GetAllDispatchesRequest) (*GetAllDispatchesResponse, error)
 	mustEmbedUnimplementedDispatchServiceServer()
 }
@@ -78,9 +67,6 @@ type UnimplementedDispatchServiceServer struct {
 
 func (UnimplementedDispatchServiceServer) SubscribeForDispatch(context.Context, *SubscribeForDispatchRequest) (*SubscribeForDispatchResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubscribeForDispatch not implemented")
-}
-func (UnimplementedDispatchServiceServer) SendDispatch(context.Context, *SendDispatchRequest) (*SendDispatchResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SendDispatch not implemented")
 }
 func (UnimplementedDispatchServiceServer) GetAllDispatches(context.Context, *GetAllDispatchesRequest) (*GetAllDispatchesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllDispatches not implemented")
@@ -116,24 +102,6 @@ func _DispatchService_SubscribeForDispatch_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DispatchService_SendDispatch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SendDispatchRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(DispatchServiceServer).SendDispatch(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/main.DispatchService/SendDispatch",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DispatchServiceServer).SendDispatch(ctx, req.(*SendDispatchRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _DispatchService_GetAllDispatches_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetAllDispatchesRequest)
 	if err := dec(in); err != nil {
@@ -162,10 +130,6 @@ var DispatchService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SubscribeForDispatch",
 			Handler:    _DispatchService_SubscribeForDispatch_Handler,
-		},
-		{
-			MethodName: "SendDispatch",
-			Handler:    _DispatchService_SendDispatch_Handler,
 		},
 		{
 			MethodName: "GetAllDispatches",

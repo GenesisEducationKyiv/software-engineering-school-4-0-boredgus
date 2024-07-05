@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+option go_package = ".;nats_msgs";
+
+package nats_msgs;
+
+message CreateSubscriptionMessage {
+  string id = 1;
+  string eventType = 2;
+}
