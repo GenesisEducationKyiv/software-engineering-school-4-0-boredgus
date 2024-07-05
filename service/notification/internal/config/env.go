@@ -17,6 +17,8 @@ type envVars struct {
 	SMTPEmail    string `env:"SMTP_EMAIL"`
 	SMTPUsername string `env:"SMTP_USERNAME"`
 	SMTPPassword string `env:"SMTP_PASSWORD"`
+
+	BrokerURL string `env:"NATS_URL"`
 }
 
 func GetEnv() (*envVars, error) {

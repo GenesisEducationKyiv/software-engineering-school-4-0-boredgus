@@ -5,6 +5,7 @@ go 1.22.4
 require (
 	github.com/caarlos0/env/v9 v9.0.0
 	github.com/go-mail/mail v2.3.1+incompatible
+	github.com/google/uuid v1.6.0
 	github.com/nats-io/nats.go v1.36.0
 	go.uber.org/zap v1.27.0
 	google.golang.org/grpc v1.65.0

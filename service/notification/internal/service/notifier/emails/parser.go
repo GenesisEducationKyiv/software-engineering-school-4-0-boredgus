@@ -15,14 +15,14 @@ func init() {
 	basePath = filepath.Dir(currentFile)
 }
 
-func PathToTemplate(filename string) string {
+func pathToTemplate(filename string) string {
 	return filepath.Join(basePath, "templates", filename)
 }
 
 var TemplateParseErr = errors.New("template error")
 
 func ParseHTMLTemplate(templateName string, data any) ([]byte, error) {
-	templateFile := PathToTemplate(templateName + ".html")
+	templateFile := pathToTemplate(templateName + ".html")
 	tmpl, err := template.ParseFiles(templateFile)
 	if err != nil {
 

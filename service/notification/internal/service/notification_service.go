@@ -32,18 +32,11 @@ func NewNotificationService(
 	}
 }
 
-func (s *notificationService) CreateSubscription(
-	ctx context.Context,
-	notification CreateSubscriptionNotification,
-) error {
-
-	return nil
+func (s *notificationService) SendSubscriptionDetails(ctx context.Context, notification Notification) error {
+	return s.notifier.Notify(notification)
 }
 
-func (s *notificationService) SendExchangeRate(
-	ctx context.Context,
-	notification ExchangeRateNotification,
-) error {
+func (s *notificationService) SendExchangeRate(ctx context.Context, notification Notification) error {
 
 	return nil
 }

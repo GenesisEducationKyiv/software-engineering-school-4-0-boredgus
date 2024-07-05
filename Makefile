@@ -7,6 +7,11 @@ start:
 start-dev:
 	ENV_FILE=${DEV_ENV_FILE} docker compose -f docker-compose-dev.yaml  --env-file ${DEV_ENV_FILE} up
 
+path:
+	export GOPATH=$HOME/go
+	export PATH=$PATH:$GOPATH:$GOPATH/bin
+	echo $PATH
+
 generate-mocks:
 	cd gateway && make generate-mocks;
 	cd service/currency && make generate-mocks;
@@ -54,6 +59,8 @@ generate-proto:
 # for notification service
 	protoc --go_out=./service/notification/internal/broker/gen \
 		service/dispatch/internal/broker/gen/sub_messages.proto
+	protoc --go_out=./service/notification/internal/broker/gen \
+		service/notification/internal/broker/gen/notification_messages.proto
 	protoc --go_out=./service/notification/internal/clients/currency/gen  \
 		--go-grpc_out=./service/notification/internal/clients/currency/gen \
 		service/currency/internal/grpc/gen/currency_service.proto

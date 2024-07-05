@@ -1,24 +1,30 @@
 package templates
 
-import "fmt"
+import (
+	"fmt"
 
-type Template string
-
-const (
-	SubscriptionCreated  Template = "subscription_created"
-	ExchangeRateTemplate Template = "exchange_rate"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/service"
 )
 
-var templateToSubjectMapper = map[Template]string{
-	SubscriptionCreated:  "You subscribed to exchange rate dispatch!",
-	ExchangeRateTemplate: "Exchange rate",
+type Template struct {
+	Name, Subject string
 }
 
-func TemplateToSubject(templateName string) (string, error) {
-	template := Template(templateName)
-	subjectTemplate, ok := templateToSubjectMapper[template]
+var notificationTypeToTemplate = map[service.NotificationType]Template{
+	service.SubscriptionCreated: {
+		Name:    "subscription_created",
+		Subject: "You subscribed to exchange rate dispatch!",
+	},
+	service.SendExchangeRates: {
+		Name:    "exchange_rate",
+		Subject: "Exchange rates",
+	},
+}
+
+func NotificationTypeToTemplate(ntfctionType service.NotificationType) (Template, error) {
+	subjectTemplate, ok := notificationTypeToTemplate[ntfctionType]
 	if !ok {
-		return "", fmt.Errorf("provided unsupported email template name '%s'", template)
+		return Template{}, fmt.Errorf("email template for '%v' notification is not configured", ntfctionType)
 	}
 
 	return subjectTemplate, nil

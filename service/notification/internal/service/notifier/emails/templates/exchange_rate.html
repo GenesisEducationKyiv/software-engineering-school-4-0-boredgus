@@ -19,11 +19,11 @@
 </style>
 
 <div class="body">
-  <h2 class="title">Exchange rates for {{ .BaseCurrency }}</h2>
+  <h2 class="title">Exchange rates for {{ .BaseCcy }}</h2>
   <br>
-  {{ range $targetCurrency, $rate := .Rates }}
+  {{ range $target_ccy, $rate := .Rates }}
     <div class="row">
-      1 {{ $.BaseCurrency }} = {{ printf "%.4f" $rate }} {{ $targetCurrency }}
+      1 {{ $.BaseCcy }} = {{ printf "%.4f" $rate }} {{ $target_ccy }}
     </div>
   {{ end }}
 </div>

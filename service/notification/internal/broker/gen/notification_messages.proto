@@ -1,19 +1,24 @@
 syntax = "proto3";
 
-option go_package = ".;nats_msgs";
+option go_package = ".;broker_msgs";
 
-package nats_msgs;
+package broker_msgs;
 
 import "google/protobuf/timestamp.proto";
 
-message Data {
-  string templateName = 1;
-  repeated string emails = 2;
-  map<string,string> payload = 3;
+enum EventType {
+  SubscriptionDetails = 0;
+  ExchangeRates = 1;
 }
 
-message SendNotificationMessage {
-  string eventName = 1;
+message Data {
+  repeated string emails = 1;
+  string baseCcy = 2;
+  map<string,double> rates = 3;
+}
+
+message SendDispatchCommand {
+  EventType eventType = 1;
   google.protobuf.Timestamp timestamp = 3;
   Data data = 4;
 }
