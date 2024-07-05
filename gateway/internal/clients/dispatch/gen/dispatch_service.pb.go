@@ -113,91 +113,6 @@ func (*SubscribeForDispatchResponse) Descriptor() ([]byte, []int) {
 	return file_service_dispatch_internal_grpc_gen_dispatch_service_proto_rawDescGZIP(), []int{1}
 }
 
-type SendDispatchRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	DispatchId string `protobuf:"bytes,1,opt,name=dispatch_id,json=dispatchId,proto3" json:"dispatch_id,omitempty"`
-}
-
-func (x *SendDispatchRequest) Reset() {
-	*x = SendDispatchRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes[2]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *SendDispatchRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SendDispatchRequest) ProtoMessage() {}
-
-func (x *SendDispatchRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes[2]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SendDispatchRequest.ProtoReflect.Descriptor instead.
-func (*SendDispatchRequest) Descriptor() ([]byte, []int) {
-	return file_service_dispatch_internal_grpc_gen_dispatch_service_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *SendDispatchRequest) GetDispatchId() string {
-	if x != nil {
-		return x.DispatchId
-	}
-	return ""
-}
-
-type SendDispatchResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *SendDispatchResponse) Reset() {
-	*x = SendDispatchResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes[3]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *SendDispatchResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SendDispatchResponse) ProtoMessage() {}
-
-func (x *SendDispatchResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes[3]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SendDispatchResponse.ProtoReflect.Descriptor instead.
-func (*SendDispatchResponse) Descriptor() ([]byte, []int) {
-	return file_service_dispatch_internal_grpc_gen_dispatch_service_proto_rawDescGZIP(), []int{3}
-}
-
 type GetAllDispatchesRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -207,7 +122,7 @@ type GetAllDispatchesRequest struct {
 func (x *GetAllDispatchesRequest) Reset() {
 	*x = GetAllDispatchesRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes[4]
+		mi := &file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -220,7 +135,7 @@ func (x *GetAllDispatchesRequest) String() string {
 func (*GetAllDispatchesRequest) ProtoMessage() {}
 
 func (x *GetAllDispatchesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes[4]
+	mi := &file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -233,7 +148,7 @@ func (x *GetAllDispatchesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllDispatchesRequest.ProtoReflect.Descriptor instead.
 func (*GetAllDispatchesRequest) Descriptor() ([]byte, []int) {
-	return file_service_dispatch_internal_grpc_gen_dispatch_service_proto_rawDescGZIP(), []int{4}
+	return file_service_dispatch_internal_grpc_gen_dispatch_service_proto_rawDescGZIP(), []int{2}
 }
 
 type DispatchData struct {
@@ -252,7 +167,7 @@ type DispatchData struct {
 func (x *DispatchData) Reset() {
 	*x = DispatchData{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes[5]
+		mi := &file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -265,7 +180,7 @@ func (x *DispatchData) String() string {
 func (*DispatchData) ProtoMessage() {}
 
 func (x *DispatchData) ProtoReflect() protoreflect.Message {
-	mi := &file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes[5]
+	mi := &file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -278,7 +193,7 @@ func (x *DispatchData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DispatchData.ProtoReflect.Descriptor instead.
 func (*DispatchData) Descriptor() ([]byte, []int) {
-	return file_service_dispatch_internal_grpc_gen_dispatch_service_proto_rawDescGZIP(), []int{5}
+	return file_service_dispatch_internal_grpc_gen_dispatch_service_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *DispatchData) GetId() string {
@@ -320,7 +235,7 @@ type GetAllDispatchesResponse struct {
 func (x *GetAllDispatchesResponse) Reset() {
 	*x = GetAllDispatchesResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes[6]
+		mi := &file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -333,7 +248,7 @@ func (x *GetAllDispatchesResponse) String() string {
 func (*GetAllDispatchesResponse) ProtoMessage() {}
 
 func (x *GetAllDispatchesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes[6]
+	mi := &file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -346,7 +261,7 @@ func (x *GetAllDispatchesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllDispatchesResponse.ProtoReflect.Descriptor instead.
 func (*GetAllDispatchesResponse) Descriptor() ([]byte, []int) {
-	return file_service_dispatch_internal_grpc_gen_dispatch_service_proto_rawDescGZIP(), []int{6}
+	return file_service_dispatch_internal_grpc_gen_dispatch_service_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *GetAllDispatchesResponse) GetDispatches() []*DispatchData {
@@ -370,11 +285,6 @@ var file_service_dispatch_internal_grpc_gen_dispatch_service_proto_rawDesc = []b
 	0x63, 0x68, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x64, 0x69, 0x73,
 	0x70, 0x61, 0x74, 0x63, 0x68, 0x49, 0x64, 0x22, 0x1e, 0x0a, 0x1c, 0x53, 0x75, 0x62, 0x73, 0x63,
 	0x72, 0x69, 0x62, 0x65, 0x46, 0x6f, 0x72, 0x44, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x36, 0x0a, 0x13, 0x53, 0x65, 0x6e, 0x64, 0x44,
-	0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1f,
-	0x0a, 0x0b, 0x64, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x0a, 0x64, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x49, 0x64, 0x22,
-	0x16, 0x0a, 0x14, 0x53, 0x65, 0x6e, 0x64, 0x44, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x52,
 	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x19, 0x0a, 0x17, 0x47, 0x65, 0x74, 0x41, 0x6c,
 	0x6c, 0x44, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65,
 	0x73, 0x74, 0x22, 0x7d, 0x0a, 0x0c, 0x44, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x44, 0x61,
@@ -418,22 +328,20 @@ func file_service_dispatch_internal_grpc_gen_dispatch_service_proto_rawDescGZIP(
 	return file_service_dispatch_internal_grpc_gen_dispatch_service_proto_rawDescData
 }
 
-var file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_service_dispatch_internal_grpc_gen_dispatch_service_proto_goTypes = []interface{}{
 	(*SubscribeForDispatchRequest)(nil),  // 0: main.SubscribeForDispatchRequest
 	(*SubscribeForDispatchResponse)(nil), // 1: main.SubscribeForDispatchResponse
-	(*SendDispatchRequest)(nil),          // 2: main.SendDispatchRequest
-	(*SendDispatchResponse)(nil),         // 3: main.SendDispatchResponse
-	(*GetAllDispatchesRequest)(nil),      // 4: main.GetAllDispatchesRequest
-	(*DispatchData)(nil),                 // 5: main.DispatchData
-	(*GetAllDispatchesResponse)(nil),     // 6: main.GetAllDispatchesResponse
+	(*GetAllDispatchesRequest)(nil),      // 2: main.GetAllDispatchesRequest
+	(*DispatchData)(nil),                 // 3: main.DispatchData
+	(*GetAllDispatchesResponse)(nil),     // 4: main.GetAllDispatchesResponse
 }
 var file_service_dispatch_internal_grpc_gen_dispatch_service_proto_depIdxs = []int32{
-	5, // 0: main.GetAllDispatchesResponse.dispatches:type_name -> main.DispatchData
+	3, // 0: main.GetAllDispatchesResponse.dispatches:type_name -> main.DispatchData
 	0, // 1: main.DispatchService.SubscribeForDispatch:input_type -> main.SubscribeForDispatchRequest
-	4, // 2: main.DispatchService.GetAllDispatches:input_type -> main.GetAllDispatchesRequest
+	2, // 2: main.DispatchService.GetAllDispatches:input_type -> main.GetAllDispatchesRequest
 	1, // 3: main.DispatchService.SubscribeForDispatch:output_type -> main.SubscribeForDispatchResponse
-	6, // 4: main.DispatchService.GetAllDispatches:output_type -> main.GetAllDispatchesResponse
+	4, // 4: main.DispatchService.GetAllDispatches:output_type -> main.GetAllDispatchesResponse
 	3, // [3:5] is the sub-list for method output_type
 	1, // [1:3] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
@@ -472,30 +380,6 @@ func file_service_dispatch_internal_grpc_gen_dispatch_service_proto_init() {
 			}
 		}
 		file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SendDispatchRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SendDispatchResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetAllDispatchesRequest); i {
 			case 0:
 				return &v.state
@@ -507,7 +391,7 @@ func file_service_dispatch_internal_grpc_gen_dispatch_service_proto_init() {
 				return nil
 			}
 		}
-		file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+		file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DispatchData); i {
 			case 0:
 				return &v.state
@@ -519,7 +403,7 @@ func file_service_dispatch_internal_grpc_gen_dispatch_service_proto_init() {
 				return nil
 			}
 		}
-		file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+		file_service_dispatch_internal_grpc_gen_dispatch_service_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetAllDispatchesResponse); i {
 			case 0:
 				return &v.state
@@ -538,7 +422,7 @@ func file_service_dispatch_internal_grpc_gen_dispatch_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_service_dispatch_internal_grpc_gen_dispatch_service_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
