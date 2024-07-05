@@ -13,13 +13,6 @@ func NewBrokerStub() *BrokerStub {
 	return &BrokerStub{}
 }
 
-func (b *BrokerStub) CreateSubscription(sub deps.SubscriptionMsg) error {
-	args := b.Called(sub)
-	returnedErr := args.Get(0)
-
-	if returnedErr != nil {
-		return returnedErr.(error)
-	}
-
-	return nil
+func (b *BrokerStub) CreateSubscription(sub deps.Subscription) {
+	b.Called(sub)
 }

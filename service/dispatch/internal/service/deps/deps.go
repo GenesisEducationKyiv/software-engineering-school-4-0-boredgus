@@ -2,6 +2,7 @@ package deps
 
 import (
 	"context"
+	"time"
 
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/entities"
 )
@@ -31,15 +32,16 @@ type (
 		GetAllDispatches(ctx context.Context) ([]DispatchData, error)
 	}
 
-	SubscriptionMsg struct {
-		ID          string
+	Subscription struct {
+		DispatchID  string
+		Email       string
 		Sources     map[string]string
 		BaseCcy     string
 		TargetCcies []string
-		SendAt      string
+		SendAt      time.Time
 	}
 
 	Broker interface {
-		CreateSubscription(sub SubscriptionMsg) error
+		CreateSubscription(sub Subscription)
 	}
 )

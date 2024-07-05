@@ -15,7 +15,6 @@ import (
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/config"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/repo"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 func panicOnError(err error, msg string) {
@@ -30,14 +29,6 @@ func main() {
 	logger := config.InitLogger(env.Mode, config.WithProcess("dispatch-service"))
 	defer logger.Flush()
 
-	// connection to currency service server
-	currencyServiceConn, err := grpc.NewClient(
-		fmt.Sprintf("%s:%s", env.CurrencyServiceAddress, env.CurrencyServicePort),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
-	panicOnError(err, "failed to connect to currency service grpc server")
-	defer currencyServiceConn.Close()
-
 	// connection to db
 	postgresqlDB, err := db.NewPostrgreSQL(
 		env.PostgreSQLConnString,
@@ -49,8 +40,13 @@ func main() {
 	storage := repo.NewStore(postgresqlDB, db.IsPqError)
 
 	// connection to NATS broker
-	natsConnection, err := nats.Connect(env.BrokerURL, nats.Name("subscription_service"))
+	natsConnection, err := nats.Connect(
+		env.BrokerURL,
+		nats.Name("subscription-service"),
+	)
 	panicOnError(err, "failed to connect to broker")
+
+	natsBroker := broker.NewNatsBroker(natsConnection, logger, panicOnError)
 
 	// initialization of dispatch service server
 	dispatchService := service.NewDispatchService(
@@ -58,7 +54,7 @@ func main() {
 		repo.NewUserRepo(storage),
 		repo.NewSubRepo(storage),
 		repo.NewDispatchRepo(storage),
-		broker.NewNatsBroker(natsConnection),
+		broker.NewEventBroker(natsBroker, logger),
 	)
 	dispatchServiceServer := server.NewDispatchServiceServer(dispatchService, logger)
 

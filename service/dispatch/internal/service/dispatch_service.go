@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"time"
 
 	"errors"
 
@@ -53,11 +52,13 @@ func (s *dispatchService) SubscribeForDispatch(ctx context.Context, email, dispa
 		return err
 	}
 
-	return s.broker.CreateSubscription(deps.SubscriptionMsg{
-		ID:          dispatchId,
+	s.broker.CreateSubscription(deps.Subscription{
+		DispatchID:  dispatchId,
 		Sources:     map[string]string{"email": email},
 		BaseCcy:     dispatchData.Details.BaseCurrency,
 		TargetCcies: dispatchData.Details.TargetCurrencies,
-		SendAt:      dispatchData.SendAt.Format(time.TimeOnly),
+		SendAt:      dispatchData.SendAt,
 	})
+
+	return nil
 }

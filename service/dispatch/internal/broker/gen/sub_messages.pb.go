@@ -4,11 +4,12 @@
 // 	protoc        v5.26.1
 // source: service/dispatch/internal/broker/gen/sub_messages.proto
 
-package nats_msgs
+package broker_msgs
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 )
@@ -20,17 +21,64 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type CreateSubscriptionMessage struct {
+type SubscriptionStatus int32
+
+const (
+	SubscriptionStatus_CREATED SubscriptionStatus = 0
+)
+
+// Enum value maps for SubscriptionStatus.
+var (
+	SubscriptionStatus_name = map[int32]string{
+		0: "CREATED",
+	}
+	SubscriptionStatus_value = map[string]int32{
+		"CREATED": 0,
+	}
+)
+
+func (x SubscriptionStatus) Enum() *SubscriptionStatus {
+	p := new(SubscriptionStatus)
+	*p = x
+	return p
+}
+
+func (x SubscriptionStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (SubscriptionStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_service_dispatch_internal_broker_gen_sub_messages_proto_enumTypes[0].Descriptor()
+}
+
+func (SubscriptionStatus) Type() protoreflect.EnumType {
+	return &file_service_dispatch_internal_broker_gen_sub_messages_proto_enumTypes[0]
+}
+
+func (x SubscriptionStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use SubscriptionStatus.Descriptor instead.
+func (SubscriptionStatus) EnumDescriptor() ([]byte, []int) {
+	return file_service_dispatch_internal_broker_gen_sub_messages_proto_rawDescGZIP(), []int{0}
+}
+
+type SubscriptionPayload struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id        string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	EventType string `protobuf:"bytes,2,opt,name=eventType,proto3" json:"eventType,omitempty"`
+	DispatchID  string                 `protobuf:"bytes,1,opt,name=dispatchID,proto3" json:"dispatchID,omitempty"`
+	BaseCcy     string                 `protobuf:"bytes,2,opt,name=baseCcy,proto3" json:"baseCcy,omitempty"`
+	TargetCcies []string               `protobuf:"bytes,3,rep,name=targetCcies,proto3" json:"targetCcies,omitempty"`
+	Status      SubscriptionStatus     `protobuf:"varint,4,opt,name=status,proto3,enum=broker_msgs.SubscriptionStatus" json:"status,omitempty"`
+	Email       string                 `protobuf:"bytes,5,opt,name=email,proto3" json:"email,omitempty"`
+	SendAt      *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=sendAt,proto3" json:"sendAt,omitempty"`
 }
 
-func (x *CreateSubscriptionMessage) Reset() {
-	*x = CreateSubscriptionMessage{}
+func (x *SubscriptionPayload) Reset() {
+	*x = SubscriptionPayload{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_service_dispatch_internal_broker_gen_sub_messages_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -38,13 +86,13 @@ func (x *CreateSubscriptionMessage) Reset() {
 	}
 }
 
-func (x *CreateSubscriptionMessage) String() string {
+func (x *SubscriptionPayload) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateSubscriptionMessage) ProtoMessage() {}
+func (*SubscriptionPayload) ProtoMessage() {}
 
-func (x *CreateSubscriptionMessage) ProtoReflect() protoreflect.Message {
+func (x *SubscriptionPayload) ProtoReflect() protoreflect.Message {
 	mi := &file_service_dispatch_internal_broker_gen_sub_messages_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -56,23 +104,122 @@ func (x *CreateSubscriptionMessage) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateSubscriptionMessage.ProtoReflect.Descriptor instead.
-func (*CreateSubscriptionMessage) Descriptor() ([]byte, []int) {
+// Deprecated: Use SubscriptionPayload.ProtoReflect.Descriptor instead.
+func (*SubscriptionPayload) Descriptor() ([]byte, []int) {
 	return file_service_dispatch_internal_broker_gen_sub_messages_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *CreateSubscriptionMessage) GetId() string {
+func (x *SubscriptionPayload) GetDispatchID() string {
 	if x != nil {
-		return x.Id
+		return x.DispatchID
 	}
 	return ""
 }
 
-func (x *CreateSubscriptionMessage) GetEventType() string {
+func (x *SubscriptionPayload) GetBaseCcy() string {
+	if x != nil {
+		return x.BaseCcy
+	}
+	return ""
+}
+
+func (x *SubscriptionPayload) GetTargetCcies() []string {
+	if x != nil {
+		return x.TargetCcies
+	}
+	return nil
+}
+
+func (x *SubscriptionPayload) GetStatus() SubscriptionStatus {
+	if x != nil {
+		return x.Status
+	}
+	return SubscriptionStatus_CREATED
+}
+
+func (x *SubscriptionPayload) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *SubscriptionPayload) GetSendAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.SendAt
+	}
+	return nil
+}
+
+type SubscriptionCreatedMessage struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	EventID   string                 `protobuf:"bytes,1,opt,name=eventID,proto3" json:"eventID,omitempty"`
+	EventType string                 `protobuf:"bytes,2,opt,name=eventType,proto3" json:"eventType,omitempty"`
+	Timestamp *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Payload   *SubscriptionPayload   `protobuf:"bytes,4,opt,name=payload,proto3" json:"payload,omitempty"`
+}
+
+func (x *SubscriptionCreatedMessage) Reset() {
+	*x = SubscriptionCreatedMessage{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_service_dispatch_internal_broker_gen_sub_messages_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SubscriptionCreatedMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SubscriptionCreatedMessage) ProtoMessage() {}
+
+func (x *SubscriptionCreatedMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_service_dispatch_internal_broker_gen_sub_messages_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SubscriptionCreatedMessage.ProtoReflect.Descriptor instead.
+func (*SubscriptionCreatedMessage) Descriptor() ([]byte, []int) {
+	return file_service_dispatch_internal_broker_gen_sub_messages_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *SubscriptionCreatedMessage) GetEventID() string {
+	if x != nil {
+		return x.EventID
+	}
+	return ""
+}
+
+func (x *SubscriptionCreatedMessage) GetEventType() string {
 	if x != nil {
 		return x.EventType
 	}
 	return ""
+}
+
+func (x *SubscriptionCreatedMessage) GetTimestamp() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Timestamp
+	}
+	return nil
+}
+
+func (x *SubscriptionCreatedMessage) GetPayload() *SubscriptionPayload {
+	if x != nil {
+		return x.Payload
+	}
+	return nil
 }
 
 var File_service_dispatch_internal_broker_gen_sub_messages_proto protoreflect.FileDescriptor
@@ -81,14 +228,42 @@ var file_service_dispatch_internal_broker_gen_sub_messages_proto_rawDesc = []byt
 	0x0a, 0x37, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2f, 0x64, 0x69, 0x73, 0x70, 0x61, 0x74,
 	0x63, 0x68, 0x2f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x2f, 0x62, 0x72, 0x6f, 0x6b,
 	0x65, 0x72, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x73, 0x75, 0x62, 0x5f, 0x6d, 0x65, 0x73, 0x73, 0x61,
-	0x67, 0x65, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x09, 0x6e, 0x61, 0x74, 0x73, 0x5f,
-	0x6d, 0x73, 0x67, 0x73, 0x22, 0x49, 0x0a, 0x19, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x53, 0x75,
-	0x62, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67,
-	0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69,
-	0x64, 0x12, 0x1c, 0x0a, 0x09, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x79, 0x70, 0x65, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x79, 0x70, 0x65, 0x42,
-	0x0d, 0x5a, 0x0b, 0x2e, 0x3b, 0x6e, 0x61, 0x74, 0x73, 0x5f, 0x6d, 0x73, 0x67, 0x73, 0x62, 0x06,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x67, 0x65, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x0b, 0x62, 0x72, 0x6f, 0x6b, 0x65,
+	0x72, 0x5f, 0x6d, 0x73, 0x67, 0x73, 0x1a, 0x1f, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
+	0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xf4, 0x01, 0x0a, 0x13, 0x53, 0x75, 0x62, 0x73,
+	0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x12,
+	0x1e, 0x0a, 0x0a, 0x64, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x49, 0x44, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x0a, 0x64, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x49, 0x44, 0x12,
+	0x18, 0x0a, 0x07, 0x62, 0x61, 0x73, 0x65, 0x43, 0x63, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x07, 0x62, 0x61, 0x73, 0x65, 0x43, 0x63, 0x79, 0x12, 0x20, 0x0a, 0x0b, 0x74, 0x61, 0x72,
+	0x67, 0x65, 0x74, 0x43, 0x63, 0x69, 0x65, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52, 0x0b,
+	0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x43, 0x63, 0x69, 0x65, 0x73, 0x12, 0x37, 0x0a, 0x06, 0x73,
+	0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x1f, 0x2e, 0x62, 0x72,
+	0x6f, 0x6b, 0x65, 0x72, 0x5f, 0x6d, 0x73, 0x67, 0x73, 0x2e, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72,
+	0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x06, 0x73, 0x74,
+	0x61, 0x74, 0x75, 0x73, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x6d, 0x61, 0x69, 0x6c, 0x18, 0x05, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x05, 0x65, 0x6d, 0x61, 0x69, 0x6c, 0x12, 0x32, 0x0a, 0x06, 0x73, 0x65,
+	0x6e, 0x64, 0x41, 0x74, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f,
+	0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d,
+	0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x41, 0x74, 0x22, 0xca,
+	0x01, 0x0a, 0x1a, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x43,
+	0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x18, 0x0a,
+	0x07, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07,
+	0x65, 0x76, 0x65, 0x6e, 0x74, 0x49, 0x44, 0x12, 0x1c, 0x0a, 0x09, 0x65, 0x76, 0x65, 0x6e, 0x74,
+	0x54, 0x79, 0x70, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x65, 0x76, 0x65, 0x6e,
+	0x74, 0x54, 0x79, 0x70, 0x65, 0x12, 0x38, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61,
+	0x6d, 0x70, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c,
+	0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73,
+	0x74, 0x61, 0x6d, 0x70, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x12,
+	0x3a, 0x0a, 0x07, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x20, 0x2e, 0x62, 0x72, 0x6f, 0x6b, 0x65, 0x72, 0x5f, 0x6d, 0x73, 0x67, 0x73, 0x2e, 0x53,
+	0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x50, 0x61, 0x79, 0x6c, 0x6f,
+	0x61, 0x64, 0x52, 0x07, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x2a, 0x21, 0x0a, 0x12, 0x53,
+	0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x75,
+	0x73, 0x12, 0x0b, 0x0a, 0x07, 0x43, 0x52, 0x45, 0x41, 0x54, 0x45, 0x44, 0x10, 0x00, 0x42, 0x0f,
+	0x5a, 0x0d, 0x2e, 0x3b, 0x62, 0x72, 0x6f, 0x6b, 0x65, 0x72, 0x5f, 0x6d, 0x73, 0x67, 0x73, 0x62,
+	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -103,16 +278,24 @@ func file_service_dispatch_internal_broker_gen_sub_messages_proto_rawDescGZIP() 
 	return file_service_dispatch_internal_broker_gen_sub_messages_proto_rawDescData
 }
 
-var file_service_dispatch_internal_broker_gen_sub_messages_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_service_dispatch_internal_broker_gen_sub_messages_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_service_dispatch_internal_broker_gen_sub_messages_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_service_dispatch_internal_broker_gen_sub_messages_proto_goTypes = []interface{}{
-	(*CreateSubscriptionMessage)(nil), // 0: nats_msgs.CreateSubscriptionMessage
+	(SubscriptionStatus)(0),            // 0: broker_msgs.SubscriptionStatus
+	(*SubscriptionPayload)(nil),        // 1: broker_msgs.SubscriptionPayload
+	(*SubscriptionCreatedMessage)(nil), // 2: broker_msgs.SubscriptionCreatedMessage
+	(*timestamppb.Timestamp)(nil),      // 3: google.protobuf.Timestamp
 }
 var file_service_dispatch_internal_broker_gen_sub_messages_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0, // 0: broker_msgs.SubscriptionPayload.status:type_name -> broker_msgs.SubscriptionStatus
+	3, // 1: broker_msgs.SubscriptionPayload.sendAt:type_name -> google.protobuf.Timestamp
+	3, // 2: broker_msgs.SubscriptionCreatedMessage.timestamp:type_name -> google.protobuf.Timestamp
+	1, // 3: broker_msgs.SubscriptionCreatedMessage.payload:type_name -> broker_msgs.SubscriptionPayload
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_service_dispatch_internal_broker_gen_sub_messages_proto_init() }
@@ -122,7 +305,19 @@ func file_service_dispatch_internal_broker_gen_sub_messages_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_service_dispatch_internal_broker_gen_sub_messages_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CreateSubscriptionMessage); i {
+			switch v := v.(*SubscriptionPayload); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_service_dispatch_internal_broker_gen_sub_messages_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SubscriptionCreatedMessage); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -139,13 +334,14 @@ func file_service_dispatch_internal_broker_gen_sub_messages_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_service_dispatch_internal_broker_gen_sub_messages_proto_rawDesc,
-			NumEnums:      0,
-			NumMessages:   1,
+			NumEnums:      1,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_service_dispatch_internal_broker_gen_sub_messages_proto_goTypes,
 		DependencyIndexes: file_service_dispatch_internal_broker_gen_sub_messages_proto_depIdxs,
+		EnumInfos:         file_service_dispatch_internal_broker_gen_sub_messages_proto_enumTypes,
 		MessageInfos:      file_service_dispatch_internal_broker_gen_sub_messages_proto_msgTypes,
 	}.Build()
 	File_service_dispatch_internal_broker_gen_sub_messages_proto = out.File

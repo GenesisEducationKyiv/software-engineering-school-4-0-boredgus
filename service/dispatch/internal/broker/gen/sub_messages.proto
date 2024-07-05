@@ -1,10 +1,27 @@
 syntax = "proto3";
 
-option go_package = ".;nats_msgs";
+option go_package = ".;broker_msgs";
 
-package nats_msgs;
+package broker_msgs;
 
-message CreateSubscriptionMessage {
-  string id = 1;
+import "google/protobuf/timestamp.proto";
+
+enum SubscriptionStatus {
+  CREATED = 0;
+}
+
+message SubscriptionPayload {
+  string dispatchID = 1;
+  string baseCcy = 2;
+  repeated string targetCcies = 3;
+  SubscriptionStatus status = 4;
+  string email = 5;
+  google.protobuf.Timestamp sendAt = 6;
+}
+
+message SubscriptionCreatedMessage {
+  string eventID = 1;
   string eventType = 2;
+  google.protobuf.Timestamp timestamp = 3;
+  SubscriptionPayload payload = 4;
 }

@@ -20,7 +20,8 @@ linters-settings:
     threshold: 100
   mnd:
     ignored-files:
-      - 'internal/tests/'
+      - "internal/tests/"
+      - "nats_broker.go"
 
 issues:
   max-same-issues: 50

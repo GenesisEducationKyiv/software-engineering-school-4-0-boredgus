@@ -21,21 +21,8 @@ func (_m *Broker) EXPECT() *Broker_Expecter {
 }
 
 // CreateSubscription provides a mock function with given fields: sub
-func (_m *Broker) CreateSubscription(sub deps.SubscriptionMsg) error {
-	ret := _m.Called(sub)
-
-	if len(ret) == 0 {
-		panic("no return value specified for CreateSubscription")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(deps.SubscriptionMsg) error); ok {
-		r0 = rf(sub)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
+func (_m *Broker) CreateSubscription(sub deps.Subscription) {
+	_m.Called(sub)
 }
 
 // Broker_CreateSubscription_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateSubscription'
@@ -49,19 +36,19 @@ func (_e *Broker_Expecter) CreateSubscription(sub interface{}) *Broker_CreateSub
 	return &Broker_CreateSubscription_Call{Call: _e.mock.On("CreateSubscription", sub)}
 }
 
-func (_c *Broker_CreateSubscription_Call) Run(run func(sub deps.SubscriptionMsg)) *Broker_CreateSubscription_Call {
+func (_c *Broker_CreateSubscription_Call) Run(run func(sub deps.Subscription)) *Broker_CreateSubscription_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(deps.SubscriptionMsg))
+		run(args[0].(deps.Subscription))
 	})
 	return _c
 }
 
-func (_c *Broker_CreateSubscription_Call) Return(_a0 error) *Broker_CreateSubscription_Call {
-	_c.Call.Return(_a0)
+func (_c *Broker_CreateSubscription_Call) Return() *Broker_CreateSubscription_Call {
+	_c.Call.Return()
 	return _c
 }
 
-func (_c *Broker_CreateSubscription_Call) RunAndReturn(run func(deps.SubscriptionMsg) error) *Broker_CreateSubscription_Call {
+func (_c *Broker_CreateSubscription_Call) RunAndReturn(run func(deps.Subscription)) *Broker_CreateSubscription_Call {
 	_c.Call.Return(run)
 	return _c
 }
