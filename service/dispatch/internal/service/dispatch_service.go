@@ -54,7 +54,7 @@ func (s *dispatchService) SubscribeForDispatch(ctx context.Context, email, dispa
 
 	s.broker.CreateSubscription(deps.Subscription{
 		DispatchID:  dispatchId,
-		Sources:     map[string]string{"email": email},
+		Email:       email,
 		BaseCcy:     dispatchData.Details.BaseCurrency,
 		TargetCcies: dispatchData.Details.TargetCurrencies,
 		SendAt:      dispatchData.SendAt,

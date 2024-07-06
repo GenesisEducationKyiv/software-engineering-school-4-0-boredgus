@@ -4,18 +4,12 @@ import (
 	"context"
 	"testing"
 
-	// "time"
-
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/entities"
-	// client_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mocks/client"
-	// logger_mocks "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mocks/logger"
-	// mailing_mocks "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mocks/mailing"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps"
 
 	broker_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mocks/broker"
 	repo_mocks "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mocks/repo"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
 func Test_DispatchService_GetAllDispatches(t *testing.T) {
@@ -94,6 +88,7 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 		dispatchId string
 	}
 	type mocked struct {
+		dispatch       entities.CurrencyDispatch
 		getDispatchErr error
 		createUserErr  error
 		createSubErr   error
@@ -107,7 +102,7 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 	setup := func(m *mocked, a *args) func() {
 		getDsptchCall := dispatchRepoMock.EXPECT().
 			GetDispatchByID(a.ctx, a.dispatchId).
-			Maybe().Return(entities.CurrencyDispatch{}, m.getDispatchErr)
+			Maybe().Return(m.dispatch, m.getDispatchErr)
 		createUserCall := userRepoMock.EXPECT().
 			CreateUser(a.ctx, a.email).
 			Maybe().NotBefore(getDsptchCall).Return(m.createUserErr)
@@ -117,8 +112,13 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 				Dispatch: a.dispatchId,
 			}).Maybe().NotBefore(createUserCall).Return(m.createSubErr)
 		brokerCall := brokerMock.EXPECT().
-			// TODO: replace mock.anything with concrete value
-			CreateSubscription(mock.Anything).Maybe().NotBefore(createSubCall)
+			CreateSubscription(deps.Subscription{
+				DispatchID:  m.dispatch.Id,
+				Email:       a.email,
+				BaseCcy:     m.dispatch.Details.BaseCurrency,
+				TargetCcies: m.dispatch.Details.TargetCurrencies,
+				SendAt:      m.dispatch.SendAt,
+			}).Maybe().NotBefore(createSubCall)
 
 		return func() {
 			getDsptchCall.Unset()

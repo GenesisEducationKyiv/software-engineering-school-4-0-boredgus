@@ -35,7 +35,6 @@ type (
 	Subscription struct {
 		DispatchID  string
 		Email       string
-		Sources     map[string]string
 		BaseCcy     string
 		TargetCcies []string
 		SendAt      time.Time

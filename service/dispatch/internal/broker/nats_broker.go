@@ -12,7 +12,6 @@ import (
 
 type natsBroker struct {
 	js     jetstream.JetStream
-	stream jetstream.Stream
 	logger config.Logger
 }
 
@@ -32,7 +31,7 @@ func NewNatsBroker(conn *nats.Conn, logger config.Logger, onError func(error, st
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	eventStream, err := js.CreateOrUpdateStream(ctx, jetstream.StreamConfig{
+	_, err = js.CreateOrUpdateStream(ctx, jetstream.StreamConfig{
 		Name:      "EVENTS",
 		Retention: jetstream.WorkQueuePolicy,
 		Subjects:  []string{"events.>"},
@@ -41,7 +40,6 @@ func NewNatsBroker(conn *nats.Conn, logger config.Logger, onError func(error, st
 
 	return &natsBroker{
 		js:     js,
-		stream: eventStream,
 		logger: logger,
 	}
 }
