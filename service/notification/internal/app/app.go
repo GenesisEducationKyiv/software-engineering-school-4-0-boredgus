@@ -19,8 +19,6 @@ type (
 	DispatchScheduler interface {
 		Run()
 		AddDispatches(ds map[string]entities.Dispatch)
-		AddSubscription(entities.Subscription)
-		// CancelSubscription(entities.Subscription)
 		Stop()
 	}
 	app struct {

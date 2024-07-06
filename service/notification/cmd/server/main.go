@@ -65,25 +65,24 @@ func main() {
 	)
 	panicOnError(err, "failed to connect to NATS broker")
 
+	// connection to message broker
 	js, err := jetstream.New(natsConnection)
 	panicOnError(err, "failed to create NATS Jetstream instance")
 
+	// initializatin of broker client
 	natsBroker, err := broker.NewNatsBroker(js, logger)
 	panicOnError(err, "failed to create broker")
 
+	// connecting to object store
 	jetstreamStore, err := natsBroker.ObjectStore("dispatches")
 	panicOnError(err, "failed to connect to object store")
 
-	dispatchStore := repo.NewDispatchRepo(broker.NewObjectStore(jetstreamStore))
-
 	// initalization of cron scheduler
-	scheduler := scheduler.NewDispatchScheduler(
-		app.DispatchInvoker(natsBroker, currencyService, logger),
-	)
+	scheduler := scheduler.NewDispatchScheduler()
 
 	handler := app.NewEventHandler(
 		natsBroker,
-		dispatchStore,
+		currencyService,
 		scheduler,
 		notificationService,
 		logger,
@@ -93,6 +92,6 @@ func main() {
 		handler,
 		scheduler,
 		logger,
-		dispatchStore,
+		repo.NewDispatchRepo(broker.NewObjectStore(jetstreamStore)),
 	).Run()
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/entities"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/service"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type (
@@ -30,15 +31,19 @@ type (
 	}
 
 	Scheduler interface {
-		AddSubscription(entities.Subscription)
+		AddSubscription(entities.Subscription, func(*entities.Dispatch))
+	}
+
+	Converter interface {
+		Convert(ctx context.Context, baseCcy string, targetCcies []string) (map[string]float64, error)
 	}
 
 	eventHandler struct {
-		broker        Broker
-		dispatchStore DispatchStore
-		scheduler     Scheduler
-		logger        config.Logger
-		service       NotificationService
+		broker    Broker
+		converter Converter
+		scheduler Scheduler
+		logger    config.Logger
+		service   NotificationService
 	}
 )
 
@@ -51,18 +56,50 @@ const (
 
 func NewEventHandler(
 	broker Broker,
-	dispatchStore DispatchStore,
+	ccyConverter Converter,
 	dispatchScheduler Scheduler,
 	service NotificationService,
 	logger config.Logger,
 ) *eventHandler {
 
 	return &eventHandler{
-		logger:        logger,
-		dispatchStore: dispatchStore,
-		scheduler:     dispatchScheduler,
-		broker:        broker,
-		service:       service,
+		logger:    logger,
+		scheduler: dispatchScheduler,
+		broker:    broker,
+		service:   service,
+	}
+}
+
+func (h *eventHandler) invokeSendingOfDispatch(d *entities.Dispatch) {
+	msg := broker_msgs.SendDispatchCommand{
+		EventType: broker_msgs.EventType_SEND_DISPATCH,
+		Timestamp: timestamppb.New(time.Now().UTC()),
+		Data: &broker_msgs.Data{
+			Emails:  d.Emails,
+			BaseCcy: d.BaseCcy,
+		},
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), TimeoutOfProcessing)
+	defer cancel()
+
+	rates, err := h.converter.Convert(ctx, d.BaseCcy, d.TargetCcies)
+	if err != nil {
+		h.logger.Errorf("failed to get rates: %v", err)
+
+		return
+	}
+	msg.Data.Rates = rates
+
+	marshalled, err := proto.Marshal(&msg)
+	if err != nil {
+		h.logger.Errorf("failed to marshal SendDispatchCommand: %v", err)
+
+		return
+	}
+
+	if err := h.broker.PublishAsync(SendDispatchCommand, marshalled); err != nil {
+		h.logger.Errorf("failed to emit SendDispatch commands: %v", err)
 	}
 }
 
@@ -72,13 +109,15 @@ func (h *eventHandler) handleSubscriptionCreatedEvent(msg broker.ConsumedMessage
 		return fmt.Errorf("failed to unmarshal message from %s: %w", SubscriptionCreatedEvent, err)
 	}
 
-	h.scheduler.AddSubscription(entities.Subscription{
+	sub := entities.Subscription{
 		DispatchID:  parsedMsg.Payload.DispatchID,
 		BaseCcy:     parsedMsg.Payload.BaseCcy,
 		TargetCcies: parsedMsg.Payload.TargetCcies,
 		Email:       parsedMsg.Payload.Email,
 		SendAt:      parsedMsg.Payload.SendAt.AsTime(),
-	})
+	}
+
+	h.scheduler.AddSubscription(sub, h.invokeSendingOfDispatch)
 
 	ctx, cancel := context.WithTimeout(context.Background(), TimeoutOfProcessing)
 	defer cancel()
