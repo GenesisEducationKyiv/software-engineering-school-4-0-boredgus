@@ -36,7 +36,7 @@ type (
 	}
 )
 
-func NewDispatchScheduler(emitSendDispatchHandler func(*entities.Dispatch)) *dispatchScheduler {
+func NewDispatchScheduler(dispatchInvoker func(*entities.Dispatch)) *dispatchScheduler {
 	return &dispatchScheduler{
 		mu:                  &sync.Mutex{},
 		cron:                cron.New(cron.WithLocation(time.UTC)),
@@ -53,7 +53,24 @@ func (s *dispatchScheduler) Stop() {
 }
 
 func (s *dispatchScheduler) AddDispatches(ds map[string]entities.Dispatch) {
-	// TODO: implement adding of dispatches
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	for _, dispatch := range ds {
+		scheduled := ScheduledDispatch{
+			Data: &dispatch,
+			Spec: NewJobSpec(dispatch.SendAt),
+		}
+
+		entryID, err := s.cron.AddJob(scheduled.Spec.String(), NewSendDispatchJob(scheduled.Data, s.dispatchInvokerF))
+		if err != nil {
+			return
+		}
+
+		scheduled.EntryID = entryID
+
+		s.scheduledDispatches[dispatch.ID] = &scheduled
+	}
 }
 
 func (s *dispatchScheduler) AddSubscription(sub entities.Subscription) {

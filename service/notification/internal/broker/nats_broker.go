@@ -6,8 +6,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/nats-io/nats.go"
-
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/config"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go/jetstream"
@@ -22,19 +20,12 @@ type (
 		Term() error
 	}
 	natsBroker struct {
-		conn            *nats.Conn
 		js              jetstream.JetStream
 		eventConsumer   jetstream.Consumer
 		commandConsumer jetstream.Consumer
 		logger          config.Logger
 	}
 )
-
-func publishAsyncErrHandler(logger config.Logger) jetstream.MsgErrHandler {
-	return func(js jetstream.JetStream, m *nats.Msg, err error) {
-		logger.Errorf("handler: failed to publish message '%s' asynchronously: %v", string(m.Data), err)
-	}
-}
 
 const CreationTimeout = 5 * time.Second
 
@@ -78,23 +69,16 @@ func createCommandConsumer(js jetstream.JetStream) (jetstream.Consumer, error) {
 	})
 }
 
-func NewNatsBroker(conn *nats.Conn, logger config.Logger) (*natsBroker, error) {
-	js, err := jetstream.New(
-		conn,
-		jetstream.WithPublishAsyncErrHandler(publishAsyncErrHandler(logger)),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create NATS Jetstream instance: %w", err)
-	}
+func NewNatsBroker(js jetstream.JetStream, logger config.Logger) (*natsBroker, error) {
 
 	eventConsumer, err := createEventConsumer(js)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create NATS stream instance: %w", err)
+		return nil, fmt.Errorf("failed to create NATS stream instance for events: %w", err)
 	}
 
 	commandConsumer, err := createCommandConsumer(js)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create NATS stream consumer: %w", err)
+		return nil, fmt.Errorf("failed to create NATS stream consumer for commands: %w", err)
 	}
 
 	return &natsBroker{
@@ -109,8 +93,6 @@ func (b *natsBroker) consume(consumer jetstream.Consumer, handler func(msg Consu
 	_, err := consumer.Consume(func(msg jetstream.Msg) {
 		handler(msg)
 	})
-
-	fmt.Println("> after consumer.Consume")
 
 	if err != nil {
 		return fmt.Errorf("failed to consume message from stream '%s': %w", consumer.CachedInfo().Stream, err)

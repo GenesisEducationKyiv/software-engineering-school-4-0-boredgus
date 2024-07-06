@@ -33,10 +33,27 @@ func NewNotificationService(
 }
 
 func (s *notificationService) SendSubscriptionDetails(ctx context.Context, notification Notification) error {
-	return s.notifier.Notify(notification)
+	err := s.notifier.Notify(notification)
+	if err != nil {
+		s.logger.Errorf("failed to send subscription details: %v", err)
+
+		return err
+	}
+
+	s.logger.Infof("succefuly sent subscription details: %+v", notification.Data)
+
+	return nil
 }
 
-func (s *notificationService) SendExchangeRate(ctx context.Context, notification Notification) error {
+func (s *notificationService) SendExchangeRates(ctx context.Context, notification Notification) error {
+	err := s.notifier.Notify(notification)
+	if err != nil {
+		s.logger.Errorf("failed to send exchange rates: %v", err)
+
+		return err
+	}
+
+	s.logger.Infof("succefuly sent exchange rates: %+v", notification.Data)
 
 	return nil
 }

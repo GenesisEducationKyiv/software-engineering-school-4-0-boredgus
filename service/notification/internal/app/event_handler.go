@@ -22,7 +22,7 @@ type (
 
 	NotificationService interface {
 		SendSubscriptionDetails(ctx context.Context, notification service.Notification) error
-		SendExchangeRate(ctx context.Context, notification service.Notification) error
+		SendExchangeRates(ctx context.Context, notification service.Notification) error
 	}
 
 	DispatchStore interface {
@@ -45,6 +45,8 @@ type (
 const (
 	SubscriptionCreatedEvent string = "events.subscription.created"
 	SendDispatchCommand      string = "commands.send.dispatch"
+
+	TimeoutOfProcessing time.Duration = 2 * time.Second
 )
 
 func NewEventHandler(
@@ -78,7 +80,7 @@ func (h *eventHandler) handleSubscriptionCreatedEvent(msg broker.ConsumedMessage
 		SendAt:      parsedMsg.Payload.SendAt.AsTime(),
 	})
 
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), TimeoutOfProcessing)
 	defer cancel()
 
 	if err := h.service.SendSubscriptionDetails(ctx, service.Notification{
@@ -93,40 +95,31 @@ func (h *eventHandler) handleSubscriptionCreatedEvent(msg broker.ConsumedMessage
 		},
 	}); err != nil {
 		return fmt.Errorf("failed to send subscription details: %w", err)
-	}
-
-	if err := msg.Ack(); err != nil {
-		return fmt.Errorf("failed to acknowledge message: %w", err)
 	}
 
 	return nil
 }
 
 func (h *eventHandler) handleSendDispatchCommand(msg broker.ConsumedMessage) error {
-	var parsedMsg broker_msgs.SubscriptionCreatedMessage
+	var parsedMsg broker_msgs.SendDispatchCommand
 	if err := proto.Unmarshal(msg.Data(), &parsedMsg); err != nil {
 		return fmt.Errorf("failed to unmarshal message from %s: %w", SubscriptionCreatedEvent, err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), TimeoutOfProcessing)
 	defer cancel()
 
 	if err := h.service.SendSubscriptionDetails(ctx, service.Notification{
 		Type: service.SubscriptionCreated,
 		Data: service.NotificationData{
-			Emails: []string{parsedMsg.Payload.Email},
-			Payload: service.SubscriptionDetails{
-				BaseCcy:     parsedMsg.Payload.BaseCcy,
-				TargetCcies: parsedMsg.Payload.TargetCcies,
-				SendAt:      parsedMsg.Payload.SendAt.AsTime().UTC().Format(time.TimeOnly),
+			Emails: parsedMsg.Data.Emails,
+			Payload: service.CurrencyDispatch{
+				BaseCcy: parsedMsg.Data.BaseCcy,
+				Rates:   parsedMsg.Data.Rates,
 			},
 		},
 	}); err != nil {
 		return fmt.Errorf("failed to send subscription details: %w", err)
-	}
-
-	if err := msg.Ack(); err != nil {
-		return fmt.Errorf("failed to acknowledge message: %w", err)
 	}
 
 	return nil
@@ -139,10 +132,26 @@ func (h *eventHandler) HandleEvents() error {
 		switch msg.Subject() {
 		case SubscriptionCreatedEvent:
 			err = h.handleSubscriptionCreatedEvent(msg)
+		default:
+			h.logger.Infof("skipping message with subject %v ...", msg.Subject())
+
+			return
 		}
 
 		if err != nil {
 			h.logger.Error(err)
+
+			err = msg.Nak()
+			if err != nil {
+				h.logger.Errorf("failed to negatively acknowledge message: %v", err)
+			}
+
+			return
+		}
+
+		err = msg.Ack()
+		if err != nil {
+			h.logger.Errorf("failed to acknowledge message: %v", err)
 		}
 	})
 }
@@ -154,10 +163,26 @@ func (h *eventHandler) HandleCommands() error {
 		switch msg.Subject() {
 		case SendDispatchCommand:
 			err = h.handleSendDispatchCommand(msg)
+		default:
+			h.logger.Infof("skipping message with subject %v ...", msg.Subject())
+
+			return
 		}
 
 		if err != nil {
 			h.logger.Error(err)
+
+			err = msg.Nak()
+			if err != nil {
+				h.logger.Errorf("failed to negatively acknowledge message: %v", err)
+			}
+
+			return
+		}
+
+		err = msg.Ack()
+		if err != nil {
+			h.logger.Errorf("failed to acknowledge message: %v", err)
 		}
 	})
 }

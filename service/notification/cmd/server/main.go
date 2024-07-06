@@ -9,11 +9,11 @@ import (
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/clients/currency"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/clients/mailman"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/config"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/entities"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/repo"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/service"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/service/notifier"
 	"github.com/nats-io/nats.go"
+	"github.com/nats-io/nats.go/jetstream"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -39,6 +39,8 @@ func main() {
 	panicOnError(err, "failed to connect to dispatch service grpc server")
 	defer currencyServiceConn.Close()
 
+	currencyService := currency.NewCurrencyServiceClient(currencyServiceConn)
+
 	// initialization of notification service
 	mailmanClient := mailman.NewMailman(mailman.SMTPParams{
 		Host:     env.SMTPHost,
@@ -63,18 +65,22 @@ func main() {
 	)
 	panicOnError(err, "failed to connect to NATS broker")
 
-	natsBroker, err := broker.NewNatsBroker(natsConnection, logger)
-	panicOnError(err, "failed to create broker")
+	js, err := jetstream.New(natsConnection)
+	panicOnError(err, "failed to create NATS Jetstream instance")
 
-	// initalzation of cron scheduler
-	scheduler := scheduler.NewDispatchScheduler(func(d *entities.Dispatch) {
-		// TODO: implement
-	})
+	natsBroker, err := broker.NewNatsBroker(js, logger)
+	panicOnError(err, "failed to create broker")
 
 	jetstreamStore, err := natsBroker.ObjectStore("dispatches")
 	panicOnError(err, "failed to connect to object store")
 
 	dispatchStore := repo.NewDispatchRepo(broker.NewObjectStore(jetstreamStore))
+
+	// initalization of cron scheduler
+	scheduler := scheduler.NewDispatchScheduler(
+		app.DispatchInvoker(natsBroker, currencyService, logger),
+	)
+
 	handler := app.NewEventHandler(
 		natsBroker,
 		dispatchStore,

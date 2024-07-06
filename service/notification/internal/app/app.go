@@ -51,35 +51,35 @@ const IntervalBetweenUploadAttempts time.Duration = 20 * time.Minute
 func (a *app) uploadOldDispatches() {
 	var attemptNumber int32 = 0
 	for attemptNumber < MaxCountOfUploadAttempts {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), TimeoutOfProcessing)
 		defer cancel()
 
 		dispaches, err := a.fetcher.GetAll(ctx)
 		if err != nil {
+			a.logger.Errorf("failed to fetch scheduled dispatches: %v", err)
+
 			attemptNumber++
 			time.Sleep(IntervalBetweenUploadAttempts)
+
 			return
 		}
 
 		a.dispatchScheduler.AddDispatches(dispaches)
+		a.logger.Infof("successfully scheduled %v dispatches", len(dispaches))
+
 		break
 	}
 }
 
 func (a *app) Run() {
-	go func() {
-		if err := a.eventHandler.HandleEvents(); err != nil {
-			a.logger.Error(err)
-		}
-	}()
-	go func() {
-		if err := a.eventHandler.HandleCommands(); err != nil {
-			a.logger.Error(err)
-		}
-	}()
+	if err := a.eventHandler.HandleEvents(); err != nil {
+		a.logger.Error(err)
+	}
+	if err := a.eventHandler.HandleCommands(); err != nil {
+		a.logger.Error(err)
+	}
 	go a.uploadOldDispatches()
 
 	defer a.dispatchScheduler.Stop()
-
 	a.dispatchScheduler.Run()
 }

@@ -29,3 +29,6 @@ issues:
     - path: "_test.go"
       linters:
         - dupl
+    - path: "event_handler.go"
+      linters:
+        - dupl
