@@ -10,7 +10,7 @@ enum SubscriptionStatus {
   CREATED = 0;
 }
 
-message SubscriptionPayload {
+message Subscription {
   string dispatchID = 1;
   string baseCcy = 2;
   repeated string targetCcies = 3;
@@ -19,9 +19,9 @@ message SubscriptionPayload {
   google.protobuf.Timestamp sendAt = 6;
 }
 
-message SubscriptionCreatedMessage {
+message SubscriptionMessage {
   string eventID = 1;
   string eventType = 2;
   google.protobuf.Timestamp timestamp = 3;
-  SubscriptionPayload payload = 4;
+  Subscription payload = 4;
 }

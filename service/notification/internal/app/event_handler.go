@@ -104,7 +104,7 @@ func (h *eventHandler) invokeSendingOfDispatch(d *entities.Dispatch) {
 }
 
 func (h *eventHandler) handleSubscriptionCreatedEvent(msg broker.ConsumedMessage) error {
-	var parsedMsg broker_msgs.SubscriptionCreatedMessage
+	var parsedMsg broker_msgs.SubscriptionMessage
 	if err := proto.Unmarshal(msg.Data(), &parsedMsg); err != nil {
 		return fmt.Errorf("failed to unmarshal message from %s: %w", SubscriptionCreatedEvent, err)
 	}
