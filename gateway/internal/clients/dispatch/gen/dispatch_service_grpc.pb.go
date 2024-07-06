@@ -23,7 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DispatchServiceClient interface {
 	SubscribeForDispatch(ctx context.Context, in *SubscribeForDispatchRequest, opts ...grpc.CallOption) (*SubscribeForDispatchResponse, error)
-	GetAllDispatches(ctx context.Context, in *GetAllDispatchesRequest, opts ...grpc.CallOption) (*GetAllDispatchesResponse, error)
+	UnsubscribeFromDispatch(ctx context.Context, in *UnsubscribeFromRequest, opts ...grpc.CallOption) (*UnsubscribeFromResponse, error)
 }
 
 type dispatchServiceClient struct {
@@ -43,9 +43,9 @@ func (c *dispatchServiceClient) SubscribeForDispatch(ctx context.Context, in *Su
 	return out, nil
 }
 
-func (c *dispatchServiceClient) GetAllDispatches(ctx context.Context, in *GetAllDispatchesRequest, opts ...grpc.CallOption) (*GetAllDispatchesResponse, error) {
-	out := new(GetAllDispatchesResponse)
-	err := c.cc.Invoke(ctx, "/main.DispatchService/GetAllDispatches", in, out, opts...)
+func (c *dispatchServiceClient) UnsubscribeFromDispatch(ctx context.Context, in *UnsubscribeFromRequest, opts ...grpc.CallOption) (*UnsubscribeFromResponse, error) {
+	out := new(UnsubscribeFromResponse)
+	err := c.cc.Invoke(ctx, "/main.DispatchService/UnsubscribeFromDispatch", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func (c *dispatchServiceClient) GetAllDispatches(ctx context.Context, in *GetAll
 // for forward compatibility
 type DispatchServiceServer interface {
 	SubscribeForDispatch(context.Context, *SubscribeForDispatchRequest) (*SubscribeForDispatchResponse, error)
-	GetAllDispatches(context.Context, *GetAllDispatchesRequest) (*GetAllDispatchesResponse, error)
+	UnsubscribeFromDispatch(context.Context, *UnsubscribeFromRequest) (*UnsubscribeFromResponse, error)
 	mustEmbedUnimplementedDispatchServiceServer()
 }
 
@@ -68,8 +68,8 @@ type UnimplementedDispatchServiceServer struct {
 func (UnimplementedDispatchServiceServer) SubscribeForDispatch(context.Context, *SubscribeForDispatchRequest) (*SubscribeForDispatchResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubscribeForDispatch not implemented")
 }
-func (UnimplementedDispatchServiceServer) GetAllDispatches(context.Context, *GetAllDispatchesRequest) (*GetAllDispatchesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAllDispatches not implemented")
+func (UnimplementedDispatchServiceServer) UnsubscribeFromDispatch(context.Context, *UnsubscribeFromRequest) (*UnsubscribeFromResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UnsubscribeFromDispatch not implemented")
 }
 func (UnimplementedDispatchServiceServer) mustEmbedUnimplementedDispatchServiceServer() {}
 
@@ -102,20 +102,20 @@ func _DispatchService_SubscribeForDispatch_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DispatchService_GetAllDispatches_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetAllDispatchesRequest)
+func _DispatchService_UnsubscribeFromDispatch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnsubscribeFromRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DispatchServiceServer).GetAllDispatches(ctx, in)
+		return srv.(DispatchServiceServer).UnsubscribeFromDispatch(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/main.DispatchService/GetAllDispatches",
+		FullMethod: "/main.DispatchService/UnsubscribeFromDispatch",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DispatchServiceServer).GetAllDispatches(ctx, req.(*GetAllDispatchesRequest))
+		return srv.(DispatchServiceServer).UnsubscribeFromDispatch(ctx, req.(*UnsubscribeFromRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -132,8 +132,8 @@ var DispatchService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _DispatchService_SubscribeForDispatch_Handler,
 		},
 		{
-			MethodName: "GetAllDispatches",
-			Handler:    _DispatchService_GetAllDispatches_Handler,
+			MethodName: "UnsubscribeFromDispatch",
+			Handler:    _DispatchService_UnsubscribeFromDispatch_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

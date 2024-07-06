@@ -48,12 +48,18 @@ func GetRouter(params *APIParams) *gin.Engine {
 		return NewContext(ctx, context.Background(), params.Logger)
 	}
 
+	subscriptionController := controllers.NewSubscriptionController(params.DispatchService)
+
 	r.GET("/rate", func(ctx *gin.Context) {
 		controllers.GetExchangeRate(newContext(ctx), params.CurrencyService)
 	})
 
 	r.POST("/subscribe", func(ctx *gin.Context) {
-		controllers.SubscribeForDailyDispatch(newContext(ctx), params.DispatchService)
+		subscriptionController.SubscribeForDailyDispatch(newContext(ctx))
+	})
+
+	r.POST("/unsubscribe", func(ctx *gin.Context) {
+		subscriptionController.UnsubscribeFromDailyDispatch(newContext(ctx))
 	})
 
 	return r

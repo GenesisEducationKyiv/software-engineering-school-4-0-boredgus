@@ -25,6 +25,7 @@ type (
 )
 
 var (
+	NotFoundErr                            = errors.New("not found")
 	SubscriptionToDispatchAlreadyExistsErr = errors.New("subscription already exists")
 )
 
@@ -41,6 +42,18 @@ func (c *dispatchServiceClient) SubscribeForDispatch(ctx context.Context, email,
 	})
 	if status.Code(err) == codes.AlreadyExists {
 		return SubscriptionToDispatchAlreadyExistsErr
+	}
+
+	return err
+}
+
+func (c *dispatchServiceClient) UnsubscribeFromDispatch(ctx context.Context, email, dispatchId string) error {
+	_, err := c.client.SubscribeForDispatch(ctx, &grpc_gen.SubscribeForDispatchRequest{
+		Email:      email,
+		DispatchId: dispatchId,
+	})
+	if status.Code(err) == codes.NotFound {
+		return errors.Join(NotFoundErr, err)
 	}
 
 	return err
