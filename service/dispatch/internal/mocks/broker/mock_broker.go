@@ -31,7 +31,7 @@ type Broker_CreateSubscription_Call struct {
 }
 
 // CreateSubscription is a helper method to define mock.On call
-//   - sub deps.SubscriptionMsg
+//   - sub deps.Subscription
 func (_e *Broker_Expecter) CreateSubscription(sub interface{}) *Broker_CreateSubscription_Call {
 	return &Broker_CreateSubscription_Call{Call: _e.mock.On("CreateSubscription", sub)}
 }

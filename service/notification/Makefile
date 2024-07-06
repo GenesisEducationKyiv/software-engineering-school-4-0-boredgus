@@ -10,5 +10,5 @@ test:
 	go tool cover -func="test-coverage.txt"
 
 generate-mocks:
-	mockery --config=./.mockery.yaml
+# mockery --config=./.mockery.yaml
 	
