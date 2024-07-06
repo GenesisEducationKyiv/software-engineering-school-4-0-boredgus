@@ -7,6 +7,5 @@ test:
 	go tool cover -func="test-coverage.txt"
 
 generate-mocks:
-	echo "\n\n  -- empty command --\n\n"
-# mockery --config=./.mockery.yaml
+	mockery --config=./.mockery.yaml
 	

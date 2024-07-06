@@ -1,0 +1,28 @@
+version: 1
+threshold:
+  compliance: 100
+  coverage: 60
+dependenciesRules:
+  - package: "**.internal/clients.**"
+    shouldOnlyDependsOn:
+      internal:
+        - "**.internal/entities.**"
+        - "**.internal/service.**"
+        - "**.internal/clients.**"
+
+  - package: "**.internal/entities"
+    shouldOnlyDependsOn::
+      internal: 
+        - "**.internal/entities"
+
+  - package: "**.internal/repo"
+    shouldOnlyDependsOn: 
+      internal: 
+        - "**.internal/entities.**"
+
+  - package: "**.internal/service.**"
+    shouldOnlyDependsOn: 
+      internal: 
+        - "**.internal/entities.**"
+        - "**.internal/config.**"
+        - "**.internal/service.**"

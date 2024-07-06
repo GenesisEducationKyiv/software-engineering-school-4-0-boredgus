@@ -34,12 +34,6 @@ dependenciesRules:
       external:
         - "google.golang.org/grpc"
 
-  - package: "**.internal/emails"
-    shouldOnlyDependsOn: 
-      internal: 
-        - "**.internal/entities.**"
-        - "**.internal/config.**"
-        - "**.internal/service.**"
 
   - package: "**.internal/repo"
     shouldOnlyDependsOn: 
