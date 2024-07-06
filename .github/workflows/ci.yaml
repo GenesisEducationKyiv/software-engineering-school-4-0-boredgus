@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         modules:
-          ["gateway", "service/dispatch", "service/currency", "daemon/dispatch"]
+          ["gateway", "service/dispatch", "service/currency", "service/notification"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        modules: ["gateway", "service/dispatch", "service/currency"]
+        modules: ["gateway", "service/dispatch", "service/currency", "service/notification"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
