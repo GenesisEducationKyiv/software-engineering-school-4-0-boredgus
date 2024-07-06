@@ -1,9 +1,6 @@
 package broker
 
 import (
-	"context"
-	"time"
-
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/config"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
@@ -27,16 +24,6 @@ func NewNatsBroker(conn *nats.Conn, logger config.Logger, onError func(error, st
 		jetstream.WithPublishAsyncErrHandler(PublishAsyncErrHandler(logger)),
 	)
 	onError(err, "failed to create NATS Jetstream instance")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	_, err = js.CreateOrUpdateStream(ctx, jetstream.StreamConfig{
-		Name:      "EVENTS",
-		Retention: jetstream.WorkQueuePolicy,
-		Subjects:  []string{"events.>"},
-	})
-	onError(err, "failed to create NATS stream")
 
 	return &natsBroker{
 		js:     js,

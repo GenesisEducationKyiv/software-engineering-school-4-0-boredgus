@@ -45,14 +45,14 @@ func (b *eventBroker) CreateSubscription(sub deps.Subscription) {
 		Payload:   SubscriptionToProto(sub, broker_msgs.SubscriptionStatus_CREATED),
 	})
 	if err != nil {
-		b.logger.Errorf("failed to marshal %s message: %w", event, err)
+		b.logger.Errorf("failed to marshal %s message: %v", event, err)
 
 		return
 	}
 
 	if err = b.broker.PublishAsync(CreateSubscriptionSubject, data); err != nil {
 		b.logger.Errorf(
-			"failed to publish CreateSubscription message to '%s' subject: %w",
+			"failed to publish CreateSubscription message to '%s' subject: %v",
 			CreateSubscriptionSubject, err,
 		)
 	}
