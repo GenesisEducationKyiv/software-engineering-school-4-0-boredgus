@@ -72,6 +72,8 @@ func (a *app) Run() {
 		a.logger.Error(err)
 	}
 
+	a.logger.Infof("notification service started...")
+
 	defer a.dispatchScheduler.Stop()
 	a.dispatchScheduler.Run()
 }

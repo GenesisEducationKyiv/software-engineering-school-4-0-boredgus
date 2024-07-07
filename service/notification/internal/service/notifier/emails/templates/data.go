@@ -19,6 +19,14 @@ var notificationTypeToTemplate = map[service.NotificationType]Template{
 		Name:    "exchange_rate",
 		Subject: "Exchange rates",
 	},
+	service.SubscriptionCancelled: {
+		Name:    "subscription_cancelled",
+		Subject: "Subscription cancellation",
+	},
+	service.SubscriptionRenewed: {
+		Name:    "subscription_renewed",
+		Subject: "Subscription renovation",
+	},
 }
 
 func NotificationTypeToTemplate(ntfctionType service.NotificationType) (Template, error) {

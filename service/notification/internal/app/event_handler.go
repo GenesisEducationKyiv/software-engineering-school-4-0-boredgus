@@ -48,9 +48,6 @@ type (
 )
 
 const (
-	SubscriptionCreatedEvent string = "events.subscription.created"
-	SendDispatchCommand      string = "commands.send.dispatch"
-
 	TimeoutOfProcessing time.Duration = 2 * time.Second
 	RedeliveryDelay     time.Duration = 1 * time.Minute
 )
@@ -105,10 +102,10 @@ func (h *eventHandler) invokeSendingOfDispatch(d *entities.Dispatch) {
 	}
 }
 
-func (h *eventHandler) handleSubscriptionCreatedEvent(msg broker.ConsumedMessage) error {
+func (h *eventHandler) handleSubscriptionEvent(msg broker.ConsumedMessage) error {
 	var parsedMsg broker_msgs.SubscriptionMessage
 	if err := proto.Unmarshal(msg.Data(), &parsedMsg); err != nil {
-		return fmt.Errorf("failed to unmarshal message from %s: %w", SubscriptionCreatedEvent, err)
+		return fmt.Errorf("failed to unmarshal subscription message: %w", err)
 	}
 
 	sub := entities.Subscription{
@@ -128,7 +125,7 @@ func (h *eventHandler) handleSubscriptionCreatedEvent(msg broker.ConsumedMessage
 	}
 
 	if err := h.service.SendSubscriptionDetails(ctx, service.Notification{
-		Type: service.SubscriptionCreated,
+		Type: MessageTypeToNotificationType(parsedMsg.EventType),
 		Data: service.NotificationData{
 			Emails: []string{parsedMsg.Payload.Email},
 			Payload: service.SubscriptionData{
@@ -163,7 +160,7 @@ func (h *eventHandler) handleSendDispatchCommand(msg broker.ConsumedMessage) err
 			},
 		},
 	}); err != nil {
-		return fmt.Errorf("failed to send subscription details: %w", err)
+		return fmt.Errorf("failed to send dispatch: %w", err)
 	}
 
 	return nil
@@ -174,8 +171,8 @@ func (h *eventHandler) HandleMessages() error {
 		var err error
 
 		switch msg.Subject() {
-		case SubscriptionCreatedEvent:
-			err = h.handleSubscriptionCreatedEvent(msg)
+		case SubscriptionCreatedEvent, SubscriptionCancelledEvent, SubscriptionRenewedEvent:
+			err = h.handleSubscriptionEvent(msg)
 		case SendDispatchCommand:
 			err = h.handleSendDispatchCommand(msg)
 		default:
