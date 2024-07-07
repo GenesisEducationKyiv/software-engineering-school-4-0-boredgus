@@ -97,13 +97,15 @@ func (b *natsBroker) PublishAsync(subject string, payload []byte) error {
 		jetstream.WithMsgID(uuid.NewString()),
 	)
 	go func() {
+		msgID := pubAckFuture.Msg().Header.Get(jetstream.MsgIDHeader)
 		select {
 		case pubAck := <-pubAckFuture.Ok():
-			b.logger.Infof("message %s asynchronously published to stream '%s'", pubAckFuture.Msg().Data, pubAck.Stream)
+
+			b.logger.Infof("message with id '%s' asynchronously published to stream '%s'", msgID, pubAck.Stream)
 
 		case err := <-pubAckFuture.Err():
 			if err != nil {
-				b.logger.Errorf("failed to publish message to stream: %v", err)
+				b.logger.Errorf("failed to publish message with '%s' to stream '%s': %v", err)
 			}
 		}
 	}()
@@ -120,7 +122,7 @@ func (b *natsBroker) ObjectStore(bucket string) (jetstream.ObjectStore, error) {
 		Storage: jetstream.FileStorage,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to create object store for dispatches: %w", err)
+		return nil, fmt.Errorf("failed to create object store: %w", err)
 	}
 
 	return store, nil
