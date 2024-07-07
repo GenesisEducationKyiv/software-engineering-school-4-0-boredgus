@@ -38,11 +38,12 @@ type (
 	}
 
 	eventHandler struct {
-		broker    Broker
-		converter Converter
-		scheduler Scheduler
-		logger    config.Logger
-		service   NotificationService
+		broker        Broker
+		converter     Converter
+		scheduler     Scheduler
+		logger        config.Logger
+		service       NotificationService
+		dispatchStore DispatchStore
 	}
 )
 
@@ -60,6 +61,7 @@ func NewEventHandler(
 	dispatchScheduler Scheduler,
 	service NotificationService,
 	logger config.Logger,
+	dispatchStore DispatchStore,
 ) *eventHandler {
 
 	return &eventHandler{
@@ -117,10 +119,13 @@ func (h *eventHandler) handleSubscriptionCreatedEvent(msg broker.ConsumedMessage
 		SendAt:      parsedMsg.Payload.SendAt.AsTime(),
 	}
 
-	h.scheduler.AddSubscription(sub, h.invokeSendingOfDispatch)
-
 	ctx, cancel := context.WithTimeout(context.Background(), TimeoutOfProcessing)
 	defer cancel()
+
+	h.scheduler.AddSubscription(sub, h.invokeSendingOfDispatch)
+	if err := h.dispatchStore.AddSubscription(ctx, sub); err != nil {
+		return fmt.Errorf("failed to save subscription: %w", err)
+	}
 
 	if err := h.service.SendSubscriptionDetails(ctx, service.Notification{
 		Type: service.SubscriptionCreated,
