@@ -14,8 +14,7 @@ type envVars struct {
 
 	PostgreSQLConnString string `env:"POSTGRESQL_CONN_STRING"`
 
-	BrokerURL                 string `env:"NATS_URL"`
-	CreateSubscriptionSubject string `env:"CREATE_SUBSCRIPTION_SUBJECT"`
+	BrokerURL string `env:"NATS_URL"`
 }
 
 func Env() (*envVars, error) {
