@@ -23,10 +23,6 @@ type (
 
 const (
 	CreateSubscriptionSubject string = "events.subscription.created"
-	CancelSubscriptionSubject string = "events.subscription.cancelled"
-
-	CreateSubscriptionEvent string = "SubscriptionCreated"
-	CancelSubscriptionEvent string = "SubscriptionCancelled"
 )
 
 func NewEventBroker(broker Broker, logger config.Logger) *eventBroker {
@@ -37,15 +33,13 @@ func NewEventBroker(broker Broker, logger config.Logger) *eventBroker {
 }
 
 func (b *eventBroker) CreateSubscription(sub service.Subscription) {
-	event := CreateSubscriptionEvent
-
 	data, err := proto.Marshal(&messages.SubscriptionMessage{
 		EventType: messages.EventType_SUBSCRIPTION_CREATED,
 		Timestamp: timestamppb.New(time.Now().UTC()),
 		Payload:   subscriptionToProto(sub, messages.SubscriptionStatus_CREATED),
 	})
 	if err != nil {
-		b.logger.Errorf("failed to marshal %s message: %v", event, err)
+		b.logger.Errorf("failed to marshal subscription message: %v", err)
 
 		return
 	}
