@@ -39,36 +39,43 @@ test:
 test-coverage:
 	go tool cover -html="test-coverage.txt"
 
+
+currency_service_proto=contracts/proto/currency_service.proto
+dispatch_service_proto=contracts/proto/dispatch_service.proto
+notification_messages_proto=contracts/proto/notification_messages.proto
+subscription_messages_proto=contracts/proto/subscription_messages.proto
+
 generate-proto:
+
 # for currency service
 	protoc --go_out=./service/currency/internal/grpc/gen \
 		--go-grpc_out=./service/currency/internal/grpc/gen \
-		contracts/proto/currency_service.proto
+		${currency_service_proto}
 	
 # for gateway
 	protoc --go_out=./gateway/internal/clients/currency/gen  \
 		--go-grpc_out=./gateway/internal/clients/currency/gen \
-		contracts/proto/currency_service.proto
+		${currency_service_proto}
 
 	protoc --go_out=./gateway/internal/clients/dispatch/gen  \
 		--go-grpc_out=./gateway/internal/clients/dispatch/gen \
-		contracts/proto/dispatch_service.proto
+		${dispatch_service_proto}
 
 # for dispatch service
 	protoc --go_out=./service/dispatch/internal/grpc/gen \
 		--go-grpc_out=./service/dispatch/internal/grpc/gen \
-		contracts/proto/dispatch_service.proto
+		${dispatch_service_proto}
 
 	protoc --go_out=./service/dispatch/internal/broker/gen \
-		contracts/proto/subscription_messages.proto
+		${subscription_messages_proto}
 
 # for notification service
 	protoc --go_out=./service/notification/internal/broker/gen \
-		contracts/proto/subscription_messages.proto
+		${subscription_messages_proto}
 
 	protoc --go_out=./service/notification/internal/broker/gen \
-		contracts/proto/notification_messages.proto
+		${notification_messages_proto}
 
 	protoc --go_out=./service/notification/internal/clients/currency/gen  \
 		--go-grpc_out=./service/notification/internal/clients/currency/gen \
-		contracts/proto/currency_service.proto
+		${currency_service_proto}
