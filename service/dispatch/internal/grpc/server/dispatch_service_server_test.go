@@ -8,8 +8,7 @@ import (
 
 	logger_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mocks/logger"
 	service_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mocks/service"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps"
-	service_err "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/err"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -54,14 +53,14 @@ func Test_DispatchServiceServer_SubscribeForDispatch(t *testing.T) {
 		{
 			name:         "failed: user already subscribed for this dispatch",
 			args:         arguments,
-			mockedValues: &mocked{expectedSubscribeErr: service_err.UniqueViolationErr},
-			wantErr:      status.Error(codes.AlreadyExists, service_err.UniqueViolationErr.Error()),
+			mockedValues: &mocked{expectedSubscribeErr: service.UniqueViolationErr},
+			wantErr:      status.Error(codes.AlreadyExists, service.UniqueViolationErr.Error()),
 		},
 		{
 			name:         "failed: dispatch with such id does not exist",
 			args:         arguments,
-			mockedValues: &mocked{expectedSubscribeErr: service_err.NotFoundErr},
-			wantErr:      status.Error(codes.NotFound, service_err.NotFoundErr.Error()),
+			mockedValues: &mocked{expectedSubscribeErr: service.NotFoundErr},
+			wantErr:      status.Error(codes.NotFound, service.NotFoundErr.Error()),
 		},
 		{
 			name:         "failed: got unknown error from SubscribeForDispatch",
@@ -139,8 +138,8 @@ func Test_DispatchServiceServer_SendDispatch(t *testing.T) {
 		{
 			name:         "failed: dispatch withsuch id does not exist",
 			args:         arguments,
-			mockedValues: &mocked{expectedSendErr: service_err.NotFoundErr},
-			expectedErr:  status.Error(codes.NotFound, service_err.NotFoundErr.Error()),
+			mockedValues: &mocked{expectedSendErr: service.NotFoundErr},
+			expectedErr:  status.Error(codes.NotFound, service.NotFoundErr.Error()),
 		},
 		{
 			name:         "failed: got unknown error from SendDispatch",
@@ -185,7 +184,7 @@ func Test_DispatchServiceServer_GetAllDispatches(t *testing.T) {
 		req *grpc_gen.GetAllDispatchesRequest
 	}
 	type mocked struct {
-		expectedDispatches []deps.DispatchData
+		expectedDispatches []service.DispatchData
 		expectedGetErr     error
 	}
 
@@ -205,7 +204,7 @@ func Test_DispatchServiceServer_GetAllDispatches(t *testing.T) {
 		ctx: context.Background(),
 		req: &grpc_gen.GetAllDispatchesRequest{},
 	}
-	dispatches := []deps.DispatchData{{
+	dispatches := []service.DispatchData{{
 		Id:                 "id",
 		Label:              "label",
 		CountOfSubscribers: 2,

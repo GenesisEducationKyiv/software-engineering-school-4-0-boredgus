@@ -5,7 +5,7 @@ package service_mock
 import (
 	context "context"
 
-	deps "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps"
+	service "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -23,23 +23,23 @@ func (_m *DispatchService) EXPECT() *DispatchService_Expecter {
 }
 
 // GetAllDispatches provides a mock function with given fields: ctx
-func (_m *DispatchService) GetAllDispatches(ctx context.Context) ([]deps.DispatchData, error) {
+func (_m *DispatchService) GetAllDispatches(ctx context.Context) ([]service.DispatchData, error) {
 	ret := _m.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetAllDispatches")
 	}
 
-	var r0 []deps.DispatchData
+	var r0 []service.DispatchData
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) ([]deps.DispatchData, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) ([]service.DispatchData, error)); ok {
 		return rf(ctx)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) []deps.DispatchData); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) []service.DispatchData); ok {
 		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]deps.DispatchData)
+			r0 = ret.Get(0).([]service.DispatchData)
 		}
 	}
 
@@ -70,12 +70,12 @@ func (_c *DispatchService_GetAllDispatches_Call) Run(run func(ctx context.Contex
 	return _c
 }
 
-func (_c *DispatchService_GetAllDispatches_Call) Return(_a0 []deps.DispatchData, _a1 error) *DispatchService_GetAllDispatches_Call {
+func (_c *DispatchService_GetAllDispatches_Call) Return(_a0 []service.DispatchData, _a1 error) *DispatchService_GetAllDispatches_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *DispatchService_GetAllDispatches_Call) RunAndReturn(run func(context.Context) ([]deps.DispatchData, error)) *DispatchService_GetAllDispatches_Call {
+func (_c *DispatchService_GetAllDispatches_Call) RunAndReturn(run func(context.Context) ([]service.DispatchData, error)) *DispatchService_GetAllDispatches_Call {
 	_c.Call.Return(run)
 	return _c
 }

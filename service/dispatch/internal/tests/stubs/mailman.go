@@ -1,7 +1,7 @@
 package stubs
 
 import (
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -13,7 +13,7 @@ type MailmanStub struct {
 func NewMailmanStub() *MailmanStub {
 	return &MailmanStub{}
 }
-func (m *MailmanStub) Send(email deps.Email) error {
+func (m *MailmanStub) Send(email service.Email) error {
 	args := m.Called(email)
 	returnedErr := args.Get(0)
 

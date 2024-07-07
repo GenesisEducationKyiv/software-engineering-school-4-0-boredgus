@@ -5,8 +5,7 @@ import (
 	"errors"
 
 	grpc_gen "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/grpc/gen"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps"
-	service_errors "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/err"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service"
 
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/config"
 	"google.golang.org/grpc/codes"
@@ -17,7 +16,7 @@ type (
 	DispatchService interface {
 		SubscribeForDispatch(ctx context.Context, email, dispatch string) error
 		SendDispatch(ctx context.Context, dispatch string) error
-		GetAllDispatches(ctx context.Context) ([]deps.DispatchData, error)
+		GetAllDispatches(ctx context.Context) ([]service.DispatchData, error)
 	}
 
 	dispatchServiceServer struct {
@@ -38,10 +37,10 @@ func (s *dispatchServiceServer) log(method string, req any) {
 func (s *dispatchServiceServer) SubscribeForDispatch(ctx context.Context, req *grpc_gen.SubscribeForDispatchRequest) (*grpc_gen.SubscribeForDispatchResponse, error) {
 	s.log("SubscribeForDispatch", req.String())
 	err := s.service.SubscribeForDispatch(ctx, req.Email, req.DispatchId)
-	if errors.Is(err, service_errors.UniqueViolationErr) {
+	if errors.Is(err, service.UniqueViolationErr) {
 		return nil, status.Error(codes.AlreadyExists, err.Error())
 	}
-	if errors.Is(err, service_errors.NotFoundErr) {
+	if errors.Is(err, service.NotFoundErr) {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
 	if err != nil {
@@ -54,7 +53,7 @@ func (s *dispatchServiceServer) SubscribeForDispatch(ctx context.Context, req *g
 func (s *dispatchServiceServer) SendDispatch(ctx context.Context, req *grpc_gen.SendDispatchRequest) (*grpc_gen.SendDispatchResponse, error) {
 	s.log("SendDispatch", req.String())
 	err := s.service.SendDispatch(ctx, req.DispatchId)
-	if errors.Is(err, service_errors.NotFoundErr) {
+	if errors.Is(err, service.NotFoundErr) {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
 	if err != nil {
@@ -67,10 +66,10 @@ func (s *dispatchServiceServer) SendDispatch(ctx context.Context, req *grpc_gen.
 func (s *dispatchServiceServer) GetAllDispatches(ctx context.Context, req *grpc_gen.GetAllDispatchesRequest) (*grpc_gen.GetAllDispatchesResponse, error) {
 	s.log("GetAllDispatches", req.String())
 	allDispatches, err := s.service.GetAllDispatches(ctx)
-	if errors.Is(err, service_errors.NotFoundErr) {
+	if errors.Is(err, service.NotFoundErr) {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
-	if errors.Is(err, service_errors.InvalidArgumentErr) {
+	if errors.Is(err, service.InvalidArgumentErr) {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 	if err != nil {
@@ -88,7 +87,7 @@ func (s *dispatchServiceServer) GetAllDispatches(ctx context.Context, req *grpc_
 	return &grpc_gen.GetAllDispatchesResponse{Dispatches: dispatches}, nil
 }
 
-func toProtoDispatch(data deps.DispatchData) *grpc_gen.DispatchData {
+func toProtoDispatch(data service.DispatchData) *grpc_gen.DispatchData {
 	return &grpc_gen.DispatchData{
 		Id:                 data.Id,
 		Label:              data.Label,

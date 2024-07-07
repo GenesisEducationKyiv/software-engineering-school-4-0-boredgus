@@ -3,7 +3,7 @@ package mailman
 import (
 	"fmt"
 
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service"
 	"github.com/go-mail/mail"
 )
 
@@ -31,7 +31,7 @@ func NewMailman(params SMTPParams) *mailman {
 	}
 }
 
-func (m *mailman) Send(email deps.Email) error {
+func (m *mailman) Send(email service.Email) error {
 	msgs := make([]*mail.Message, 0, len(email.To))
 
 	for _, target := range email.To {

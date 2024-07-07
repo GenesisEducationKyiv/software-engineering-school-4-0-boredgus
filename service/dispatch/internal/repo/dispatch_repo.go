@@ -6,8 +6,7 @@ import (
 	"strings"
 
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/entities"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps"
-	service_errors "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/err"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service"
 )
 
 type dispatchRepo struct {
@@ -32,14 +31,14 @@ func (r *dispatchRepo) GetDispatchByID(ctx context.Context, dispatchId string) (
 	row := r.db.QueryRowContext(ctx, getDispatchByIdQ, dispatchId)
 	err := row.Err()
 	if err != nil && r.db.IsError(err, InvalidTextRepresentation) {
-		return dispatch, fmt.Errorf("%w: incorrect format for uuid", service_errors.InvalidArgumentErr)
+		return dispatch, fmt.Errorf("%w: incorrect format for uuid", service.InvalidArgumentErr)
 	}
 	if err != nil {
 		return dispatch, err
 	}
 	var targetCurrencies string
 	if err := row.Scan(&dispatch.Id, &dispatch.Label, &dispatch.TemplateName, &dispatch.Details.BaseCurrency, &targetCurrencies, &dispatch.SendAt, &dispatch.CountOfSubscribers); err != nil {
-		return dispatch, fmt.Errorf("%w: dispatch with such id does not exists", service_errors.NotFoundErr)
+		return dispatch, fmt.Errorf("%w: dispatch with such id does not exists", service.NotFoundErr)
 	}
 	dispatch.Details.TargetCurrencies = strings.Split(targetCurrencies, ",")
 
@@ -60,7 +59,7 @@ func (r *dispatchRepo) GetSubscribersOfDispatch(ctx context.Context, dispatchId 
 	var result []string
 	rows, err := r.db.QueryContext(ctx, getSubscribersOfDispatchQ, dispatchId)
 	if r.db.IsError(err, InvalidTextRepresentation) {
-		return result, fmt.Errorf("%w: incorrect format for uuid", service_errors.InvalidArgumentErr)
+		return result, fmt.Errorf("%w: incorrect format for uuid", service.InvalidArgumentErr)
 	}
 
 	for rows.Next() {
@@ -82,14 +81,14 @@ const getAllDispatchesQ = `
 	group by cd.id;
 `
 
-func (r *dispatchRepo) GetAllDispatches(ctx context.Context) ([]deps.DispatchData, error) {
-	result := make([]deps.DispatchData, 0, 5) // nolint:mnd
+func (r *dispatchRepo) GetAllDispatches(ctx context.Context) ([]service.DispatchData, error) {
+	result := make([]service.DispatchData, 0, 5) // nolint:mnd
 	rows, err := r.db.QueryContext(ctx, getAllDispatchesQ)
 	if err != nil {
 		return nil, err
 	}
 	for rows.Next() {
-		var dispatch deps.DispatchData
+		var dispatch service.DispatchData
 		if err := rows.Scan(&dispatch.Id, &dispatch.Label, &dispatch.SendAt, &dispatch.CountOfSubscribers); err != nil {
 			return result, fmt.Errorf("failed to scan currency dispatch: %w", err)
 		}

@@ -3,7 +3,7 @@
 package mailing_mock
 
 import (
-	deps "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps"
+	service "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -21,7 +21,7 @@ func (_m *Mailman) EXPECT() *Mailman_Expecter {
 }
 
 // Send provides a mock function with given fields: email
-func (_m *Mailman) Send(email deps.Email) error {
+func (_m *Mailman) Send(email service.Email) error {
 	ret := _m.Called(email)
 
 	if len(ret) == 0 {
@@ -29,7 +29,7 @@ func (_m *Mailman) Send(email deps.Email) error {
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(deps.Email) error); ok {
+	if rf, ok := ret.Get(0).(func(service.Email) error); ok {
 		r0 = rf(email)
 	} else {
 		r0 = ret.Error(0)
@@ -49,9 +49,9 @@ func (_e *Mailman_Expecter) Send(email interface{}) *Mailman_Send_Call {
 	return &Mailman_Send_Call{Call: _e.mock.On("Send", email)}
 }
 
-func (_c *Mailman_Send_Call) Run(run func(email deps.Email)) *Mailman_Send_Call {
+func (_c *Mailman_Send_Call) Run(run func(email service.Email)) *Mailman_Send_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(deps.Email))
+		run(args[0].(service.Email))
 	})
 	return _c
 }
@@ -61,7 +61,7 @@ func (_c *Mailman_Send_Call) Return(_a0 error) *Mailman_Send_Call {
 	return _c
 }
 
-func (_c *Mailman_Send_Call) RunAndReturn(run func(deps.Email) error) *Mailman_Send_Call {
+func (_c *Mailman_Send_Call) RunAndReturn(run func(service.Email) error) *Mailman_Send_Call {
 	_c.Call.Return(run)
 	return _c
 }

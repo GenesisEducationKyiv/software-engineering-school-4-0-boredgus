@@ -1,4 +1,4 @@
-package service
+package service_test
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	client_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mocks/client"
 	logger_mocks "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mocks/logger"
 	mailing_mocks "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mocks/mailing"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service"
 
 	repo_mocks "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mocks/repo"
 	"github.com/stretchr/testify/assert"
@@ -20,7 +20,7 @@ func Test_DispatchService_GetAllDispatches(t *testing.T) {
 		ctx context.Context
 	}
 	type mocked struct {
-		dispatchesFromRepo  []deps.DispatchData
+		dispatchesFromRepo  []service.DispatchData
 		getAllDispatchesErr error
 	}
 
@@ -35,7 +35,7 @@ func Test_DispatchService_GetAllDispatches(t *testing.T) {
 		}
 	}
 
-	dispatches := []deps.DispatchData{{
+	dispatches := []service.DispatchData{{
 		Id:                 "id",
 		Label:              "label",
 		CountOfSubscribers: 2,
@@ -46,7 +46,7 @@ func Test_DispatchService_GetAllDispatches(t *testing.T) {
 		name           string
 		args           args
 		mockedValues   mocked
-		expectedResult []deps.DispatchData
+		expectedResult []service.DispatchData
 		expectedErr    error
 	}{
 		{
@@ -68,9 +68,7 @@ func Test_DispatchService_GetAllDispatches(t *testing.T) {
 			cleanup := setup(tt.mockedValues, tt.args)
 			defer cleanup()
 
-			s := &dispatchService{
-				dispatchRepo: dispatchRepoMock,
-			}
+			s := service.NewDispatchService(nil, nil, nil, nil, nil, dispatchRepoMock)
 			actualResult, actualErr := s.GetAllDispatches(ctx)
 
 			assert.Equal(t, tt.expectedResult, actualResult)
@@ -107,7 +105,7 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 			CreateUser(a.ctx, a.email).
 			Maybe().NotBefore(getDsptchCall).Return(m.createUserErr)
 		createSubCall := subRepoMock.EXPECT().
-			CreateSubscription(a.ctx, deps.SubscriptionData{
+			CreateSubscription(a.ctx, service.SubscriptionData{
 				Email:    a.email,
 				Dispatch: a.dispatchId,
 			}).Maybe().NotBefore(createUserCall).Return(m.createSubErr)
@@ -158,13 +156,10 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cleanup := setup(tt.mockedValues, tt.args)
 			defer cleanup()
-			s := &dispatchService{
-				userRepo:     userRepoMock,
-				subRepo:      subRepoMock,
-				dispatchRepo: dispatchRepoMock,
-			}
 
+			s := service.NewDispatchService(nil, nil, nil, userRepoMock, subRepoMock, dispatchRepoMock)
 			actualErr := s.SubscribeForDispatch(tt.args.ctx, tt.args.email, tt.args.dispatchId)
+
 			if tt.expectedErr != nil {
 				assert.ErrorIs(t, actualErr, tt.expectedErr)
 
@@ -206,7 +201,7 @@ func Test_DispatchService_SendDispatch(t *testing.T) {
 		convertCall := csClientMock.EXPECT().
 			Convert(a.ctx, m.dispatch.Details.BaseCurrency, m.dispatch.Details.TargetCurrencies).Maybe().NotBefore(getSubsCall).Return(m.rates, m.convertErr)
 		sendCall := mailmanMock.EXPECT().
-			Send(deps.Email{
+			Send(service.Email{
 				To:       m.subscribers,
 				Subject:  m.dispatch.Label,
 				HTMLBody: string(m.parsedEmail),
@@ -289,7 +284,7 @@ func Test_DispatchService_SendDispatch(t *testing.T) {
 				subscribers: subscribers,
 				dispatch:    invalidDispatch,
 			},
-			wantErr: TemplateParseErr,
+			wantErr: service.TemplateParseErr,
 		},
 		{
 			name: "failed: got an error from mailman",
@@ -318,12 +313,7 @@ func Test_DispatchService_SendDispatch(t *testing.T) {
 			cleanup := setup(tt.mockedValues, tt.args)
 			defer cleanup()
 
-			s := &dispatchService{
-				dispatchRepo: dispatchRepoMock,
-				mailman:      mailmanMock,
-				csClient:     csClientMock,
-				log:          loggerMock,
-			}
+			s := service.NewDispatchService(loggerMock, mailmanMock, csClientMock, nil, nil, dispatchRepoMock)
 			actualErr := s.SendDispatch(tt.args.ctx, tt.args.dispatchId)
 
 			if tt.wantErr != nil {
