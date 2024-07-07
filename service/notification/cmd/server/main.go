@@ -75,12 +75,11 @@ func main() {
 	panicOnError(err, "failed to connect to object store")
 
 	// initalization of dispatch scheduler
-	scheduler := scheduler.NewDispatchScheduler()
+	scheduler := scheduler.NewDispatchScheduler(natsBroker, currencyService, logger)
 
 	dispatchRepo := repo.NewDispatchRepo(broker.NewObjectStore(jetstreamStore))
 	handler := app.NewEventHandler(
 		natsBroker,
-		currencyService,
 		scheduler,
 		notificationService,
 		logger,

@@ -1,12 +1,18 @@
 package scheduler
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"time"
 
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/app"
+	messages "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/broker/gen"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/config"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/entities"
 	"github.com/robfig/cron/v3"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type JobSpec struct {
@@ -28,19 +34,65 @@ type (
 		Spec    JobSpec
 	}
 
+	Publisher interface {
+		PublishAsync(subject string, payload []byte) error
+	}
+	Converter interface {
+		Convert(ctx context.Context, baseCcy string, targetCcies []string) (map[string]float64, error)
+	}
+
 	dispatchScheduler struct {
 		cron                *cron.Cron
 		mu                  *sync.Mutex
 		scheduledDispatches map[string]*ScheduledDispatch
-		dispatchInvokerF    func(*entities.Dispatch)
+		broker              Publisher
+		converter           Converter
+		logger              config.Logger
 	}
 )
 
-func NewDispatchScheduler() *dispatchScheduler {
+func NewDispatchScheduler(
+	broker Publisher,
+	converter Converter,
+	logger config.Logger,
+) *dispatchScheduler {
 	return &dispatchScheduler{
 		mu:                  &sync.Mutex{},
 		cron:                cron.New(cron.WithLocation(time.UTC)),
 		scheduledDispatches: make(map[string]*ScheduledDispatch),
+	}
+}
+
+func (s *dispatchScheduler) invokeSendingOfDispatch(d *entities.Dispatch) {
+	msg := messages.SendDispatchCommand{
+		EventType: messages.EventType_SEND_DISPATCH,
+		Timestamp: timestamppb.New(time.Now().UTC()),
+		Payload: &messages.Dispatch{
+			Emails:  d.Emails,
+			BaseCcy: d.BaseCcy,
+		},
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), app.TimeoutOfProcessing)
+	defer cancel()
+
+	rates, err := s.converter.Convert(ctx, d.BaseCcy, d.TargetCcies)
+	if err != nil {
+		s.logger.Errorf("failed to get rates: %v", err)
+
+		return
+	}
+	msg.Payload.Rates = rates
+
+	marshalled, err := proto.Marshal(&msg)
+	if err != nil {
+		s.logger.Errorf("failed to marshal SendDispatchCommand: %v", err)
+
+		return
+	}
+
+	if err := s.broker.PublishAsync(app.SendDispatchCommand, marshalled); err != nil {
+		s.logger.Errorf("failed to emit SendDispatch commands: %v", err)
 	}
 }
 
@@ -62,7 +114,7 @@ func (s *dispatchScheduler) AddDispatches(ds map[string]entities.Dispatch) {
 			Spec: NewJobSpec(dispatch.SendAt),
 		}
 
-		entryID, err := s.cron.AddJob(scheduled.Spec.String(), NewSendDispatchJob(scheduled.Data, s.dispatchInvokerF))
+		entryID, err := s.cron.AddJob(scheduled.Spec.String(), NewSendDispatchJob(scheduled.Data, s.invokeSendingOfDispatch))
 		if err != nil {
 			return
 		}
@@ -73,7 +125,7 @@ func (s *dispatchScheduler) AddDispatches(ds map[string]entities.Dispatch) {
 	}
 }
 
-func (s *dispatchScheduler) AddSubscription(sub entities.Subscription, invokerF func(*entities.Dispatch)) {
+func (s *dispatchScheduler) AddSubscription(sub entities.Subscription) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -89,7 +141,7 @@ func (s *dispatchScheduler) AddSubscription(sub entities.Subscription, invokerF 
 		dispatch.Data.Emails = append(dispatch.Data.Emails, sub.Email)
 	}
 
-	entryID, err := s.cron.AddJob(dispatch.Spec.String(), NewSendDispatchJob(dispatch.Data, invokerF))
+	entryID, err := s.cron.AddJob(dispatch.Spec.String(), NewSendDispatchJob(dispatch.Data, s.invokeSendingOfDispatch))
 	if err != nil {
 		return
 	}

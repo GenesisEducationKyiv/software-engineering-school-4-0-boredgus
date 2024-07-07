@@ -11,12 +11,10 @@ import (
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/entities"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/service"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type (
-	Broker interface {
-		PublishAsync(subject string, payload []byte) error
+	Consumer interface {
 		ConsumeMessage(handler func(msg broker.ConsumedMessage)) error
 	}
 
@@ -30,16 +28,11 @@ type (
 	}
 
 	Scheduler interface {
-		AddSubscription(entities.Subscription, func(*entities.Dispatch))
-	}
-
-	Converter interface {
-		Convert(ctx context.Context, baseCcy string, targetCcies []string) (map[string]float64, error)
+		AddSubscription(entities.Subscription)
 	}
 
 	eventHandler struct {
-		broker        Broker
-		converter     Converter
+		broker        Consumer
 		scheduler     Scheduler
 		logger        config.Logger
 		service       NotificationService
@@ -53,8 +46,7 @@ const (
 )
 
 func NewEventHandler(
-	broker Broker,
-	ccyConverter Converter,
+	broker Consumer,
 	dispatchScheduler Scheduler,
 	service NotificationService,
 	logger config.Logger,
@@ -66,39 +58,6 @@ func NewEventHandler(
 		scheduler: dispatchScheduler,
 		broker:    broker,
 		service:   service,
-	}
-}
-
-func (h *eventHandler) invokeSendingOfDispatch(d *entities.Dispatch) {
-	msg := broker_msgs.SendDispatchCommand{
-		EventType: broker_msgs.EventType_SEND_DISPATCH,
-		Timestamp: timestamppb.New(time.Now().UTC()),
-		Payload: &broker_msgs.Dispatch{
-			Emails:  d.Emails,
-			BaseCcy: d.BaseCcy,
-		},
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), TimeoutOfProcessing)
-	defer cancel()
-
-	rates, err := h.converter.Convert(ctx, d.BaseCcy, d.TargetCcies)
-	if err != nil {
-		h.logger.Errorf("failed to get rates: %v", err)
-
-		return
-	}
-	msg.Payload.Rates = rates
-
-	marshalled, err := proto.Marshal(&msg)
-	if err != nil {
-		h.logger.Errorf("failed to marshal SendDispatchCommand: %v", err)
-
-		return
-	}
-
-	if err := h.broker.PublishAsync(SendDispatchCommand, marshalled); err != nil {
-		h.logger.Errorf("failed to emit SendDispatch commands: %v", err)
 	}
 }
 
@@ -119,7 +78,7 @@ func (h *eventHandler) handleSubscriptionEvent(msg broker.ConsumedMessage) error
 	ctx, cancel := context.WithTimeout(context.Background(), TimeoutOfProcessing)
 	defer cancel()
 
-	h.scheduler.AddSubscription(sub, h.invokeSendingOfDispatch)
+	h.scheduler.AddSubscription(sub)
 	if err := h.dispatchStore.AddSubscription(ctx, sub); err != nil {
 		return fmt.Errorf("failed to save subscription: %w", err)
 	}
