@@ -1,7 +1,0 @@
-with-expecter: true
-outpkg: "{{.PackageName}}_mocks"
-dir: "internal/mocks/{{.PackageName}}"
-mockname: "{{.InterfaceName}}"
-filename: "mock_{{ .InterfaceName | snakecase }}.go"
-
-packages:
