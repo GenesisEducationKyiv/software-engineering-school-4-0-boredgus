@@ -5,7 +5,7 @@ mockname: "{{.InterfaceName}}"
 filename: "mock_{{ .InterfaceName | snakecase }}.go"
 
 packages:
-  github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps:
+  github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service:
     interfaces:
       UserRepo:
         config:

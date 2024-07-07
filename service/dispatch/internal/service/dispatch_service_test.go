@@ -1,11 +1,11 @@
-package service
+package service_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/entities"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service"
 
 	broker_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mocks/broker"
 	repo_mocks "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mocks/repo"
@@ -17,7 +17,7 @@ func Test_DispatchService_GetAllDispatches(t *testing.T) {
 		ctx context.Context
 	}
 	type mocked struct {
-		dispatchesFromRepo  []deps.DispatchData
+		dispatchesFromRepo  []service.DispatchData
 		getAllDispatchesErr error
 	}
 
@@ -32,7 +32,7 @@ func Test_DispatchService_GetAllDispatches(t *testing.T) {
 		}
 	}
 
-	dispatches := []deps.DispatchData{{
+	dispatches := []service.DispatchData{{
 		Id:                 "id",
 		Label:              "label",
 		CountOfSubscribers: 2,
@@ -43,7 +43,7 @@ func Test_DispatchService_GetAllDispatches(t *testing.T) {
 		name           string
 		args           args
 		mockedValues   mocked
-		expectedResult []deps.DispatchData
+		expectedResult []service.DispatchData
 		expectedErr    error
 	}{
 		{
@@ -65,9 +65,7 @@ func Test_DispatchService_GetAllDispatches(t *testing.T) {
 			cleanup := setup(tt.mockedValues, tt.args)
 			defer cleanup()
 
-			s := &dispatchService{
-				dispatchRepo: dispatchRepoMock,
-			}
+			s := service.NewDispatchService(nil, nil, nil, nil, nil, dispatchRepoMock)
 			actualResult, actualErr := s.GetAllDispatches(ctx)
 
 			assert.Equal(t, tt.expectedResult, actualResult)
@@ -107,12 +105,12 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 			CreateUser(a.ctx, a.email).
 			Maybe().NotBefore(getDsptchCall).Return(m.createUserErr)
 		createSubCall := subRepoMock.EXPECT().
-			CreateSubscription(a.ctx, deps.SubscriptionData{
+			CreateSubscription(a.ctx, service.SubscriptionData{
 				Email:    a.email,
 				Dispatch: a.dispatchId,
 			}).Maybe().NotBefore(createUserCall).Return(m.createSubErr)
 		brokerCall := brokerMock.EXPECT().
-			CreateSubscription(deps.Subscription{
+			CreateSubscription(service.Subscription{
 				DispatchID:  m.dispatch.Id,
 				Email:       a.email,
 				BaseCcy:     m.dispatch.Details.BaseCurrency,
@@ -167,14 +165,10 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cleanup := setup(tt.mockedValues, tt.args)
 			defer cleanup()
-			s := &dispatchService{
-				userRepo:     userRepoMock,
-				subRepo:      subRepoMock,
-				dispatchRepo: dispatchRepoMock,
-				broker:       brokerMock,
-			}
 
+			s := service.NewDispatchService(nil, nil, nil, userRepoMock, subRepoMock, dispatchRepoMock)
 			actualErr := s.SubscribeForDispatch(tt.args.ctx, tt.args.email, tt.args.dispatchId)
+
 			if tt.expectedErr != nil {
 				assert.ErrorIs(t, actualErr, tt.expectedErr)
 

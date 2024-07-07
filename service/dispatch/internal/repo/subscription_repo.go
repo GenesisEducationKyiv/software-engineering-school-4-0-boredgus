@@ -4,8 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps"
-	service_errors "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/err"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service"
 )
 
 type subscriptionRepo struct {
@@ -29,10 +28,10 @@ const subscribeForQ string = `
 	;
 `
 
-func (r *subscriptionRepo) CreateSubscription(ctx context.Context, args deps.SubscriptionData) error {
+func (r *subscriptionRepo) CreateSubscription(ctx context.Context, args service.SubscriptionData) error {
 	_, err := r.db.ExecContext(ctx, subscribeForQ, args.Email, args.Dispatch)
 	if r.db.IsError(err, UniqueViolation) {
-		return fmt.Errorf("%w: user has already subscribed for this dispatch", service_errors.UniqueViolationErr)
+		return fmt.Errorf("%w: user has already subscribed for this dispatch", service.UniqueViolationErr)
 	}
 
 	return err
