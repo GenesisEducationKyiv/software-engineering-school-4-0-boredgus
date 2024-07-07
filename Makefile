@@ -7,11 +7,6 @@ start:
 start-dev:
 	ENV_FILE=${DEV_ENV_FILE} docker compose -f docker-compose-dev.yaml  --env-file ${DEV_ENV_FILE} up
 
-path:
-	export GOPATH=$HOME/go
-	export PATH=$PATH:$GOPATH:$GOPATH/bin
-	echo $PATH
-
 generate-mocks:
 	cd gateway && make generate-mocks;
 	cd service/currency && make generate-mocks;
@@ -79,3 +74,6 @@ generate-proto:
 	protoc --go_out=./service/notification/internal/clients/currency/gen  \
 		--go-grpc_out=./service/notification/internal/clients/currency/gen \
 		${currency_service_proto}
+
+
+# /Users/daha/.nvm/versions/node/v21.6.2/bin:/opt/homebrew/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/go/bin:/Users/daha/.cabal/bin:/Users/daha/.ghcup/bin:/Users/daha/.nvm/versions/node/v21.6.2/bin:/opt/homebrew/bin:/Users/daha/go:/Users/daha/go/bin
