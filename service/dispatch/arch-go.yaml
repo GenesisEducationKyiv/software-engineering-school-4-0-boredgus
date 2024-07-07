@@ -1,0 +1,51 @@
+version: 1
+threshold:
+  compliance: 100
+  coverage: 40
+dependenciesRules:
+  - package: "**.internal/clients.*"
+    shouldOnlyDependsOn:
+      internal:
+        - "**.internal/clients.*.gen.*"
+        - "**.internal/entities.**"
+        - "**.internal/service.**"
+
+  - package: "**.internal/entities.**"
+    shouldOnlyDependsOn: 
+      internal: 
+        - "**.internal/entities.**"
+
+  - package: "**.internal/grpc/server"
+    shouldOnlyDependsOn: 
+      internal: 
+        - "**.internal/entities.**"
+        - "**.internal/config.**"
+        - "**.internal/repo.**"
+        - "**.internal/service.**"
+        - "**.internal/grpc/gen"
+      external:
+        - "google.golang.org/grpc"
+
+  - package: "**.internal/emails"
+    shouldOnlyDependsOn: 
+      internal: 
+        - "**.internal/entities.**"
+        - "**.internal/config.**"
+        - "**.internal/service.**"
+
+  - package: "**.internal/repo"
+    shouldOnlyDependsOn: 
+      internal: 
+        - "**.internal/entities.**"
+        - "**.internal/config.**"
+        - "**.internal/service.**"
+      external:
+        - "database/sql"
+
+  - package: "**.internal/service"
+    shouldOnlyDependsOn: 
+      internal: 
+        - "**.internal/entities.**"
+        - "**.internal/config.**"
+        - "**.internal/service.*"
+        - "**.internal/emails.**"

@@ -1,0 +1,132 @@
+package tests
+
+import (
+	"context"
+	"database/sql"
+	"slices"
+	"testing"
+
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/config"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/db"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/repo"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/tests"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/tests/stubs"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/tests/testdata"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
+)
+
+type (
+	DispatchService interface {
+		GetAllDispatches(ctx context.Context) ([]service.DispatchData, error)
+		SubscribeForDispatch(ctx context.Context, email, dispatchId string) error
+		SendDispatch(ctx context.Context, dispatchId string) error
+	}
+
+	DispatchServiceSuite struct {
+		suite.Suite
+		ctx             context.Context
+		dispatchService DispatchService
+
+		pgContainer  *tests.PostgresContainer
+		dispatchRepo service.DispatchRepo
+		dbConnection *sql.DB
+
+		logger  config.Logger
+		mailman *stubs.MailmanStub
+	}
+)
+
+func (s *DispatchServiceSuite) SetupSuite() {
+	s.logger = config.InitLogger(config.TestMode)
+
+	s.mailman = stubs.NewMailmanStub()
+	s.ctx = context.Background()
+
+	pgContainer, err := tests.CreatePostgresContainer(s.ctx)
+	s.NoErrorf(err, "failed to create postgres container")
+	s.pgContainer = pgContainer
+
+	dbConnection, err := db.NewPostrgreSQL(
+		s.pgContainer.ConnectionString,
+		db.PostgeSQLMigrationsUp(nil),
+	)
+	s.NoError(err)
+	s.dbConnection = dbConnection
+	storage := repo.NewStore(dbConnection, db.IsPqError)
+	s.dispatchRepo = repo.NewDispatchRepo(storage)
+
+	s.dispatchService = service.NewDispatchService(
+		s.logger,
+		s.mailman,
+		stubs.NewCurrencyServiceClient(),
+		repo.NewUserRepo(storage),
+		repo.NewSubRepo(storage),
+		s.dispatchRepo,
+	)
+}
+
+func (s *DispatchServiceSuite) TearDownSuite() {
+	err := s.dbConnection.Close()
+	if err != nil {
+		s.Fail("failed to close connection to db", err)
+	}
+
+	err = s.pgContainer.Terminate(s.ctx)
+	if err != nil {
+		s.Fail("failed to terminate database container", err)
+	}
+}
+
+func (s *DispatchServiceSuite) Test_GetAllDispatches() {
+	ctx := context.Background()
+
+	dispatches, err := s.dispatchService.GetAllDispatches(ctx)
+
+	s.NoError(err)
+	s.Equal(1, len(dispatches))
+	s.Equal(dispatches[0].Id, testdata.USD_UAH_DISPATCH_ID)
+}
+
+func (s *DispatchServiceSuite) Test_SendDispatch() {
+	ctx := context.Background()
+	s.NoError(s.pgContainer.ExecuteSQLFiles(ctx, "add_couple_of_subscribers_for_usd_uah_dispatch"))
+
+	s.mailman.On("Send", mock.Anything).Return(nil)
+
+	s.NoError(s.dispatchService.SendDispatch(ctx, testdata.USD_UAH_DISPATCH_ID))
+
+	s.Equal(1, len(s.mailman.Calls))
+	actualEmailReceivers := s.mailman.Calls[0].Arguments.Get(0).(service.Email).To
+	expectedEmailReceivers := testdata.SubscribersOfUSDUAHDispatch
+	s.Equal(actualEmailReceivers, expectedEmailReceivers)
+}
+
+func (s *DispatchServiceSuite) Test_SubscribeForDispatch_Success() {
+	emailToSubscribe := "email_1@gmail.com"
+	dispatchID := testdata.USD_UAH_DISPATCH_ID
+	ctx := context.Background()
+
+	s.NoError(s.dispatchService.SubscribeForDispatch(ctx, emailToSubscribe, dispatchID))
+
+	subscribers, err := s.dispatchRepo.GetSubscribersOfDispatch(ctx, dispatchID)
+	s.NoError(err)
+	s.True(slices.Contains(subscribers, emailToSubscribe))
+}
+
+func (s *DispatchServiceSuite) Test_SubscribeForDispatch_UserAlreadySubscribedForThisDispatch() {
+	email := "email_2@gmail.com"
+	dispatchId := testdata.USD_UAH_DISPATCH_ID
+	ctx := context.Background()
+
+	s.NoError(s.dispatchService.SubscribeForDispatch(ctx, email, dispatchId))
+	s.ErrorIs(
+		s.dispatchService.SubscribeForDispatch(ctx, email, dispatchId),
+		service.UniqueViolationErr,
+	)
+}
+
+func TestIntegration_DispatchService(t *testing.T) {
+	suite.Run(t, new(DispatchServiceSuite))
+}
