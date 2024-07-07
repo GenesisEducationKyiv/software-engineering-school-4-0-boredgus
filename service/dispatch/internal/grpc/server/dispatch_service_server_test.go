@@ -8,8 +8,7 @@ import (
 
 	logger_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mocks/logger"
 	service_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mocks/service"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps"
-	service_err "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/err"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -54,14 +53,14 @@ func Test_DispatchServiceServer_SubscribeForDispatch(t *testing.T) {
 		{
 			name:         "failed: user already subscribed for this dispatch",
 			args:         arguments,
-			mockedValues: &mocked{expectedSubscribeErr: service_err.UniqueViolationErr},
-			wantErr:      status.Error(codes.AlreadyExists, service_err.UniqueViolationErr.Error()),
+			mockedValues: &mocked{expectedSubscribeErr: service.UniqueViolationErr},
+			wantErr:      status.Error(codes.AlreadyExists, service.UniqueViolationErr.Error()),
 		},
 		{
 			name:         "failed: dispatch with such id does not exist",
 			args:         arguments,
-			mockedValues: &mocked{expectedSubscribeErr: service_err.NotFoundErr},
-			wantErr:      status.Error(codes.NotFound, service_err.NotFoundErr.Error()),
+			mockedValues: &mocked{expectedSubscribeErr: service.NotFoundErr},
+			wantErr:      status.Error(codes.NotFound, service.NotFoundErr.Error()),
 		},
 		{
 			name:         "failed: got unknown error from SubscribeForDispatch",
@@ -96,96 +95,6 @@ func Test_DispatchServiceServer_SubscribeForDispatch(t *testing.T) {
 				return
 			}
 			assert.Nil(t, err)
-		})
-	}
-}
-
-func Test_DispatchServiceServer_GetAllDispatches(t *testing.T) {
-	type args struct {
-		ctx context.Context
-		req *grpc_gen.GetAllDispatchesRequest
-	}
-	type mocked struct {
-		expectedDispatches []deps.DispatchData
-		expectedGetErr     error
-	}
-
-	dsMock := service_mock.NewDispatchService(t)
-	loggerMock := logger_mock.NewLogger()
-	setup := func(m *mocked, a *args) func() {
-		dsCall := dsMock.EXPECT().
-			GetAllDispatches(a.ctx).
-			Once().Return(m.expectedDispatches, m.expectedGetErr)
-
-		return func() {
-			dsCall.Unset()
-		}
-	}
-
-	arguments := &args{
-		ctx: context.Background(),
-		req: &grpc_gen.GetAllDispatchesRequest{},
-	}
-	dispatches := []deps.DispatchData{{
-		Id:                 "id",
-		Label:              "label",
-		CountOfSubscribers: 2,
-	}}
-	dispatchProtos := make([]*grpc_gen.DispatchData, 0, len(dispatches))
-	for _, d := range dispatches {
-		dispatchProtos = append(dispatchProtos, toProtoDispatch(d))
-	}
-
-	tests := []struct {
-		name             string
-		args             *args
-		mockedValues     *mocked
-		expectedResponse *grpc_gen.GetAllDispatchesResponse
-		expectedErr      error
-	}{
-		{
-			name:         "failed: got unknown error from GetAllDispatches",
-			args:         arguments,
-			mockedValues: &mocked{expectedGetErr: assert.AnError},
-			expectedErr:  status.Error(codes.Internal, assert.AnError.Error()),
-		},
-		{
-			name:         "success: there is no dispatches",
-			args:         arguments,
-			mockedValues: &mocked{},
-			expectedResponse: &grpc_gen.GetAllDispatchesResponse{
-				Dispatches: []*grpc_gen.DispatchData{},
-			},
-		},
-		{
-			name:         "success: got all dispatches",
-			args:         arguments,
-			mockedValues: &mocked{expectedDispatches: dispatches},
-			expectedResponse: &grpc_gen.GetAllDispatchesResponse{
-				Dispatches: dispatchProtos,
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			cleanup := setup(tt.mockedValues, tt.args)
-			defer cleanup()
-
-			s := &dispatchServiceServer{
-				service:                            dsMock,
-				logger:                             loggerMock,
-				UnimplementedDispatchServiceServer: grpc_gen.UnimplementedDispatchServiceServer{},
-			}
-			actualResponse, actualErr := s.GetAllDispatches(tt.args.ctx, tt.args.req)
-
-			assert.Equal(t, tt.expectedResponse, actualResponse)
-			if tt.expectedErr != nil {
-				assert.ErrorIs(t, actualErr, tt.expectedErr)
-
-				return
-			}
-			assert.Nil(t, actualErr)
 		})
 	}
 }

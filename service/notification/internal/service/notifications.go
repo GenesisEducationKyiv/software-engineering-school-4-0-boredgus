@@ -17,13 +17,13 @@ type Notification struct {
 	Data NotificationData
 }
 
-type SubscriptionDetails struct {
+type SubscriptionData struct {
 	BaseCcy     string
 	TargetCcies []string
 	SendAt      string
 }
 
-type CurrencyDispatch struct {
+type CurrencyDispatchData struct {
 	BaseCcy string
 	Rates   map[string]float64
 }

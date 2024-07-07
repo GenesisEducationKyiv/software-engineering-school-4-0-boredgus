@@ -31,25 +31,27 @@ func NewEmailNotifier(notifier service.Notifier, mailman Mailman) *emailNotifier
 }
 
 func (n *emailNotifier) Notify(notification service.Notification) error {
-	if len(notification.Data.Emails) > 0 {
-		emailTemplate, err := templates.NotificationTypeToTemplate(notification.Type)
-		if err != nil {
-			return err
-		}
+	if len(notification.Data.Emails) == 0 {
+		return n.notifier.Notify(notification)
+	}
 
-		htmlBody, err := emails.ParseHTMLTemplate(emailTemplate.Name, notification.Data.Payload)
-		if err != nil {
-			return err
-		}
+	emailTemplate, err := templates.NotificationTypeToTemplate(notification.Type)
+	if err != nil {
+		return err
+	}
 
-		err = n.mailman.Send(Email{
-			To:       notification.Data.Emails,
-			Subject:  emailTemplate.Subject,
-			HTMLBody: string(htmlBody),
-		})
-		if err != nil {
-			return err
-		}
+	htmlBody, err := emails.ParseHTMLTemplate(emailTemplate.Name, notification.Data.Payload)
+	if err != nil {
+		return err
+	}
+
+	err = n.mailman.Send(Email{
+		To:       notification.Data.Emails,
+		Subject:  emailTemplate.Subject,
+		HTMLBody: string(htmlBody),
+	})
+	if err != nil {
+		return err
 	}
 
 	return n.notifier.Notify(notification)

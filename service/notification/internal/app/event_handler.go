@@ -17,8 +17,7 @@ import (
 type (
 	Broker interface {
 		PublishAsync(subject string, payload []byte) error
-		ConsumeEvent(handler func(msg broker.ConsumedMessage)) error
-		ConsumeCommand(handler func(msg broker.ConsumedMessage)) error
+		ConsumeMessage(handler func(msg broker.ConsumedMessage)) error
 	}
 
 	NotificationService interface {
@@ -39,11 +38,12 @@ type (
 	}
 
 	eventHandler struct {
-		broker    Broker
-		converter Converter
-		scheduler Scheduler
-		logger    config.Logger
-		service   NotificationService
+		broker        Broker
+		converter     Converter
+		scheduler     Scheduler
+		logger        config.Logger
+		service       NotificationService
+		dispatchStore DispatchStore
 	}
 )
 
@@ -52,6 +52,7 @@ const (
 	SendDispatchCommand      string = "commands.send.dispatch"
 
 	TimeoutOfProcessing time.Duration = 2 * time.Second
+	RedeliveryDelay     time.Duration = 1 * time.Minute
 )
 
 func NewEventHandler(
@@ -60,6 +61,7 @@ func NewEventHandler(
 	dispatchScheduler Scheduler,
 	service NotificationService,
 	logger config.Logger,
+	dispatchStore DispatchStore,
 ) *eventHandler {
 
 	return &eventHandler{
@@ -74,7 +76,7 @@ func (h *eventHandler) invokeSendingOfDispatch(d *entities.Dispatch) {
 	msg := broker_msgs.SendDispatchCommand{
 		EventType: broker_msgs.EventType_SEND_DISPATCH,
 		Timestamp: timestamppb.New(time.Now().UTC()),
-		Data: &broker_msgs.Data{
+		Payload: &broker_msgs.Dispatch{
 			Emails:  d.Emails,
 			BaseCcy: d.BaseCcy,
 		},
@@ -89,7 +91,7 @@ func (h *eventHandler) invokeSendingOfDispatch(d *entities.Dispatch) {
 
 		return
 	}
-	msg.Data.Rates = rates
+	msg.Payload.Rates = rates
 
 	marshalled, err := proto.Marshal(&msg)
 	if err != nil {
@@ -117,16 +119,19 @@ func (h *eventHandler) handleSubscriptionCreatedEvent(msg broker.ConsumedMessage
 		SendAt:      parsedMsg.Payload.SendAt.AsTime(),
 	}
 
-	h.scheduler.AddSubscription(sub, h.invokeSendingOfDispatch)
-
 	ctx, cancel := context.WithTimeout(context.Background(), TimeoutOfProcessing)
 	defer cancel()
+
+	h.scheduler.AddSubscription(sub, h.invokeSendingOfDispatch)
+	if err := h.dispatchStore.AddSubscription(ctx, sub); err != nil {
+		return fmt.Errorf("failed to save subscription: %w", err)
+	}
 
 	if err := h.service.SendSubscriptionDetails(ctx, service.Notification{
 		Type: service.SubscriptionCreated,
 		Data: service.NotificationData{
 			Emails: []string{parsedMsg.Payload.Email},
-			Payload: service.SubscriptionDetails{
+			Payload: service.SubscriptionData{
 				BaseCcy:     parsedMsg.Payload.BaseCcy,
 				TargetCcies: parsedMsg.Payload.TargetCcies,
 				SendAt:      parsedMsg.Payload.SendAt.AsTime().UTC().Format(time.TimeOnly),
@@ -151,10 +156,10 @@ func (h *eventHandler) handleSendDispatchCommand(msg broker.ConsumedMessage) err
 	if err := h.service.SendSubscriptionDetails(ctx, service.Notification{
 		Type: service.SubscriptionCreated,
 		Data: service.NotificationData{
-			Emails: parsedMsg.Data.Emails,
-			Payload: service.CurrencyDispatch{
-				BaseCcy: parsedMsg.Data.BaseCcy,
-				Rates:   parsedMsg.Data.Rates,
+			Emails: parsedMsg.Payload.Emails,
+			Payload: service.CurrencyDispatchData{
+				BaseCcy: parsedMsg.Payload.BaseCcy,
+				Rates:   parsedMsg.Payload.Rates,
 			},
 		},
 	}); err != nil {
@@ -164,42 +169,13 @@ func (h *eventHandler) handleSendDispatchCommand(msg broker.ConsumedMessage) err
 	return nil
 }
 
-func (h *eventHandler) HandleEvents() error {
-	return h.broker.ConsumeEvent(func(msg broker.ConsumedMessage) {
+func (h *eventHandler) HandleMessages() error {
+	return h.broker.ConsumeMessage(func(msg broker.ConsumedMessage) {
 		var err error
 
 		switch msg.Subject() {
 		case SubscriptionCreatedEvent:
 			err = h.handleSubscriptionCreatedEvent(msg)
-		default:
-			h.logger.Infof("skipping message with subject %v ...", msg.Subject())
-
-			return
-		}
-
-		if err != nil {
-			h.logger.Error(err)
-
-			err = msg.Nak()
-			if err != nil {
-				h.logger.Errorf("failed to negatively acknowledge message: %v", err)
-			}
-
-			return
-		}
-
-		err = msg.Ack()
-		if err != nil {
-			h.logger.Errorf("failed to acknowledge message: %v", err)
-		}
-	})
-}
-
-func (h *eventHandler) HandleCommands() error {
-	return h.broker.ConsumeCommand(func(msg broker.ConsumedMessage) {
-		var err error
-
-		switch msg.Subject() {
 		case SendDispatchCommand:
 			err = h.handleSendDispatchCommand(msg)
 		default:
@@ -208,10 +184,12 @@ func (h *eventHandler) HandleCommands() error {
 			return
 		}
 
-		if err != nil {
-			h.logger.Error(err)
+		h.logger.Infof("handling message with subject %v ...", msg.Subject())
 
-			err = msg.Nak()
+		if err != nil {
+			h.logger.Errorf("failed to handle message: %v", err)
+
+			err = msg.NakWithDelay(RedeliveryDelay)
 			if err != nil {
 				h.logger.Errorf("failed to negatively acknowledge message: %v", err)
 			}
@@ -223,5 +201,7 @@ func (h *eventHandler) HandleCommands() error {
 		if err != nil {
 			h.logger.Errorf("failed to acknowledge message: %v", err)
 		}
+
+		h.logger.Info("successfully handled message")
 	})
 }

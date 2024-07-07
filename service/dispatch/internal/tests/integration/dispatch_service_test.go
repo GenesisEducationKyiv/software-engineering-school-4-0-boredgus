@@ -10,8 +10,6 @@ import (
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/db"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/repo"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps"
-	service_err "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/err"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/tests"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/tests/stubs"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/tests/testdata"
@@ -22,7 +20,7 @@ import (
 
 type (
 	DispatchService interface {
-		GetAllDispatches(ctx context.Context) ([]deps.DispatchData, error)
+		GetAllDispatches(ctx context.Context) ([]service.DispatchData, error)
 		SubscribeForDispatch(ctx context.Context, email, dispatchId string) error
 	}
 
@@ -32,7 +30,7 @@ type (
 		dispatchService DispatchService
 
 		pgContainer  *tests.PostgresContainer
-		dispatchRepo deps.DispatchRepo
+		dispatchRepo service.DispatchRepo
 		dbConnection *sql.DB
 
 		logger config.Logger
@@ -113,7 +111,7 @@ func (s *DispatchServiceSuite) Test_SubscribeForDispatch_UserAlreadySubscribedFo
 	s.NoError(s.dispatchService.SubscribeForDispatch(ctx, email, dispatchId))
 	s.ErrorIs(
 		s.dispatchService.SubscribeForDispatch(ctx, email, dispatchId),
-		service_err.UniqueViolationErr,
+		service.UniqueViolationErr,
 	)
 }
 

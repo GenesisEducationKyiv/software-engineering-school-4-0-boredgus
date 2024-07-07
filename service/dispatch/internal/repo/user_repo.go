@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	service_errors "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/err"
+	service "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service"
 )
 
 type UserRepo struct {
@@ -23,7 +23,7 @@ const createUserQ string = `
 func (r *UserRepo) CreateUser(ctx context.Context, email string) error {
 	_, err := r.db.ExecContext(ctx, createUserQ, email)
 	if r.db.IsError(err, UniqueViolation) {
-		return fmt.Errorf("%w: user with such email already exists", service_errors.UniqueViolationErr)
+		return fmt.Errorf("%w: user with such email already exists", service.UniqueViolationErr)
 	}
 
 	return err

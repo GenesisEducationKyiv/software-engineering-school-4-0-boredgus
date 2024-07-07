@@ -13,116 +13,99 @@ import (
 
 type (
 	ConsumedMessage interface {
+		// Subject returns a subject on which a message was published/received.
 		Subject() string
+
+		// Data returns the message body.
 		Data() []byte
+
+		// Ack tells the server that the message was successfully processed
+		// and it can move on to the next message.
 		Ack() error
-		Nak() error
-		Term() error
+
+		// NakWithDelay tells the server to redeliver the message after the given delay.
+		NakWithDelay(delay time.Duration) error
 	}
+
 	natsBroker struct {
-		js              jetstream.JetStream
-		eventConsumer   jetstream.Consumer
-		commandConsumer jetstream.Consumer
-		logger          config.Logger
+		jetstream jetstream.JetStream
+		consumer  jetstream.Consumer
+		logger    config.Logger
 	}
 )
 
-const CreationTimeout = 5 * time.Second
+const (
+	CreationTimeout time.Duration = 5 * time.Second
 
-func createEventConsumer(js jetstream.JetStream) (jetstream.Consumer, error) {
+	NotificationStreamName   string = "NOTIFICATIONS"
+	NotificationConsumerName string = "notification-sender"
+)
+
+func createConsumer(js jetstream.JetStream) (jetstream.Consumer, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), CreationTimeout)
 	defer cancel()
 
-	eventStream, err := js.CreateOrUpdateStream(ctx, jetstream.StreamConfig{
-		Name:      "EVENTS",
+	stream, err := js.CreateOrUpdateStream(ctx, jetstream.StreamConfig{
+		Name:      NotificationStreamName,
 		Retention: jetstream.WorkQueuePolicy,
-		Subjects:  []string{"events.>"},
+		Subjects:  []string{"commands.>", "events.subscription.>"},
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to update %s stream: %w", NotificationStreamName, err)
 	}
 
-	return eventStream.CreateOrUpdateConsumer(context.Background(), jetstream.ConsumerConfig{
-		Name:          "notification-event-consumer",
-		Durable:       "notification-event-consumer",
+	consumer, err := stream.CreateOrUpdateConsumer(context.Background(), jetstream.ConsumerConfig{
+		Name:          NotificationConsumerName,
+		Durable:       NotificationConsumerName,
 		DeliverPolicy: jetstream.DeliverAllPolicy,
-	})
-}
-
-func createCommandConsumer(js jetstream.JetStream) (jetstream.Consumer, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), CreationTimeout)
-	defer cancel()
-
-	eventStream, err := js.CreateOrUpdateStream(ctx, jetstream.StreamConfig{
-		Name:      "COMMANDS",
-		Retention: jetstream.WorkQueuePolicy,
-		Subjects:  []string{"commands.>"},
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to update %s consumer: %w", NotificationConsumerName, err)
 	}
 
-	return eventStream.CreateOrUpdateConsumer(context.Background(), jetstream.ConsumerConfig{
-		Name:          "notification-command-consumer",
-		Durable:       "notification-command-consumer",
-		DeliverPolicy: jetstream.DeliverAllPolicy,
-	})
+	return consumer, nil
 }
 
 func NewNatsBroker(js jetstream.JetStream, logger config.Logger) (*natsBroker, error) {
-
-	eventConsumer, err := createEventConsumer(js)
+	consumer, err := createConsumer(js)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create NATS stream instance for events: %w", err)
-	}
-
-	commandConsumer, err := createCommandConsumer(js)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create NATS stream consumer for commands: %w", err)
+		return nil, fmt.Errorf("failed to init consumer: %w", err)
 	}
 
 	return &natsBroker{
-		js:              js,
-		eventConsumer:   eventConsumer,
-		commandConsumer: commandConsumer,
-		logger:          logger,
+		jetstream: js,
+		consumer:  consumer,
+		logger:    logger,
 	}, nil
 }
 
-func (b *natsBroker) consume(consumer jetstream.Consumer, handler func(msg ConsumedMessage)) error {
-	_, err := consumer.Consume(func(msg jetstream.Msg) {
+func (b *natsBroker) ConsumeMessage(handler func(msg ConsumedMessage)) error {
+	_, err := b.consumer.Consume(func(msg jetstream.Msg) {
 		handler(msg)
 	})
-
 	if err != nil {
-		return fmt.Errorf("failed to consume message from stream '%s': %w", consumer.CachedInfo().Stream, err)
+		return fmt.Errorf("failed to consume message from stream '%s': %w", b.consumer.CachedInfo().Stream, err)
 	}
 
 	return nil
 }
 
-func (b *natsBroker) ConsumeEvent(handler func(msg ConsumedMessage)) error {
-	return b.consume(b.eventConsumer, handler)
-}
-
-func (b *natsBroker) ConsumeCommand(handler func(msg ConsumedMessage)) error {
-	return b.consume(b.commandConsumer, handler)
-}
-
 func (b *natsBroker) PublishAsync(subject string, payload []byte) error {
-	pubAckFuture, err := b.js.PublishAsync(
+	pubAckFuture, err := b.jetstream.PublishAsync(
 		subject,
 		payload,
 		jetstream.WithMsgID(uuid.NewString()),
 	)
 	go func() {
+		msgID := pubAckFuture.Msg().Header.Get(jetstream.MsgIDHeader)
 		select {
 		case pubAck := <-pubAckFuture.Ok():
-			b.logger.Infof("message %s asynchronously published to stream '%s'", pubAckFuture.Msg().Data, pubAck.Stream)
+
+			b.logger.Infof("message with id '%s' asynchronously published to stream '%s'", msgID, pubAck.Stream)
 
 		case err := <-pubAckFuture.Err():
 			if err != nil {
-				b.logger.Errorf("failed to publish message to stream: %v", err)
+				b.logger.Errorf("failed to publish message with '%s' to stream '%s': %v", err)
 			}
 		}
 	}()
@@ -134,12 +117,12 @@ func (b *natsBroker) ObjectStore(bucket string) (jetstream.ObjectStore, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), CreationTimeout)
 	defer cancel()
 
-	store, err := b.js.CreateOrUpdateObjectStore(ctx, jetstream.ObjectStoreConfig{
+	store, err := b.jetstream.CreateOrUpdateObjectStore(ctx, jetstream.ObjectStoreConfig{
 		Bucket:  bucket,
 		Storage: jetstream.FileStorage,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to create object store for dispatches: %w", err)
+		return nil, fmt.Errorf("failed to create object store: %w", err)
 	}
 
 	return store, nil

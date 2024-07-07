@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v5.26.1
-// source: service/dispatch/internal/grpc/gen/dispatch_service.proto
+// source: services/dispatch_service.proto
 
 package __
 
@@ -23,7 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DispatchServiceClient interface {
 	SubscribeForDispatch(ctx context.Context, in *SubscribeForDispatchRequest, opts ...grpc.CallOption) (*SubscribeForDispatchResponse, error)
-	UnsubscribeFromDispatch(ctx context.Context, in *UnsubscribeFromRequest, opts ...grpc.CallOption) (*UnsubscribeFromResponse, error)
+	UnsubscribeFromDispatch(ctx context.Context, in *UnsubscribeFromDispatchRequest, opts ...grpc.CallOption) (*UnsubscribeFromDispatchResponse, error)
 }
 
 type dispatchServiceClient struct {
@@ -43,8 +43,8 @@ func (c *dispatchServiceClient) SubscribeForDispatch(ctx context.Context, in *Su
 	return out, nil
 }
 
-func (c *dispatchServiceClient) UnsubscribeFromDispatch(ctx context.Context, in *UnsubscribeFromRequest, opts ...grpc.CallOption) (*UnsubscribeFromResponse, error) {
-	out := new(UnsubscribeFromResponse)
+func (c *dispatchServiceClient) UnsubscribeFromDispatch(ctx context.Context, in *UnsubscribeFromDispatchRequest, opts ...grpc.CallOption) (*UnsubscribeFromDispatchResponse, error) {
+	out := new(UnsubscribeFromDispatchResponse)
 	err := c.cc.Invoke(ctx, "/main.DispatchService/UnsubscribeFromDispatch", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func (c *dispatchServiceClient) UnsubscribeFromDispatch(ctx context.Context, in 
 // for forward compatibility
 type DispatchServiceServer interface {
 	SubscribeForDispatch(context.Context, *SubscribeForDispatchRequest) (*SubscribeForDispatchResponse, error)
-	UnsubscribeFromDispatch(context.Context, *UnsubscribeFromRequest) (*UnsubscribeFromResponse, error)
+	UnsubscribeFromDispatch(context.Context, *UnsubscribeFromDispatchRequest) (*UnsubscribeFromDispatchResponse, error)
 	mustEmbedUnimplementedDispatchServiceServer()
 }
 
@@ -68,7 +68,7 @@ type UnimplementedDispatchServiceServer struct {
 func (UnimplementedDispatchServiceServer) SubscribeForDispatch(context.Context, *SubscribeForDispatchRequest) (*SubscribeForDispatchResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubscribeForDispatch not implemented")
 }
-func (UnimplementedDispatchServiceServer) UnsubscribeFromDispatch(context.Context, *UnsubscribeFromRequest) (*UnsubscribeFromResponse, error) {
+func (UnimplementedDispatchServiceServer) UnsubscribeFromDispatch(context.Context, *UnsubscribeFromDispatchRequest) (*UnsubscribeFromDispatchResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnsubscribeFromDispatch not implemented")
 }
 func (UnimplementedDispatchServiceServer) mustEmbedUnimplementedDispatchServiceServer() {}
@@ -103,7 +103,7 @@ func _DispatchService_SubscribeForDispatch_Handler(srv interface{}, ctx context.
 }
 
 func _DispatchService_UnsubscribeFromDispatch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UnsubscribeFromRequest)
+	in := new(UnsubscribeFromDispatchRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -115,7 +115,7 @@ func _DispatchService_UnsubscribeFromDispatch_Handler(srv interface{}, ctx conte
 		FullMethod: "/main.DispatchService/UnsubscribeFromDispatch",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DispatchServiceServer).UnsubscribeFromDispatch(ctx, req.(*UnsubscribeFromRequest))
+		return srv.(DispatchServiceServer).UnsubscribeFromDispatch(ctx, req.(*UnsubscribeFromDispatchRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -137,5 +137,5 @@ var DispatchService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "service/dispatch/internal/grpc/gen/dispatch_service.proto",
+	Metadata: "services/dispatch_service.proto",
 }

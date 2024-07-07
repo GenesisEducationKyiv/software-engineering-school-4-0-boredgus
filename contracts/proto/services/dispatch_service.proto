@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package main;
+option go_package = "./";
+
+service DispatchService {
+  rpc SubscribeForDispatch(SubscribeForDispatchRequest) returns (SubscribeForDispatchResponse) {}
+  rpc UnsubscribeFromDispatch(UnsubscribeFromDispatchRequest) returns (UnsubscribeFromDispatchResponse) {}
+}
+
+message SubscribeForDispatchRequest {
+  string email = 1;
+  string dispatch_id = 2;
+}
+
+message SubscribeForDispatchResponse {}
+
+message UnsubscribeFromDispatchRequest {
+  string email = 1;
+  string dispatch_id = 2;
+}
+
+message UnsubscribeFromDispatchResponse {}

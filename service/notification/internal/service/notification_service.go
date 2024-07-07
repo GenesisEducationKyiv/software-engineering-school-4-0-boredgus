@@ -14,21 +14,18 @@ type (
 		Convert(ctx context.Context, baseCcy string, targetCcies []string) (map[string]float64, error)
 	}
 	notificationService struct {
-		logger          config.Logger
-		notifier        Notifier
-		currencyService CurrencyService
+		logger   config.Logger
+		notifier Notifier
 	}
 )
 
 func NewNotificationService(
 	logger config.Logger,
 	notifier Notifier,
-	currencyService CurrencyService,
 ) *notificationService {
 	return &notificationService{
-		logger:          logger,
-		notifier:        notifier,
-		currencyService: currencyService,
+		logger:   logger,
+		notifier: notifier,
 	}
 }
 

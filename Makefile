@@ -7,11 +7,6 @@ start:
 start-dev:
 	ENV_FILE=${DEV_ENV_FILE} docker compose -f docker-compose-dev.yaml  --env-file ${DEV_ENV_FILE} up
 
-path:
-	export GOPATH=$HOME/go
-	export PATH=$PATH:$GOPATH:$GOPATH/bin
-	echo $PATH
-
 generate-mocks:
 	cd gateway && make generate-mocks;
 	cd service/currency && make generate-mocks;
@@ -39,28 +34,52 @@ test:
 test-coverage:
 	go tool cover -html="test-coverage.txt"
 
+
+currency_service_proto=contracts/proto/services/currency_service.proto
+dispatch_service_proto=contracts/proto/services/dispatch_service.proto
+
+messages_proto=contracts/proto/messages/messages.proto
+dispatch_messages_proto=contracts/proto/messages/dispatch/dispatch_messages.proto ${messages_proto}
+subscription_messages_proto=contracts/proto/messages/subscription/subscription_messages.proto ${messages_proto}
+
 generate-proto:
-# for themselves
-	protoc --go_out=. --go_opt=paths=source_relative \
-		--go-grpc_out=. --go-grpc_opt=paths=source_relative \
-		service/currency/internal/grpc/gen/currency_service.proto \
-		service/dispatch/internal/grpc/gen/dispatch_service.proto \
-		service/dispatch/internal/broker/gen/sub_messages.proto \
-		service/notification/internal/broker/gen/notification_messages.proto
-	
 # for gateway
 	protoc --go_out=./gateway/internal/clients/currency/gen  \
 		--go-grpc_out=./gateway/internal/clients/currency/gen \
-		service/currency/internal/grpc/gen/currency_service.proto
+		--proto_path=contracts/proto \
+		${currency_service_proto}
+
 	protoc --go_out=./gateway/internal/clients/dispatch/gen  \
 		--go-grpc_out=./gateway/internal/clients/dispatch/gen \
-		service/dispatch/internal/grpc/gen/dispatch_service.proto
+		--proto_path=contracts/proto \
+		${dispatch_service_proto}
+
+# for currency service
+	protoc --go_out=./service/currency/internal/grpc/gen \
+		--go-grpc_out=./service/currency/internal/grpc/gen \
+		--proto_path=contracts/proto \
+		${currency_service_proto}
+
+# for dispatch service
+	protoc --go_out=./service/dispatch/internal/grpc/gen \
+		--go-grpc_out=./service/dispatch/internal/grpc/gen \
+		--proto_path=contracts/proto \
+		${dispatch_service_proto}
+
+	protoc --go_out=./service/dispatch/internal/broker/gen \
+		--proto_path=contracts/proto \
+		${subscription_messages_proto}
 
 # for notification service
 	protoc --go_out=./service/notification/internal/broker/gen \
-		service/dispatch/internal/broker/gen/sub_messages.proto
+		--proto_path=contracts/proto \
+		${subscription_messages_proto}
+
 	protoc --go_out=./service/notification/internal/broker/gen \
-		service/notification/internal/broker/gen/notification_messages.proto
+		--proto_path=contracts/proto \
+		${dispatch_messages_proto}
+
 	protoc --go_out=./service/notification/internal/clients/currency/gen  \
 		--go-grpc_out=./service/notification/internal/clients/currency/gen \
-		service/currency/internal/grpc/gen/currency_service.proto
+		--proto_path=contracts/proto \
+		${currency_service_proto}

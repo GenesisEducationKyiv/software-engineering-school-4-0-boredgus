@@ -36,27 +36,24 @@ func main() {
 		fmt.Sprintf("%s:%s", env.CurrencyServiceAddress, env.CurrencyServicePort),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
-	panicOnError(err, "failed to connect to dispatch service grpc server")
+	panicOnError(err, "failed to connect to currency service grpc server")
 	defer currencyServiceConn.Close()
 
 	currencyService := currency.NewCurrencyServiceClient(currencyServiceConn)
 
 	// initialization of notification service
-	mailmanClient := mailman.NewMailman(mailman.SMTPParams{
+	mailmanClient := mailman.NewSMTPMailman(mailman.SMTPParams{
 		Host:     env.SMTPHost,
 		Port:     env.SMTPPort,
 		Email:    env.SMTPEmail,
 		Name:     env.SMTPUsername,
 		Password: env.SMTPPassword,
 	})
-	baseNotifier := notifier.NewBaseNotifier()
-	emailNotifier := notifier.NewEmailNotifier(baseNotifier, mailmanClient)
-
-	notificationService := service.NewNotificationService(
-		logger,
-		emailNotifier,
-		currency.NewCurrencyServiceClient(currencyServiceConn),
+	emailNotifier := notifier.NewEmailNotifier(
+		notifier.NewBaseNotifier(),
+		mailmanClient,
 	)
+	notificationService := service.NewNotificationService(logger, emailNotifier)
 
 	// connection to NATS broker
 	natsConnection, err := nats.Connect(
@@ -65,33 +62,35 @@ func main() {
 	)
 	panicOnError(err, "failed to connect to NATS broker")
 
-	// connection to message broker
+	// initialization of jetstream
 	js, err := jetstream.New(natsConnection)
 	panicOnError(err, "failed to create NATS Jetstream instance")
 
-	// initializatin of broker client
+	// initialization of broker client
 	natsBroker, err := broker.NewNatsBroker(js, logger)
 	panicOnError(err, "failed to create broker")
 
-	// connecting to object store
+	// connection to object store
 	jetstreamStore, err := natsBroker.ObjectStore("dispatches")
 	panicOnError(err, "failed to connect to object store")
 
-	// initalization of cron scheduler
+	// initalization of dispatch scheduler
 	scheduler := scheduler.NewDispatchScheduler()
 
+	dispatchRepo := repo.NewDispatchRepo(broker.NewObjectStore(jetstreamStore))
 	handler := app.NewEventHandler(
 		natsBroker,
 		currencyService,
 		scheduler,
 		notificationService,
 		logger,
+		dispatchRepo,
 	)
 
 	app.NewApp(
 		handler,
 		scheduler,
 		logger,
-		repo.NewDispatchRepo(broker.NewObjectStore(jetstreamStore)),
+		dispatchRepo,
 	).Run()
 }

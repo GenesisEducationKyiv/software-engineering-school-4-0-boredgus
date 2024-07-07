@@ -7,13 +7,11 @@ import (
 	"github.com/go-mail/mail"
 )
 
-type (
-	Dialer interface {
-		DialAndSend(m ...*mail.Message) error
-	}
-)
+type Dialer interface {
+	DialAndSend(m ...*mail.Message) error
+}
 
-type mailman struct {
+type smtpMailman struct {
 	dialer Dialer
 	author string
 }
@@ -26,14 +24,14 @@ type SMTPParams struct {
 	Password string
 }
 
-func NewMailman(params SMTPParams) *mailman {
-	return &mailman{
+func NewSMTPMailman(params SMTPParams) *smtpMailman {
+	return &smtpMailman{
 		dialer: mail.NewDialer(params.Host, params.Port, params.Email, params.Password),
 		author: fmt.Sprintf(`"%s" <%s>`, params.Name, params.Email),
 	}
 }
 
-func (m *mailman) Send(email notifier.Email) error {
+func (m *smtpMailman) Send(email notifier.Email) error {
 	msgs := make([]*mail.Message, 0, len(email.To))
 
 	for _, target := range email.To {
