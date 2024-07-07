@@ -19,19 +19,17 @@ func pathToTemplate(filename string) string {
 	return filepath.Join(basePath, "templates", filename)
 }
 
-var TemplateParseErr = errors.New("template error")
+var HTMLTemplateErr = errors.New("html template error")
 
 func ParseHTMLTemplate(templateName string, data any) ([]byte, error) {
 	templateFile := pathToTemplate(templateName + ".html")
 	tmpl, err := template.ParseFiles(templateFile)
 	if err != nil {
-
-		return nil, errors.Join(TemplateParseErr, err)
+		return nil, errors.Join(HTMLTemplateErr, err)
 	}
 	var buffer bytes.Buffer
 	if err := tmpl.Execute(&buffer, data); err != nil {
-
-		return nil, errors.Join(TemplateParseErr, err)
+		return nil, errors.Join(HTMLTemplateErr, err)
 	}
 
 	return buffer.Bytes(), nil
