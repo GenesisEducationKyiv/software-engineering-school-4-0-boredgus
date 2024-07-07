@@ -11,17 +11,9 @@ dependenciesRules:
         - "**.internal/service.**"
 
   - package: "**.internal/entities.**"
-    shouldNotDependsOn: 
+    shouldOnlyDependsOn: 
       internal: 
-        - "**.internal/clients.**"
-        - "**.internal/config.**"
-        - "**.internal/db.**"
-        - "**.internal/grpc.**"
-        - "**.internal/mailing.**"
-        - "**.internal/mocks.**"
-        - "**.internal/repo.**"
-        - "**.internal/service.**"
-        - "**.internal/tests.**"
+        - "**.internal/entities.**"
 
   - package: "**.internal/grpc/server"
     shouldOnlyDependsOn: 

@@ -12,14 +12,9 @@ dependenciesRules:
         - "**.internal/parser.**"
 
   - package: "**.internal/entities.**"
-    shouldNotDependsOn: 
+    shouldOnlyDependsOn:: 
       internal: 
-        - "**.internal/clients.**"
-        - "**.internal/config.**"
-        - "**.internal/grpc.**"
-        - "**.internal/mocks.**"
-        - "**.internal/service"
-        - "**.internal/parser.**"
+        - "**.internal/entities.**"
 
   - package: "**.internal/grpc/server"
     shouldOnlyDependsOn: 
