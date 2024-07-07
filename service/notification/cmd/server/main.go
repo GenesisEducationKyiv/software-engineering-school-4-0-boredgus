@@ -36,7 +36,7 @@ func main() {
 		fmt.Sprintf("%s:%s", env.CurrencyServiceAddress, env.CurrencyServicePort),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
-	panicOnError(err, "failed to connect to dispatch service grpc server")
+	panicOnError(err, "failed to connect to currency service grpc server")
 	defer currencyServiceConn.Close()
 
 	currencyService := currency.NewCurrencyServiceClient(currencyServiceConn)
@@ -49,14 +49,11 @@ func main() {
 		Name:     env.SMTPUsername,
 		Password: env.SMTPPassword,
 	})
-	baseNotifier := notifier.NewBaseNotifier()
-	emailNotifier := notifier.NewEmailNotifier(baseNotifier, mailmanClient)
-
-	notificationService := service.NewNotificationService(
-		logger,
-		emailNotifier,
-		currency.NewCurrencyServiceClient(currencyServiceConn),
+	emailNotifier := notifier.NewEmailNotifier(
+		notifier.NewBaseNotifier(),
+		mailmanClient,
 	)
+	notificationService := service.NewNotificationService(logger, emailNotifier)
 
 	// connection to NATS broker
 	natsConnection, err := nats.Connect(
@@ -65,19 +62,19 @@ func main() {
 	)
 	panicOnError(err, "failed to connect to NATS broker")
 
-	// connection to message broker
+	// initialization of jetstream
 	js, err := jetstream.New(natsConnection)
 	panicOnError(err, "failed to create NATS Jetstream instance")
 
-	// initializatin of broker client
+	// initialization of broker client
 	natsBroker, err := broker.NewNatsBroker(js, logger)
 	panicOnError(err, "failed to create broker")
 
-	// connecting to object store
+	// connection to object store
 	jetstreamStore, err := natsBroker.ObjectStore("dispatches")
 	panicOnError(err, "failed to connect to object store")
 
-	// initalization of cron scheduler
+	// initalization of dispatchs scheduler
 	scheduler := scheduler.NewDispatchScheduler()
 
 	handler := app.NewEventHandler(
