@@ -20,8 +20,8 @@ import (
 
 type (
 	DispatchService interface {
-		GetAllDispatches(ctx context.Context) ([]service.DispatchData, error)
 		SubscribeForDispatch(ctx context.Context, email, dispatchId string) error
+		UnsubscribeFromDispatch(ctx context.Context, email, dispatchId string) error
 	}
 
 	DispatchServiceSuite struct {
@@ -39,8 +39,6 @@ type (
 )
 
 func (s *DispatchServiceSuite) SetupSuite() {
-	s.logger = config.InitLogger(config.TestMode)
-
 	s.ctx = context.Background()
 
 	pgContainer, err := tests.CreatePostgresContainer(s.ctx)
@@ -49,7 +47,7 @@ func (s *DispatchServiceSuite) SetupSuite() {
 
 	dbConnection, err := db.NewPostrgreSQL(
 		s.pgContainer.ConnectionString,
-		db.PostgeSQLMigrationsUp(nil),
+		db.PostgeSQLMigrationsUp,
 	)
 	s.NoError(err)
 	s.dbConnection = dbConnection
@@ -58,7 +56,6 @@ func (s *DispatchServiceSuite) SetupSuite() {
 	s.broker = stubs.NewBrokerStub()
 
 	s.dispatchService = service.NewDispatchService(
-		s.logger,
 		repo.NewUserRepo(storage),
 		repo.NewSubRepo(storage),
 		s.dispatchRepo,
@@ -78,22 +75,12 @@ func (s *DispatchServiceSuite) TearDownSuite() {
 	}
 }
 
-func (s *DispatchServiceSuite) Test_GetAllDispatches() {
-	ctx := context.Background()
-
-	dispatches, err := s.dispatchService.GetAllDispatches(ctx)
-
-	s.NoError(err)
-	s.Equal(1, len(dispatches))
-	s.Equal(dispatches[0].Id, testdata.USD_UAH_DISPATCH_ID)
-}
-
-func (s *DispatchServiceSuite) Test_SubscribeForDispatch_Success() {
-	emailToSubscribe := "email_1@gmail.com"
+func (s *DispatchServiceSuite) Test_SubscribeForDispatch_SuccessfullyCreatedSubscription() {
+	emailToSubscribe := "email_for_created_subscription@gmail.com"
 	dispatchID := testdata.USD_UAH_DISPATCH_ID
 	ctx := context.Background()
 
-	s.broker.On("CreateSubscription", mock.Anything).Once().Return(nil)
+	s.broker.On("CreateSubscription", mock.Anything)
 	s.NoError(s.dispatchService.SubscribeForDispatch(ctx, emailToSubscribe, dispatchID))
 
 	subscribers, err := s.dispatchRepo.GetSubscribersOfDispatch(ctx, dispatchID)
@@ -101,18 +88,48 @@ func (s *DispatchServiceSuite) Test_SubscribeForDispatch_Success() {
 	s.True(slices.Contains(subscribers, emailToSubscribe))
 }
 
+func (s *DispatchServiceSuite) Test_SubscribeForDispatch_SuccessfullyRenewedSubscription() {
+	data := testdata.CancelledSubscriptionData
+	ctx := context.Background()
+	s.NoError(s.pgContainer.ExecuteSQLFiles(ctx, data.Filename))
+	s.broker.On("RenewSubscription", mock.Anything)
+
+	s.NoError(s.dispatchService.SubscribeForDispatch(ctx, data.Email, data.DispatchID))
+
+	subscribers, err := s.dispatchRepo.GetSubscribersOfDispatch(ctx, data.DispatchID)
+	s.NoError(err)
+	s.True(slices.Contains(subscribers, data.Email))
+}
+
 func (s *DispatchServiceSuite) Test_SubscribeForDispatch_UserAlreadySubscribedForThisDispatch() {
-	email := "email_2@gmail.com"
+	email := "duplicated_email@gmail.com"
 	dispatchId := testdata.USD_UAH_DISPATCH_ID
 	ctx := context.Background()
 
-	s.broker.On("CreateSubscription", mock.Anything).Once().Return(nil)
-
+	s.broker.On("CreateSubscription", mock.Anything)
 	s.NoError(s.dispatchService.SubscribeForDispatch(ctx, email, dispatchId))
 	s.ErrorIs(
 		s.dispatchService.SubscribeForDispatch(ctx, email, dispatchId),
-		service.UniqueViolationErr,
+		service.AlreadyExistsErr,
 	)
+}
+
+func (s *DispatchServiceSuite) Test_UnsubscribeFromDispatch_SuccessfullyCancelledSubscription() {
+	data := testdata.NewSubscriptionData
+	ctx := context.Background()
+
+	s.broker.On("CancelSubscription", mock.Anything)
+	s.NoError(s.pgContainer.ExecuteSQLFiles(ctx, data.Filename))
+
+	s.NoError(s.dispatchService.UnsubscribeFromDispatch(ctx, data.Email, data.DispatchID))
+}
+
+func (s *DispatchServiceSuite) Test_UnsubscribeFromDispatch_SubscriptionIsAlreadyCancelled() {
+	data := testdata.CancelledSubscriptionData2
+	ctx := context.Background()
+	s.NoError(s.pgContainer.ExecuteSQLFiles(ctx, data.Filename))
+
+	s.NoError(s.dispatchService.UnsubscribeFromDispatch(ctx, data.Email, data.DispatchID))
 }
 
 func TestIntegration_DispatchService(t *testing.T) {

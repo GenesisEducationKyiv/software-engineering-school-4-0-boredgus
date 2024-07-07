@@ -10,7 +10,7 @@ type CurrencyDispatchDetails struct {
 }
 
 type Dispatch[T any] struct {
-	Id                 string
+	ID                 string
 	Label              string
 	SendAt             time.Time
 	TemplateName       string

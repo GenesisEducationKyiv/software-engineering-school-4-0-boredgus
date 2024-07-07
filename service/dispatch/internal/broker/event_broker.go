@@ -22,7 +22,9 @@ type (
 )
 
 const (
-	CreateSubscriptionSubject string = "events.subscription.created"
+	SubscriptionCreatedSubject   string = "events.subscription.created"
+	SubscriptionCancelledSubject string = "events.subscription.cancelled"
+	SubscriptionRenewedSubject   string = "events.subscription.renewed"
 )
 
 func NewEventBroker(broker Broker, logger config.Logger) *eventBroker {
@@ -44,11 +46,45 @@ func (b *eventBroker) CreateSubscription(sub service.Subscription) {
 		return
 	}
 
-	if err = b.broker.PublishAsync(CreateSubscriptionSubject, data); err != nil {
-		b.logger.Errorf(
-			"failed to publish CreateSubscription message to '%s' subject: %v",
-			CreateSubscriptionSubject, err,
-		)
+	subject := SubscriptionCreatedSubject
+	if err = b.broker.PublishAsync(subject, data); err != nil {
+		b.logger.Errorf("failed to publish message to '%s' subject: %v", subject, err)
+	}
+}
+
+func (b *eventBroker) CancelSubscription(sub service.Subscription) {
+	data, err := proto.Marshal(&messages.SubscriptionMessage{
+		EventType: messages.EventType_SUBSCRIPTION_CANCELLED,
+		Timestamp: timestamppb.New(time.Now().UTC()),
+		Payload:   subscriptionToProto(sub, messages.SubscriptionStatus_CANCELLED),
+	})
+	if err != nil {
+		b.logger.Errorf("failed to marshal subscription message: %v", err)
+
+		return
+	}
+
+	subject := SubscriptionCancelledSubject
+	if err = b.broker.PublishAsync(subject, data); err != nil {
+		b.logger.Errorf("failed to publish message to '%s' subject: %v", subject, err)
+	}
+}
+
+func (b *eventBroker) RenewSubscription(sub service.Subscription) {
+	data, err := proto.Marshal(&messages.SubscriptionMessage{
+		EventType: messages.EventType_SUBSCRIPTION_RENEWED,
+		Timestamp: timestamppb.New(time.Now().UTC()),
+		Payload:   subscriptionToProto(sub, messages.SubscriptionStatus_RENEWED),
+	})
+	if err != nil {
+		b.logger.Errorf("failed to marshal subscription message: %v", err)
+
+		return
+	}
+
+	subject := SubscriptionRenewedSubject
+	if err = b.broker.PublishAsync(subject, data); err != nil {
+		b.logger.Errorf("failed to publish message to '%s' subject: %v", subject, err)
 	}
 }
 

@@ -6,4 +6,6 @@ package messages;
 enum EventType {
   SUBSCRIPTION_CREATED = 0;
   SEND_DISPATCH = 1;
+  SUBSCRIPTION_CANCELLED = 2;
+  SUBSCRIPTION_RENEWED = 3;
 }

@@ -16,3 +16,11 @@ func NewBrokerStub() *BrokerStub {
 func (b *BrokerStub) CreateSubscription(sub service.Subscription) {
 	b.Called(sub)
 }
+
+func (b *BrokerStub) CancelSubscription(sub service.Subscription) {
+	b.Called(sub)
+}
+
+func (b *BrokerStub) RenewSubscription(sub service.Subscription) {
+	b.Called(sub)
+}

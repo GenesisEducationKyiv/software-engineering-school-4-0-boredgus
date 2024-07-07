@@ -37,7 +37,7 @@ func (r *dispatchRepo) GetDispatchByID(ctx context.Context, dispatchId string) (
 		return dispatch, err
 	}
 	var targetCurrencies string
-	if err := row.Scan(&dispatch.Id, &dispatch.Label, &dispatch.TemplateName, &dispatch.Details.BaseCurrency, &targetCurrencies, &dispatch.SendAt, &dispatch.CountOfSubscribers); err != nil {
+	if err := row.Scan(&dispatch.ID, &dispatch.Label, &dispatch.TemplateName, &dispatch.Details.BaseCurrency, &targetCurrencies, &dispatch.SendAt, &dispatch.CountOfSubscribers); err != nil {
 		return dispatch, fmt.Errorf("%w: dispatch with such id does not exists", service.NotFoundErr)
 	}
 	dispatch.Details.TargetCurrencies = strings.Split(targetCurrencies, ",")
@@ -52,7 +52,7 @@ const getSubscribersOfDispatchQ string = `
 	on cs.dispatch_id = cd.id
 	left join subs."users" u 
 	on cs.user_id = u.id
-	where cd.u_id = $1 and u.email is not null;
+	where cd.u_id = $1 and u.email is not null and cs.status != 2;
 `
 
 func (r *dispatchRepo) GetSubscribersOfDispatch(ctx context.Context, dispatchId string) ([]string, error) {
@@ -61,6 +61,9 @@ func (r *dispatchRepo) GetSubscribersOfDispatch(ctx context.Context, dispatchId 
 	if r.db.IsError(err, InvalidTextRepresentation) {
 		return result, fmt.Errorf("%w: incorrect format for uuid", service.InvalidArgumentErr)
 	}
+	if err != nil {
+		return nil, err
+	}
 
 	for rows.Next() {
 		var email string
@@ -68,31 +71,6 @@ func (r *dispatchRepo) GetSubscribersOfDispatch(ctx context.Context, dispatchId 
 			return result, fmt.Errorf("failed to scan row: %w", err)
 		}
 		result = append(result, email)
-	}
-
-	return result, nil
-}
-
-const getAllDispatchesQ = `
-	select cd.u_id, cd.label, cd.send_at, count(cs.user_id) subs_count
-	from subs."currency_dispatches" cd
-	left join subs."currency_subscriptions" cs
-	on cs.dispatch_id = cd.id
-	group by cd.id;
-`
-
-func (r *dispatchRepo) GetAllDispatches(ctx context.Context) ([]service.DispatchData, error) {
-	result := make([]service.DispatchData, 0, 5) // nolint:mnd
-	rows, err := r.db.QueryContext(ctx, getAllDispatchesQ)
-	if err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		var dispatch service.DispatchData
-		if err := rows.Scan(&dispatch.Id, &dispatch.Label, &dispatch.SendAt, &dispatch.CountOfSubscribers); err != nil {
-			return result, fmt.Errorf("failed to scan currency dispatch: %w", err)
-		}
-		result = append(result, dispatch)
 	}
 
 	return result, nil

@@ -32,9 +32,9 @@ func main() {
 	// connection to db
 	postgresqlDB, err := db.NewPostrgreSQL(
 		env.PostgreSQLConnString,
-		db.PostgeSQLMigrationsUp(logger),
+		db.PostgeSQLMigrationsUp,
 	)
-	panicOnError(err, "failed toconnect to postgresql db")
+	panicOnError(err, "failed to connect to postgresql db")
 	defer postgresqlDB.Close()
 
 	storage := repo.NewStore(postgresqlDB, db.IsPqError)
@@ -50,7 +50,6 @@ func main() {
 
 	// initialization of dispatch service server
 	dispatchService := service.NewDispatchService(
-		logger,
 		repo.NewUserRepo(storage),
 		repo.NewSubRepo(storage),
 		repo.NewDispatchRepo(storage),

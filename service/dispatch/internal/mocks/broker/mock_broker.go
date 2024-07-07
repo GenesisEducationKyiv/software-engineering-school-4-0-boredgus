@@ -20,6 +20,39 @@ func (_m *Broker) EXPECT() *Broker_Expecter {
 	return &Broker_Expecter{mock: &_m.Mock}
 }
 
+// CancelSubscription provides a mock function with given fields: sub
+func (_m *Broker) CancelSubscription(sub service.Subscription) {
+	_m.Called(sub)
+}
+
+// Broker_CancelSubscription_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CancelSubscription'
+type Broker_CancelSubscription_Call struct {
+	*mock.Call
+}
+
+// CancelSubscription is a helper method to define mock.On call
+//   - sub service.Subscription
+func (_e *Broker_Expecter) CancelSubscription(sub interface{}) *Broker_CancelSubscription_Call {
+	return &Broker_CancelSubscription_Call{Call: _e.mock.On("CancelSubscription", sub)}
+}
+
+func (_c *Broker_CancelSubscription_Call) Run(run func(sub service.Subscription)) *Broker_CancelSubscription_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(service.Subscription))
+	})
+	return _c
+}
+
+func (_c *Broker_CancelSubscription_Call) Return() *Broker_CancelSubscription_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *Broker_CancelSubscription_Call) RunAndReturn(run func(service.Subscription)) *Broker_CancelSubscription_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CreateSubscription provides a mock function with given fields: sub
 func (_m *Broker) CreateSubscription(sub service.Subscription) {
 	_m.Called(sub)
@@ -49,6 +82,39 @@ func (_c *Broker_CreateSubscription_Call) Return() *Broker_CreateSubscription_Ca
 }
 
 func (_c *Broker_CreateSubscription_Call) RunAndReturn(run func(service.Subscription)) *Broker_CreateSubscription_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RenewSubscription provides a mock function with given fields: sub
+func (_m *Broker) RenewSubscription(sub service.Subscription) {
+	_m.Called(sub)
+}
+
+// Broker_RenewSubscription_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RenewSubscription'
+type Broker_RenewSubscription_Call struct {
+	*mock.Call
+}
+
+// RenewSubscription is a helper method to define mock.On call
+//   - sub service.Subscription
+func (_e *Broker_Expecter) RenewSubscription(sub interface{}) *Broker_RenewSubscription_Call {
+	return &Broker_RenewSubscription_Call{Call: _e.mock.On("RenewSubscription", sub)}
+}
+
+func (_c *Broker_RenewSubscription_Call) Run(run func(sub service.Subscription)) *Broker_RenewSubscription_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(service.Subscription))
+	})
+	return _c
+}
+
+func (_c *Broker_RenewSubscription_Call) Return() *Broker_RenewSubscription_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *Broker_RenewSubscription_Call) RunAndReturn(run func(service.Subscription)) *Broker_RenewSubscription_Call {
 	_c.Call.Return(run)
 	return _c
 }

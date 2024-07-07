@@ -1,9 +1,27 @@
 package testdata
 
-// Emails that are being subscribed for a USD-UAH dispatch in _add_couple_of_subscribers_for_usd_uah_dispatch.sql_
-var SubscribersOfUSDUAHDispatch = []string{
-	"test_email_1@gmail.com",
-	"test_email_2@gmail.com",
+const USD_UAH_DISPATCH_ID = "f669a90d-d4aa-4285-bbce-6b14c6ff9065"
+
+type SetupData struct {
+	Filename   string
+	Email      string
+	DispatchID string
 }
 
-const USD_UAH_DISPATCH_ID = "f669a90d-d4aa-4285-bbce-6b14c6ff9065"
+var CancelledSubscriptionData = SetupData{
+	Filename:   "add_cancelled_subscription",
+	Email:      "cancelled@gmail.com",
+	DispatchID: USD_UAH_DISPATCH_ID,
+}
+
+var CancelledSubscriptionData2 = SetupData{
+	Filename:   "add_cancelled_subscription_2",
+	Email:      "cancelled_2@gmail.com",
+	DispatchID: USD_UAH_DISPATCH_ID,
+}
+
+var NewSubscriptionData = SetupData{
+	Filename:   "add_new_subscription",
+	Email:      "created@gmail.com",
+	DispatchID: USD_UAH_DISPATCH_ID,
+}
