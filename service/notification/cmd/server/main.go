@@ -42,7 +42,7 @@ func main() {
 	currencyService := currency.NewCurrencyServiceClient(currencyServiceConn)
 
 	// initialization of notification service
-	mailmanClient := mailman.NewMailman(mailman.SMTPParams{
+	mailmanClient := mailman.NewSMTPMailman(mailman.SMTPParams{
 		Host:     env.SMTPHost,
 		Port:     env.SMTPPort,
 		Email:    env.SMTPEmail,
