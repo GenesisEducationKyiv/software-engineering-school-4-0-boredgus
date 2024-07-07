@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.34.1
 // 	protoc        v5.26.1
-// source: contracts/proto/dispatch_service.proto
+// source: services/dispatch_service.proto
 
 package __
 
@@ -32,7 +32,7 @@ type SubscribeForDispatchRequest struct {
 func (x *SubscribeForDispatchRequest) Reset() {
 	*x = SubscribeForDispatchRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_contracts_proto_dispatch_service_proto_msgTypes[0]
+		mi := &file_services_dispatch_service_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -45,7 +45,7 @@ func (x *SubscribeForDispatchRequest) String() string {
 func (*SubscribeForDispatchRequest) ProtoMessage() {}
 
 func (x *SubscribeForDispatchRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_contracts_proto_dispatch_service_proto_msgTypes[0]
+	mi := &file_services_dispatch_service_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58,7 +58,7 @@ func (x *SubscribeForDispatchRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeForDispatchRequest.ProtoReflect.Descriptor instead.
 func (*SubscribeForDispatchRequest) Descriptor() ([]byte, []int) {
-	return file_contracts_proto_dispatch_service_proto_rawDescGZIP(), []int{0}
+	return file_services_dispatch_service_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *SubscribeForDispatchRequest) GetEmail() string {
@@ -84,7 +84,7 @@ type SubscribeForDispatchResponse struct {
 func (x *SubscribeForDispatchResponse) Reset() {
 	*x = SubscribeForDispatchResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_contracts_proto_dispatch_service_proto_msgTypes[1]
+		mi := &file_services_dispatch_service_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -97,7 +97,7 @@ func (x *SubscribeForDispatchResponse) String() string {
 func (*SubscribeForDispatchResponse) ProtoMessage() {}
 
 func (x *SubscribeForDispatchResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_contracts_proto_dispatch_service_proto_msgTypes[1]
+	mi := &file_services_dispatch_service_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -110,251 +110,66 @@ func (x *SubscribeForDispatchResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeForDispatchResponse.ProtoReflect.Descriptor instead.
 func (*SubscribeForDispatchResponse) Descriptor() ([]byte, []int) {
-	return file_contracts_proto_dispatch_service_proto_rawDescGZIP(), []int{1}
+	return file_services_dispatch_service_proto_rawDescGZIP(), []int{1}
 }
 
-type GetAllDispatchesRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
+var File_services_dispatch_service_proto protoreflect.FileDescriptor
 
-func (x *GetAllDispatchesRequest) Reset() {
-	*x = GetAllDispatchesRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_contracts_proto_dispatch_service_proto_msgTypes[2]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GetAllDispatchesRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAllDispatchesRequest) ProtoMessage() {}
-
-func (x *GetAllDispatchesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_contracts_proto_dispatch_service_proto_msgTypes[2]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAllDispatchesRequest.ProtoReflect.Descriptor instead.
-func (*GetAllDispatchesRequest) Descriptor() ([]byte, []int) {
-	return file_contracts_proto_dispatch_service_proto_rawDescGZIP(), []int{2}
-}
-
-type DispatchData struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// string baseCurrency = 2;
-	// repeated string targetCurrencies = 3;
-	SendAt             string `protobuf:"bytes,4,opt,name=send_at,json=sendAt,proto3" json:"send_at,omitempty"`
-	CountOfSubscribers int64  `protobuf:"varint,5,opt,name=countOfSubscribers,proto3" json:"countOfSubscribers,omitempty"`
-	Label              string `protobuf:"bytes,6,opt,name=label,proto3" json:"label,omitempty"`
-}
-
-func (x *DispatchData) Reset() {
-	*x = DispatchData{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_contracts_proto_dispatch_service_proto_msgTypes[3]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *DispatchData) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DispatchData) ProtoMessage() {}
-
-func (x *DispatchData) ProtoReflect() protoreflect.Message {
-	mi := &file_contracts_proto_dispatch_service_proto_msgTypes[3]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DispatchData.ProtoReflect.Descriptor instead.
-func (*DispatchData) Descriptor() ([]byte, []int) {
-	return file_contracts_proto_dispatch_service_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *DispatchData) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *DispatchData) GetSendAt() string {
-	if x != nil {
-		return x.SendAt
-	}
-	return ""
-}
-
-func (x *DispatchData) GetCountOfSubscribers() int64 {
-	if x != nil {
-		return x.CountOfSubscribers
-	}
-	return 0
-}
-
-func (x *DispatchData) GetLabel() string {
-	if x != nil {
-		return x.Label
-	}
-	return ""
-}
-
-type GetAllDispatchesResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Dispatches []*DispatchData `protobuf:"bytes,1,rep,name=dispatches,proto3" json:"dispatches,omitempty"`
-}
-
-func (x *GetAllDispatchesResponse) Reset() {
-	*x = GetAllDispatchesResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_contracts_proto_dispatch_service_proto_msgTypes[4]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GetAllDispatchesResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAllDispatchesResponse) ProtoMessage() {}
-
-func (x *GetAllDispatchesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_contracts_proto_dispatch_service_proto_msgTypes[4]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAllDispatchesResponse.ProtoReflect.Descriptor instead.
-func (*GetAllDispatchesResponse) Descriptor() ([]byte, []int) {
-	return file_contracts_proto_dispatch_service_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *GetAllDispatchesResponse) GetDispatches() []*DispatchData {
-	if x != nil {
-		return x.Dispatches
-	}
-	return nil
-}
-
-var File_contracts_proto_dispatch_service_proto protoreflect.FileDescriptor
-
-var file_contracts_proto_dispatch_service_proto_rawDesc = []byte{
-	0x0a, 0x26, 0x63, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x73, 0x2f, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x2f, 0x64, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69,
-	0x63, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x04, 0x6d, 0x61, 0x69, 0x6e, 0x22, 0x54,
-	0x0a, 0x1b, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x46, 0x6f, 0x72, 0x44, 0x69,
-	0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x14, 0x0a,
-	0x05, 0x65, 0x6d, 0x61, 0x69, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x65, 0x6d,
-	0x61, 0x69, 0x6c, 0x12, 0x1f, 0x0a, 0x0b, 0x64, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x5f,
-	0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x64, 0x69, 0x73, 0x70, 0x61, 0x74,
-	0x63, 0x68, 0x49, 0x64, 0x22, 0x1e, 0x0a, 0x1c, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62,
-	0x65, 0x46, 0x6f, 0x72, 0x44, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x19, 0x0a, 0x17, 0x47, 0x65, 0x74, 0x41, 0x6c, 0x6c, 0x44, 0x69,
-	0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22,
-	0x7d, 0x0a, 0x0c, 0x44, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x44, 0x61, 0x74, 0x61, 0x12,
-	0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12,
-	0x17, 0x0a, 0x07, 0x73, 0x65, 0x6e, 0x64, 0x5f, 0x61, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x41, 0x74, 0x12, 0x2e, 0x0a, 0x12, 0x63, 0x6f, 0x75, 0x6e,
-	0x74, 0x4f, 0x66, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x72, 0x73, 0x18, 0x05,
-	0x20, 0x01, 0x28, 0x03, 0x52, 0x12, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x4f, 0x66, 0x53, 0x75, 0x62,
-	0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x72, 0x73, 0x12, 0x14, 0x0a, 0x05, 0x6c, 0x61, 0x62, 0x65,
-	0x6c, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x6c, 0x61, 0x62, 0x65, 0x6c, 0x22, 0x4e,
-	0x0a, 0x18, 0x47, 0x65, 0x74, 0x41, 0x6c, 0x6c, 0x44, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68,
-	0x65, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x32, 0x0a, 0x0a, 0x64, 0x69,
-	0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x12,
-	0x2e, 0x6d, 0x61, 0x69, 0x6e, 0x2e, 0x44, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x44, 0x61,
-	0x74, 0x61, 0x52, 0x0a, 0x64, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x65, 0x73, 0x32, 0xc7,
-	0x01, 0x0a, 0x0f, 0x44, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x53, 0x65, 0x72, 0x76, 0x69,
-	0x63, 0x65, 0x12, 0x5f, 0x0a, 0x14, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x46,
-	0x6f, 0x72, 0x44, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x12, 0x21, 0x2e, 0x6d, 0x61, 0x69,
-	0x6e, 0x2e, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x46, 0x6f, 0x72, 0x44, 0x69,
-	0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x22, 0x2e,
-	0x6d, 0x61, 0x69, 0x6e, 0x2e, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x46, 0x6f,
-	0x72, 0x44, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x22, 0x00, 0x12, 0x53, 0x0a, 0x10, 0x47, 0x65, 0x74, 0x41, 0x6c, 0x6c, 0x44, 0x69, 0x73,
-	0x70, 0x61, 0x74, 0x63, 0x68, 0x65, 0x73, 0x12, 0x1d, 0x2e, 0x6d, 0x61, 0x69, 0x6e, 0x2e, 0x47,
-	0x65, 0x74, 0x41, 0x6c, 0x6c, 0x44, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x65, 0x73, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x6d, 0x61, 0x69, 0x6e, 0x2e, 0x47, 0x65,
-	0x74, 0x41, 0x6c, 0x6c, 0x44, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x65, 0x73, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x04, 0x5a, 0x02, 0x2e, 0x2f, 0x62, 0x06,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+var file_services_dispatch_service_proto_rawDesc = []byte{
+	0x0a, 0x1f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x73, 0x2f, 0x64, 0x69, 0x73, 0x70, 0x61,
+	0x74, 0x63, 0x68, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x12, 0x04, 0x6d, 0x61, 0x69, 0x6e, 0x22, 0x54, 0x0a, 0x1b, 0x53, 0x75, 0x62, 0x73, 0x63,
+	0x72, 0x69, 0x62, 0x65, 0x46, 0x6f, 0x72, 0x44, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x6d, 0x61, 0x69, 0x6c, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x65, 0x6d, 0x61, 0x69, 0x6c, 0x12, 0x1f, 0x0a, 0x0b,
+	0x64, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x0a, 0x64, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x49, 0x64, 0x22, 0x1e, 0x0a,
+	0x1c, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x46, 0x6f, 0x72, 0x44, 0x69, 0x73,
+	0x70, 0x61, 0x74, 0x63, 0x68, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x32, 0x72, 0x0a,
+	0x0f, 0x44, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
+	0x12, 0x5f, 0x0a, 0x14, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x46, 0x6f, 0x72,
+	0x44, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x12, 0x21, 0x2e, 0x6d, 0x61, 0x69, 0x6e, 0x2e,
+	0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x46, 0x6f, 0x72, 0x44, 0x69, 0x73, 0x70,
+	0x61, 0x74, 0x63, 0x68, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x22, 0x2e, 0x6d, 0x61,
+	0x69, 0x6e, 0x2e, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x46, 0x6f, 0x72, 0x44,
+	0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
+	0x00, 0x42, 0x04, 0x5a, 0x02, 0x2e, 0x2f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
-	file_contracts_proto_dispatch_service_proto_rawDescOnce sync.Once
-	file_contracts_proto_dispatch_service_proto_rawDescData = file_contracts_proto_dispatch_service_proto_rawDesc
+	file_services_dispatch_service_proto_rawDescOnce sync.Once
+	file_services_dispatch_service_proto_rawDescData = file_services_dispatch_service_proto_rawDesc
 )
 
-func file_contracts_proto_dispatch_service_proto_rawDescGZIP() []byte {
-	file_contracts_proto_dispatch_service_proto_rawDescOnce.Do(func() {
-		file_contracts_proto_dispatch_service_proto_rawDescData = protoimpl.X.CompressGZIP(file_contracts_proto_dispatch_service_proto_rawDescData)
+func file_services_dispatch_service_proto_rawDescGZIP() []byte {
+	file_services_dispatch_service_proto_rawDescOnce.Do(func() {
+		file_services_dispatch_service_proto_rawDescData = protoimpl.X.CompressGZIP(file_services_dispatch_service_proto_rawDescData)
 	})
-	return file_contracts_proto_dispatch_service_proto_rawDescData
+	return file_services_dispatch_service_proto_rawDescData
 }
 
-var file_contracts_proto_dispatch_service_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
-var file_contracts_proto_dispatch_service_proto_goTypes = []interface{}{
+var file_services_dispatch_service_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_services_dispatch_service_proto_goTypes = []interface{}{
 	(*SubscribeForDispatchRequest)(nil),  // 0: main.SubscribeForDispatchRequest
 	(*SubscribeForDispatchResponse)(nil), // 1: main.SubscribeForDispatchResponse
-	(*GetAllDispatchesRequest)(nil),      // 2: main.GetAllDispatchesRequest
-	(*DispatchData)(nil),                 // 3: main.DispatchData
-	(*GetAllDispatchesResponse)(nil),     // 4: main.GetAllDispatchesResponse
 }
-var file_contracts_proto_dispatch_service_proto_depIdxs = []int32{
-	3, // 0: main.GetAllDispatchesResponse.dispatches:type_name -> main.DispatchData
-	0, // 1: main.DispatchService.SubscribeForDispatch:input_type -> main.SubscribeForDispatchRequest
-	2, // 2: main.DispatchService.GetAllDispatches:input_type -> main.GetAllDispatchesRequest
-	1, // 3: main.DispatchService.SubscribeForDispatch:output_type -> main.SubscribeForDispatchResponse
-	4, // 4: main.DispatchService.GetAllDispatches:output_type -> main.GetAllDispatchesResponse
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+var file_services_dispatch_service_proto_depIdxs = []int32{
+	0, // 0: main.DispatchService.SubscribeForDispatch:input_type -> main.SubscribeForDispatchRequest
+	1, // 1: main.DispatchService.SubscribeForDispatch:output_type -> main.SubscribeForDispatchResponse
+	1, // [1:2] is the sub-list for method output_type
+	0, // [0:1] is the sub-list for method input_type
+	0, // [0:0] is the sub-list for extension type_name
+	0, // [0:0] is the sub-list for extension extendee
+	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_contracts_proto_dispatch_service_proto_init() }
-func file_contracts_proto_dispatch_service_proto_init() {
-	if File_contracts_proto_dispatch_service_proto != nil {
+func init() { file_services_dispatch_service_proto_init() }
+func file_services_dispatch_service_proto_init() {
+	if File_services_dispatch_service_proto != nil {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_contracts_proto_dispatch_service_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_services_dispatch_service_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SubscribeForDispatchRequest); i {
 			case 0:
 				return &v.state
@@ -366,44 +181,8 @@ func file_contracts_proto_dispatch_service_proto_init() {
 				return nil
 			}
 		}
-		file_contracts_proto_dispatch_service_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+		file_services_dispatch_service_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SubscribeForDispatchResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_contracts_proto_dispatch_service_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetAllDispatchesRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_contracts_proto_dispatch_service_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DispatchData); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_contracts_proto_dispatch_service_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetAllDispatchesResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -419,18 +198,18 @@ func file_contracts_proto_dispatch_service_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_contracts_proto_dispatch_service_proto_rawDesc,
+			RawDescriptor: file_services_dispatch_service_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_contracts_proto_dispatch_service_proto_goTypes,
-		DependencyIndexes: file_contracts_proto_dispatch_service_proto_depIdxs,
-		MessageInfos:      file_contracts_proto_dispatch_service_proto_msgTypes,
+		GoTypes:           file_services_dispatch_service_proto_goTypes,
+		DependencyIndexes: file_services_dispatch_service_proto_depIdxs,
+		MessageInfos:      file_services_dispatch_service_proto_msgTypes,
 	}.Build()
-	File_contracts_proto_dispatch_service_proto = out.File
-	file_contracts_proto_dispatch_service_proto_rawDesc = nil
-	file_contracts_proto_dispatch_service_proto_goTypes = nil
-	file_contracts_proto_dispatch_service_proto_depIdxs = nil
+	File_services_dispatch_service_proto = out.File
+	file_services_dispatch_service_proto_rawDesc = nil
+	file_services_dispatch_service_proto_goTypes = nil
+	file_services_dispatch_service_proto_depIdxs = nil
 }

@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package main;
+option go_package = "./";
+
+service DispatchService {
+  rpc SubscribeForDispatch(SubscribeForDispatchRequest) returns (SubscribeForDispatchResponse) {}
+}
+
+message SubscribeForDispatchRequest {
+  string email = 1;
+  string dispatch_id = 2;
+}
+
+message SubscribeForDispatchResponse {}

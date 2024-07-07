@@ -1,23 +1,20 @@
 syntax = "proto3";
 
-option go_package = ".;broker_msgs";
-
-package broker_msgs;
+package messages.dispatch;
+option go_package = ".;messages";
 
 import "google/protobuf/timestamp.proto";
+import "messages/messages.proto";
 
-enum EventType {
-  SEND_DISPATCH = 0;
-}
 
-message Data {
+message Dispatch {
   repeated string emails = 1;
   string baseCcy = 2;
   map<string,double> rates = 3;
 }
 
 message SendDispatchCommand {
-  EventType eventType = 1;
+  messages.EventType eventType = 1;
   google.protobuf.Timestamp timestamp = 3;
-  Data data = 4;
+  Dispatch payload = 4;
 }

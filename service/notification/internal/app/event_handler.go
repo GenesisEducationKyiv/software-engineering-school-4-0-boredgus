@@ -74,7 +74,7 @@ func (h *eventHandler) invokeSendingOfDispatch(d *entities.Dispatch) {
 	msg := broker_msgs.SendDispatchCommand{
 		EventType: broker_msgs.EventType_SEND_DISPATCH,
 		Timestamp: timestamppb.New(time.Now().UTC()),
-		Data: &broker_msgs.Data{
+		Payload: &broker_msgs.Dispatch{
 			Emails:  d.Emails,
 			BaseCcy: d.BaseCcy,
 		},
@@ -89,7 +89,7 @@ func (h *eventHandler) invokeSendingOfDispatch(d *entities.Dispatch) {
 
 		return
 	}
-	msg.Data.Rates = rates
+	msg.Payload.Rates = rates
 
 	marshalled, err := proto.Marshal(&msg)
 	if err != nil {
@@ -151,10 +151,10 @@ func (h *eventHandler) handleSendDispatchCommand(msg broker.ConsumedMessage) err
 	if err := h.service.SendSubscriptionDetails(ctx, service.Notification{
 		Type: service.SubscriptionCreated,
 		Data: service.NotificationData{
-			Emails: parsedMsg.Data.Emails,
+			Emails: parsedMsg.Payload.Emails,
 			Payload: service.CurrencyDispatchData{
-				BaseCcy: parsedMsg.Data.BaseCcy,
-				Rates:   parsedMsg.Data.Rates,
+				BaseCcy: parsedMsg.Payload.BaseCcy,
+				Rates:   parsedMsg.Payload.Rates,
 			},
 		},
 	}); err != nil {
