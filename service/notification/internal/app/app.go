@@ -9,9 +9,8 @@ import (
 )
 
 type (
-	EventHandler interface {
-		HandleEvents() error
-		HandleCommands() error
+	MessageHandler interface {
+		HandleMessages() error
 	}
 	DispatchFetcher interface {
 		GetAll(ctx context.Context) (map[string]entities.Dispatch, error)
@@ -22,7 +21,7 @@ type (
 		Stop()
 	}
 	app struct {
-		eventHandler      EventHandler
+		handler           MessageHandler
 		dispatchScheduler DispatchScheduler
 		fetcher           DispatchFetcher
 		logger            config.Logger
@@ -30,13 +29,13 @@ type (
 )
 
 func NewApp(
-	eventHandler EventHandler,
+	handler MessageHandler,
 	dispatchScheduler DispatchScheduler,
 	logger config.Logger,
 	fetcher DispatchFetcher,
 ) *app {
 	return &app{
-		eventHandler:      eventHandler,
+		handler:           handler,
 		logger:            logger,
 		dispatchScheduler: dispatchScheduler,
 		fetcher:           fetcher,
@@ -70,10 +69,7 @@ func (a *app) uploadOldDispatches() {
 }
 
 func (a *app) Run() {
-	if err := a.eventHandler.HandleEvents(); err != nil {
-		a.logger.Error(err)
-	}
-	if err := a.eventHandler.HandleCommands(); err != nil {
+	if err := a.handler.HandleMessages(); err != nil {
 		a.logger.Error(err)
 	}
 	go a.uploadOldDispatches()

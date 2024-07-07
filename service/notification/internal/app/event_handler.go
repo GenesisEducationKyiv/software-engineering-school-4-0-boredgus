@@ -17,8 +17,7 @@ import (
 type (
 	Broker interface {
 		PublishAsync(subject string, payload []byte) error
-		ConsumeEvent(handler func(msg broker.ConsumedMessage)) error
-		ConsumeCommand(handler func(msg broker.ConsumedMessage)) error
+		ConsumeMessage(handler func(msg broker.ConsumedMessage)) error
 	}
 
 	NotificationService interface {
@@ -52,6 +51,7 @@ const (
 	SendDispatchCommand      string = "commands.send.dispatch"
 
 	TimeoutOfProcessing time.Duration = 2 * time.Second
+	RedeliveryDelay     time.Duration = 1 * time.Minute
 )
 
 func NewEventHandler(
@@ -164,42 +164,13 @@ func (h *eventHandler) handleSendDispatchCommand(msg broker.ConsumedMessage) err
 	return nil
 }
 
-func (h *eventHandler) HandleEvents() error {
-	return h.broker.ConsumeEvent(func(msg broker.ConsumedMessage) {
+func (h *eventHandler) HandleMessages() error {
+	return h.broker.ConsumeMessage(func(msg broker.ConsumedMessage) {
 		var err error
 
 		switch msg.Subject() {
 		case SubscriptionCreatedEvent:
 			err = h.handleSubscriptionCreatedEvent(msg)
-		default:
-			h.logger.Infof("skipping message with subject %v ...", msg.Subject())
-
-			return
-		}
-
-		if err != nil {
-			h.logger.Error(err)
-
-			err = msg.Nak()
-			if err != nil {
-				h.logger.Errorf("failed to negatively acknowledge message: %v", err)
-			}
-
-			return
-		}
-
-		err = msg.Ack()
-		if err != nil {
-			h.logger.Errorf("failed to acknowledge message: %v", err)
-		}
-	})
-}
-
-func (h *eventHandler) HandleCommands() error {
-	return h.broker.ConsumeCommand(func(msg broker.ConsumedMessage) {
-		var err error
-
-		switch msg.Subject() {
 		case SendDispatchCommand:
 			err = h.handleSendDispatchCommand(msg)
 		default:
@@ -208,10 +179,12 @@ func (h *eventHandler) HandleCommands() error {
 			return
 		}
 
-		if err != nil {
-			h.logger.Error(err)
+		h.logger.Infof("handling message with subject %v ...", msg.Subject())
 
-			err = msg.Nak()
+		if err != nil {
+			h.logger.Errorf("failed to handle message: %v", err)
+
+			err = msg.NakWithDelay(RedeliveryDelay)
 			if err != nil {
 				h.logger.Errorf("failed to negatively acknowledge message: %v", err)
 			}
@@ -223,5 +196,7 @@ func (h *eventHandler) HandleCommands() error {
 		if err != nil {
 			h.logger.Errorf("failed to acknowledge message: %v", err)
 		}
+
+		h.logger.Info("successfully handled message")
 	})
 }
