@@ -3,7 +3,7 @@
 package broker_mock
 
 import (
-	deps "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps"
+	service "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -21,7 +21,7 @@ func (_m *Broker) EXPECT() *Broker_Expecter {
 }
 
 // CreateSubscription provides a mock function with given fields: sub
-func (_m *Broker) CreateSubscription(sub deps.Subscription) {
+func (_m *Broker) CreateSubscription(sub service.Subscription) {
 	_m.Called(sub)
 }
 
@@ -31,14 +31,14 @@ type Broker_CreateSubscription_Call struct {
 }
 
 // CreateSubscription is a helper method to define mock.On call
-//   - sub deps.Subscription
+//   - sub service.Subscription
 func (_e *Broker_Expecter) CreateSubscription(sub interface{}) *Broker_CreateSubscription_Call {
 	return &Broker_CreateSubscription_Call{Call: _e.mock.On("CreateSubscription", sub)}
 }
 
-func (_c *Broker_CreateSubscription_Call) Run(run func(sub deps.Subscription)) *Broker_CreateSubscription_Call {
+func (_c *Broker_CreateSubscription_Call) Run(run func(sub service.Subscription)) *Broker_CreateSubscription_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(deps.Subscription))
+		run(args[0].(service.Subscription))
 	})
 	return _c
 }
@@ -48,7 +48,7 @@ func (_c *Broker_CreateSubscription_Call) Return() *Broker_CreateSubscription_Ca
 	return _c
 }
 
-func (_c *Broker_CreateSubscription_Call) RunAndReturn(run func(deps.Subscription)) *Broker_CreateSubscription_Call {
+func (_c *Broker_CreateSubscription_Call) RunAndReturn(run func(service.Subscription)) *Broker_CreateSubscription_Call {
 	_c.Call.Return(run)
 	return _c
 }

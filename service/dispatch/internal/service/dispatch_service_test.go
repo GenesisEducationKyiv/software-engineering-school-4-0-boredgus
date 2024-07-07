@@ -65,7 +65,7 @@ func Test_DispatchService_GetAllDispatches(t *testing.T) {
 			cleanup := setup(tt.mockedValues, tt.args)
 			defer cleanup()
 
-			s := service.NewDispatchService(nil, nil, nil, nil, nil, dispatchRepoMock)
+			s := service.NewDispatchService(nil, nil, nil, dispatchRepoMock, nil)
 			actualResult, actualErr := s.GetAllDispatches(ctx)
 
 			assert.Equal(t, tt.expectedResult, actualResult)
@@ -166,7 +166,7 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 			cleanup := setup(tt.mockedValues, tt.args)
 			defer cleanup()
 
-			s := service.NewDispatchService(nil, nil, nil, userRepoMock, subRepoMock, dispatchRepoMock)
+			s := service.NewDispatchService(nil, userRepoMock, subRepoMock, dispatchRepoMock, brokerMock)
 			actualErr := s.SubscribeForDispatch(tt.args.ctx, tt.args.email, tt.args.dispatchId)
 
 			if tt.expectedErr != nil {

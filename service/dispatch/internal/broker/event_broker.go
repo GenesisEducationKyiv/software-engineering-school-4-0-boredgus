@@ -5,7 +5,7 @@ import (
 
 	broker_msgs "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/broker/gen"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/config"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service/deps"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -37,7 +37,7 @@ func NewEventBroker(broker Broker, logger config.Logger) *eventBroker {
 	}
 }
 
-func (b *eventBroker) CreateSubscription(sub deps.Subscription) {
+func (b *eventBroker) CreateSubscription(sub service.Subscription) {
 	event := CreateSubscriptionEvent
 
 	data, err := proto.Marshal(&broker_msgs.SubscriptionMessage{
@@ -61,7 +61,7 @@ func (b *eventBroker) CreateSubscription(sub deps.Subscription) {
 }
 
 func SubscriptionToProto(
-	sub deps.Subscription,
+	sub service.Subscription,
 	status broker_msgs.SubscriptionStatus,
 ) *broker_msgs.Subscription {
 	return &broker_msgs.Subscription{
