@@ -126,7 +126,7 @@ func (h *eventHandler) handleSubscriptionCreatedEvent(msg broker.ConsumedMessage
 		Type: service.SubscriptionCreated,
 		Data: service.NotificationData{
 			Emails: []string{parsedMsg.Payload.Email},
-			Payload: service.SubscriptionDetails{
+			Payload: service.SubscriptionData{
 				BaseCcy:     parsedMsg.Payload.BaseCcy,
 				TargetCcies: parsedMsg.Payload.TargetCcies,
 				SendAt:      parsedMsg.Payload.SendAt.AsTime().UTC().Format(time.TimeOnly),
@@ -152,7 +152,7 @@ func (h *eventHandler) handleSendDispatchCommand(msg broker.ConsumedMessage) err
 		Type: service.SubscriptionCreated,
 		Data: service.NotificationData{
 			Emails: parsedMsg.Data.Emails,
-			Payload: service.CurrencyDispatch{
+			Payload: service.CurrencyDispatchData{
 				BaseCcy: parsedMsg.Data.BaseCcy,
 				Rates:   parsedMsg.Data.Rates,
 			},
