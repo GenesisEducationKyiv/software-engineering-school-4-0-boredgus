@@ -40,27 +40,35 @@ test-coverage:
 	go tool cover -html="test-coverage.txt"
 
 generate-proto:
-# for themselves
-	protoc --go_out=. --go_opt=paths=source_relative \
-		--go-grpc_out=. --go-grpc_opt=paths=source_relative \
-		service/currency/internal/grpc/gen/currency_service.proto \
-		service/dispatch/internal/grpc/gen/dispatch_service.proto \
-		service/dispatch/internal/broker/gen/sub_messages.proto \
-		service/notification/internal/broker/gen/notification_messages.proto
+# for currency service
+	protoc --go_out=./service/currency/internal/grpc/gen \
+		--go-grpc_out=./service/currency/internal/grpc/gen \
+		contracts/proto/currency_service.proto
 	
 # for gateway
 	protoc --go_out=./gateway/internal/clients/currency/gen  \
 		--go-grpc_out=./gateway/internal/clients/currency/gen \
-		service/currency/internal/grpc/gen/currency_service.proto
+		contracts/proto/currency_service.proto
+
 	protoc --go_out=./gateway/internal/clients/dispatch/gen  \
 		--go-grpc_out=./gateway/internal/clients/dispatch/gen \
-		service/dispatch/internal/grpc/gen/dispatch_service.proto
+		contracts/proto/dispatch_service.proto
+
+# for dispatch service
+	protoc --go_out=./service/dispatch/internal/grpc/gen \
+		--go-grpc_out=./service/dispatch/internal/grpc/gen \
+		contracts/proto/dispatch_service.proto
+
+	protoc --go_out=./service/dispatch/internal/broker/gen \
+		contracts/proto/subscription_messages.proto
 
 # for notification service
 	protoc --go_out=./service/notification/internal/broker/gen \
-		service/dispatch/internal/broker/gen/sub_messages.proto
+		contracts/proto/subscription_messages.proto
+
 	protoc --go_out=./service/notification/internal/broker/gen \
-		service/notification/internal/broker/gen/notification_messages.proto
+		contracts/proto/notification_messages.proto
+
 	protoc --go_out=./service/notification/internal/clients/currency/gen  \
 		--go-grpc_out=./service/notification/internal/clients/currency/gen \
-		service/currency/internal/grpc/gen/currency_service.proto
+		contracts/proto/currency_service.proto

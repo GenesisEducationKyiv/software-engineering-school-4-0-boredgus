@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v5.26.1
-// source: service/dispatch/internal/grpc/gen/dispatch_service.proto
+// source: contracts/proto/dispatch_service.proto
 
 package __
 
@@ -137,5 +137,5 @@ var DispatchService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "service/dispatch/internal/grpc/gen/dispatch_service.proto",
+	Metadata: "contracts/proto/dispatch_service.proto",
 }
