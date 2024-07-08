@@ -56,10 +56,11 @@ func NewEventHandler(
 ) *eventHandler {
 
 	return &eventHandler{
-		logger:    logger,
-		scheduler: dispatchScheduler,
-		broker:    broker,
-		service:   service,
+		logger:        logger,
+		scheduler:     dispatchScheduler,
+		broker:        broker,
+		service:       service,
+		dispatchStore: dispatchStore,
 	}
 }
 
