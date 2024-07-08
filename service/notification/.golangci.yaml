@@ -22,6 +22,7 @@ linters-settings:
     ignored-files:
       - "internal/tests/"
       - "nats_broker.go"
+      - tests/nats_container.go
 
 issues:
   max-same-issues: 50
