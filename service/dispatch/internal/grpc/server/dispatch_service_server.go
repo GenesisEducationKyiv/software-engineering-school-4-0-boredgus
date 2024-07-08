@@ -49,7 +49,7 @@ func (s *dispatchServiceServer) SubscribeForDispatch(ctx context.Context, req *g
 	return &grpc_gen.SubscribeForDispatchResponse{}, nil
 }
 
-func (s *dispatchServiceServer) f(ctx context.Context, req *grpc_gen.UnsubscribeFromDispatchRequest) (*grpc_gen.UnsubscribeFromDispatchResponse, error) {
+func (s *dispatchServiceServer) UnsubscribeFromDispatch(ctx context.Context, req *grpc_gen.UnsubscribeFromDispatchRequest) (*grpc_gen.UnsubscribeFromDispatchResponse, error) {
 	s.log("UnsubscribeFromDispatch", req.String())
 
 	err := s.service.UnsubscribeFromDispatch(ctx, req.Email, req.DispatchId)

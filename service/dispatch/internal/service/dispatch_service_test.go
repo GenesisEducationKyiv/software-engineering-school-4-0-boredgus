@@ -12,12 +12,6 @@ import (
 )
 
 func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
-	type fields struct {
-		userRepo     service.UserRepo
-		subRepo      service.SubRepo
-		dispatchRepo service.DispatchRepo
-		broker       service.Broker
-	}
 	type args struct {
 		ctx        context.Context
 		email      string
@@ -239,12 +233,6 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 }
 
 func Test_dispatchService_UnsubscribeFromDispatch(t *testing.T) {
-	type fields struct {
-		userRepo     service.UserRepo
-		subRepo      service.SubRepo
-		dispatchRepo service.DispatchRepo
-		broker       service.Broker
-	}
 	type args struct {
 		ctx        context.Context
 		email      string

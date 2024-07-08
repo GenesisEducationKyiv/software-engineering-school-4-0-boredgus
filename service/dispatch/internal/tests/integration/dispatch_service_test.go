@@ -6,7 +6,6 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/config"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/db"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/repo"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service"
@@ -33,7 +32,6 @@ type (
 		dispatchRepo service.DispatchRepo
 		dbConnection *sql.DB
 
-		logger config.Logger
 		broker *stubs.BrokerStub
 	}
 )
