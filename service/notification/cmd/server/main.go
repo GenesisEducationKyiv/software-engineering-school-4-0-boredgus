@@ -68,7 +68,7 @@ func main() {
 
 	// initialization of broker client
 	natsBroker, err := broker.NewNatsBroker(js, logger)
-	panicOnError(err, "failed to create broker")
+	panicOnError(err, "failed to create broker client")
 
 	// connection to object store
 	jetstreamStore, err := natsBroker.ObjectStore("dispatches")
