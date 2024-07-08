@@ -47,3 +47,5 @@ require (
 	google.golang.org/protobuf v1.34.0
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/ugorji/go v1.1.4 => github.com/ugorji/go/codec v0.0.0-20190204201341-e444a5086c43
