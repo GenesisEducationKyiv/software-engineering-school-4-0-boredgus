@@ -25,10 +25,12 @@ type (
 
 	DispatchStore interface {
 		AddSubscription(ctx context.Context, sub entities.Subscription) error
+		CancelSubscription(ctx context.Context, sub entities.Subscription) error
 	}
 
 	Scheduler interface {
 		AddSubscription(entities.Subscription)
+		CancelSubscription(entities.Subscription)
 	}
 
 	eventHandler struct {
@@ -78,8 +80,18 @@ func (h *eventHandler) handleSubscriptionEvent(msg broker.ConsumedMessage) error
 	ctx, cancel := context.WithTimeout(context.Background(), TimeoutOfProcessing)
 	defer cancel()
 
-	h.scheduler.AddSubscription(sub)
-	if err := h.dispatchStore.AddSubscription(ctx, sub); err != nil {
+	var err error
+	switch parsedMsg.EventType {
+	case broker_msgs.EventType_SUBSCRIPTION_CREATED,
+		broker_msgs.EventType_SUBSCRIPTION_RENEWED:
+		h.scheduler.AddSubscription(sub)
+		err = h.dispatchStore.AddSubscription(ctx, sub)
+	case broker_msgs.EventType_SUBSCRIPTION_CANCELLED:
+		h.scheduler.CancelSubscription(sub)
+		err = h.dispatchStore.CancelSubscription(ctx, sub)
+	}
+
+	if err != nil {
 		return fmt.Errorf("failed to save subscription: %w", err)
 	}
 

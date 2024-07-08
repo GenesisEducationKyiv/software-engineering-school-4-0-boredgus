@@ -3,6 +3,7 @@ package scheduler
 import (
 	"context"
 	"fmt"
+	"slices"
 	"sync"
 	"time"
 
@@ -150,20 +151,29 @@ func (s *dispatchScheduler) AddSubscription(sub entities.Subscription) {
 	s.scheduledDispatches[sub.DispatchID] = dispatch
 }
 
-// func (s *dispatchScheduler) CancelSubscription(sub entities.Subscription) {
-// 	s.mu.Lock()
-// 	defer s.mu.Unlock()
-// 	schdledDispatch, ok := s.scheduledDispatches[sub.DispatchID]
-// 	if !ok {
-// 		return
-// 	}
-// 	emailIndex := slices.Index(schdledDispatch.Data.Emails, sub.Email)
-// 	if emailIndex < 0 {
-// 		return
-// 	}
-// 	countOfSubscribers := len(schdledDispatch.Data.Emails)
-// 	schdledDispatch.Data.Emails[emailIndex] = schdledDispatch.Data.Emails[countOfSubscribers-1]
-// 	schdledDispatch.Data.Emails = schdledDispatch.Data.Emails[:countOfSubscribers-1]
-// 	s.cron.Remove(schdledDispatch.entryID)
-// 	s.cron.AddJob(schdledDispatch.spec.String(), NewDispatchJob(schdledDispatch.Data, s.broker))
-// }
+func (s *dispatchScheduler) CancelSubscription(sub entities.Subscription) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	schdledDispatch, ok := s.scheduledDispatches[sub.DispatchID]
+	if !ok {
+		return
+	}
+	emailIndex := slices.Index(schdledDispatch.Data.Emails, sub.Email)
+	if emailIndex < 0 {
+		return
+	}
+
+	s.cron.Remove(schdledDispatch.EntryID)
+	countOfSubscribers := len(schdledDispatch.Data.Emails)
+	if countOfSubscribers == 1 {
+		delete(s.scheduledDispatches, sub.DispatchID)
+
+		return
+	}
+
+	schdledDispatch.Data.Emails[emailIndex] = schdledDispatch.Data.Emails[countOfSubscribers-1]
+	schdledDispatch.Data.Emails = schdledDispatch.Data.Emails[:countOfSubscribers-1]
+
+	s.cron.AddJob(schdledDispatch.Spec.String(), NewSendDispatchJob(schdledDispatch.Data, s.invokeSendingOfDispatch))
+}
