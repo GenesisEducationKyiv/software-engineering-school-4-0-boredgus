@@ -1,6 +1,8 @@
 package broker
 
 import (
+	"fmt"
+
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/config"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
@@ -18,17 +20,19 @@ func PublishAsyncErrHandler(logger config.Logger) jetstream.MsgErrHandler {
 	}
 }
 
-func NewNatsBroker(conn *nats.Conn, logger config.Logger, onError func(error, string)) *natsBroker {
+func NewNatsBroker(conn *nats.Conn, logger config.Logger) (*natsBroker, error) {
 	js, err := jetstream.New(
 		conn,
 		jetstream.WithPublishAsyncErrHandler(PublishAsyncErrHandler(logger)),
 	)
-	onError(err, "failed to create NATS Jetstream instance")
+	if err != nil {
+		return nil, fmt.Errorf("failed to create jestream: %w", err)
+	}
 
 	return &natsBroker{
 		js:     js,
 		logger: logger,
-	}
+	}, nil
 }
 
 func (b *natsBroker) PublishAsync(subject string, payload []byte) error {
