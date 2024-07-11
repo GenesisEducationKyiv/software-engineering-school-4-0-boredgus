@@ -24,11 +24,11 @@ type (
 	}
 
 	DispatchStore interface {
-		AddSubscription(ctx context.Context, sub entities.Subscription) error
+		AddSubscription(ctx context.Context, sub *entities.Subscription) error
 	}
 
 	Scheduler interface {
-		AddSubscription(entities.Subscription)
+		AddSubscription(*entities.Subscription)
 	}
 
 	eventHandler struct {
@@ -70,13 +70,7 @@ func (h *eventHandler) handleSubscriptionCreatedEvent(msg broker.ConsumedMessage
 		return fmt.Errorf("failed to unmarshal message from %s: %w", SubscriptionCreatedEvent, err)
 	}
 
-	sub := entities.Subscription{
-		DispatchID:  parsedMsg.Payload.DispatchID,
-		BaseCcy:     parsedMsg.Payload.BaseCcy,
-		TargetCcies: parsedMsg.Payload.TargetCcies,
-		Email:       parsedMsg.Payload.Email,
-		SendAt:      parsedMsg.Payload.SendAt.AsTime(),
-	}
+	sub := ProtoToSubscription(&parsedMsg)
 
 	ctx, cancel := context.WithTimeout(context.Background(), TimeoutOfProcessing)
 	defer cancel()
@@ -86,17 +80,10 @@ func (h *eventHandler) handleSubscriptionCreatedEvent(msg broker.ConsumedMessage
 		return fmt.Errorf("failed to save subscription: %w", err)
 	}
 
-	if err := h.service.SendSubscriptionDetails(ctx, service.Notification{
-		Type: service.SubscriptionCreated,
-		Data: service.NotificationData{
-			Emails: []string{parsedMsg.Payload.Email},
-			Payload: service.SubscriptionData{
-				BaseCcy:     parsedMsg.Payload.BaseCcy,
-				TargetCcies: parsedMsg.Payload.TargetCcies,
-				SendAt:      parsedMsg.Payload.SendAt.AsTime().UTC().Format(time.TimeOnly),
-			},
-		},
-	}); err != nil {
+	if err := h.service.SendSubscriptionDetails(
+		ctx,
+		*ProtoToDispatchDetailsNotification(&parsedMsg, service.SubscriptionCreated),
+	); err != nil {
 		return fmt.Errorf("failed to send subscription details: %w", err)
 	}
 
@@ -112,16 +99,10 @@ func (h *eventHandler) handleSendDispatchCommand(msg broker.ConsumedMessage) err
 	ctx, cancel := context.WithTimeout(context.Background(), TimeoutOfProcessing)
 	defer cancel()
 
-	if err := h.service.SendSubscriptionDetails(ctx, service.Notification{
-		Type: service.SubscriptionCreated,
-		Data: service.NotificationData{
-			Emails: parsedMsg.Payload.Emails,
-			Payload: service.CurrencyDispatchData{
-				BaseCcy: parsedMsg.Payload.BaseCcy,
-				Rates:   parsedMsg.Payload.Rates,
-			},
-		},
-	}); err != nil {
+	if err := h.service.SendExchangeRates(
+		ctx,
+		*ProtoToCurrencyDispatchNotification(&parsedMsg),
+	); err != nil {
 		return fmt.Errorf("failed to send subscription details: %w", err)
 	}
 

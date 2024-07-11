@@ -125,7 +125,7 @@ func (s *dispatchScheduler) AddDispatches(ds map[string]entities.Dispatch) {
 	}
 }
 
-func (s *dispatchScheduler) AddSubscription(sub entities.Subscription) {
+func (s *dispatchScheduler) AddSubscription(sub *entities.Subscription) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
