@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/config"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/entities"
@@ -42,9 +41,6 @@ func NewApp(
 		fetcher:           fetcher,
 	}
 }
-
-const MaxCountOfUploadAttempts int32 = 3
-const IntervalBetweenUploadAttempts time.Duration = 1 * time.Minute
 
 func (a *app) uploadOldDispatches() error {
 	ctx, cancel := context.WithTimeout(context.Background(), TimeoutOfProcessing)

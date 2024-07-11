@@ -46,7 +46,8 @@ func main() {
 	)
 	panicOnError(err, "failed to connect to broker")
 
-	natsBroker := broker.NewNatsBroker(natsConnection, logger, panicOnError)
+	natsBroker, err := broker.NewNatsBroker(natsConnection, logger)
+	panicOnError(err, "")
 
 	// initialization of dispatch service server
 	dispatchService := service.NewDispatchService(

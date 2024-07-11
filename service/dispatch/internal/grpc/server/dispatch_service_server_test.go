@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func Test_DispatchServiceServer_SubscribeForDispatch(t *testing.T) {
@@ -47,7 +48,7 @@ func Test_DispatchServiceServer_SubscribeForDispatch(t *testing.T) {
 		name         string
 		args         *args
 		mockedValues *mocked
-		want         *grpc_gen.SubscribeForDispatchResponse
+		want         *emptypb.Empty
 		wantErr      error
 	}{
 		{
@@ -72,7 +73,7 @@ func Test_DispatchServiceServer_SubscribeForDispatch(t *testing.T) {
 			name:         "successfuly subscribed for a dispatch",
 			args:         arguments,
 			mockedValues: &mocked{},
-			want:         &grpc_gen.SubscribeForDispatchResponse{},
+			want:         &emptypb.Empty{},
 		},
 	}
 

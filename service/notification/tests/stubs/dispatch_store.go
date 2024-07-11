@@ -13,9 +13,9 @@ func NewDispatchStoreMock() *dispatchStoreMock {
 	return &dispatchStoreMock{}
 }
 
-func (m *dispatchStoreMock) AddSubscription(ctx context.Context, sub entities.Subscription) error {
+func (m *dispatchStoreMock) AddSubscription(ctx context.Context, sub *entities.Subscription) error {
 	return nil
 }
-func (m *dispatchStoreMock) CancelSubscription(ctx context.Context, sub entities.Subscription) error {
+func (m *dispatchStoreMock) CancelSubscription(ctx context.Context, sub *entities.Subscription) error {
 	return nil
 }

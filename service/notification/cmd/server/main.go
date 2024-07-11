@@ -66,9 +66,13 @@ func main() {
 	js, err := jetstream.New(natsConnection)
 	panicOnError(err, "failed to create NATS Jetstream instance")
 
+	// initialization of consumer
+	consumer, err := broker.CreateNotificationConsumer(js)
+	panicOnError(err, "failed to init consumer")
+
 	// initialization of broker client
-	natsBroker, err := broker.NewNatsBroker(js, logger)
-	panicOnError(err, "failed to create broker client")
+	natsBroker, err := broker.NewNatsBroker(js, consumer, logger)
+	panicOnError(err, "failed to create broker")
 
 	// connection to object store
 	jetstreamStore, err := natsBroker.ObjectStore("dispatches")

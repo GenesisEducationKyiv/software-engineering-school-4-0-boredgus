@@ -54,7 +54,10 @@ func (t *NATSConsumerSuite) initConsumerClient() {
 	js, err := jetstream.New(natsConnection)
 	t.NoErrorf(err, "failed to create NATS Jetstream instance")
 
-	natsBroker, err := broker.NewNatsBroker(js, t.logger)
+	consumer, err := broker.CreateNotificationConsumer(js)
+	t.NoErrorf(err, "failed to create consumer")
+
+	natsBroker, err := broker.NewNatsBroker(js, consumer, t.logger)
 	t.NoErrorf(err, "failed to create broker client")
 	t.broker = natsBroker
 }
