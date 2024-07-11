@@ -41,7 +41,7 @@ const (
 	NotificationConsumerName string = "notification-sender"
 )
 
-func createConsumer(js jetstream.JetStream) (jetstream.Consumer, error) {
+func CreateNotificationConsumer(js jetstream.JetStream) (jetstream.Consumer, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), CreationTimeout)
 	defer cancel()
 
@@ -54,7 +54,7 @@ func createConsumer(js jetstream.JetStream) (jetstream.Consumer, error) {
 		return nil, fmt.Errorf("failed to update %s stream: %w", NotificationStreamName, err)
 	}
 
-	consumer, err := stream.CreateOrUpdateConsumer(context.Background(), jetstream.ConsumerConfig{
+	consumer, err := stream.CreateOrUpdateConsumer(ctx, jetstream.ConsumerConfig{
 		Name:          NotificationConsumerName,
 		Durable:       NotificationConsumerName,
 		DeliverPolicy: jetstream.DeliverAllPolicy,
@@ -66,12 +66,11 @@ func createConsumer(js jetstream.JetStream) (jetstream.Consumer, error) {
 	return consumer, nil
 }
 
-func NewNatsBroker(js jetstream.JetStream, logger config.Logger) (*natsBroker, error) {
-	consumer, err := createConsumer(js)
-	if err != nil {
-		return nil, fmt.Errorf("failed to init consumer: %w", err)
-	}
-
+func NewNatsBroker(
+	js jetstream.JetStream,
+	consumer jetstream.Consumer,
+	logger config.Logger,
+) (*natsBroker, error) {
 	return &natsBroker{
 		jetstream: js,
 		consumer:  consumer,
