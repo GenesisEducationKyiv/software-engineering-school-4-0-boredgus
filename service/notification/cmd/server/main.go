@@ -49,10 +49,7 @@ func main() {
 		Name:     env.SMTPUsername,
 		Password: env.SMTPPassword,
 	})
-	emailNotifier := notifier.NewEmailNotifier(
-		notifier.NewBaseNotifier(),
-		mailmanClient,
-	)
+	emailNotifier := notifier.NewEmailNotifier(mailmanClient)
 	notificationService := service.NewNotificationService(logger, emailNotifier)
 
 	// connection to NATS broker

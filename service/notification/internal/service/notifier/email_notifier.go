@@ -18,21 +18,19 @@ type (
 	}
 
 	emailNotifier struct {
-		notifier service.Notifier
-		mailman  Mailman
+		mailman Mailman
 	}
 )
 
-func NewEmailNotifier(notifier service.Notifier, mailman Mailman) *emailNotifier {
+func NewEmailNotifier(mailman Mailman) *emailNotifier {
 	return &emailNotifier{
-		notifier: notifier,
-		mailman:  mailman,
+		mailman: mailman,
 	}
 }
 
 func (n *emailNotifier) Notify(notification service.Notification) error {
 	if len(notification.Data.Emails) == 0 {
-		return n.notifier.Notify(notification)
+		return nil
 	}
 
 	emailTemplate, err := templates.NotificationTypeToTemplate(notification.Type)
@@ -54,5 +52,5 @@ func (n *emailNotifier) Notify(notification service.Notification) error {
 		return err
 	}
 
-	return n.notifier.Notify(notification)
+	return nil
 }
