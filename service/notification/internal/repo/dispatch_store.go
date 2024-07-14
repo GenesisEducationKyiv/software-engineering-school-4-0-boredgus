@@ -6,30 +6,23 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"sync"
 
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/broker"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/entities"
 )
 
 const DispathesObjectName string = "scheduled_dispatches"
 
-var ErrNotFound = errors.New("not found")
-
 type (
-	ObjectStore interface {
-		Get(context.Context, string) (io.ReadCloser, error)
-		Put(ctx context.Context, name string, data io.Reader) error
-	}
-
 	dispatchStore struct {
-		store      ObjectStore
+		store      broker.ObjectStore
 		mu         *sync.Mutex
 		dispatches map[string]entities.Dispatch
 	}
 )
 
-func NewDispatchRepo(store ObjectStore) *dispatchStore {
+func NewDispatchRepo(store broker.ObjectStore) *dispatchStore {
 	return &dispatchStore{
 		store:      store,
 		mu:         &sync.Mutex{},
@@ -63,7 +56,7 @@ func (s *dispatchStore) AddSubscription(ctx context.Context, sub *entities.Subsc
 
 func (s *dispatchStore) GetAll(ctx context.Context) (map[string]entities.Dispatch, error) {
 	reader, err := s.store.Get(ctx, DispathesObjectName)
-	if errors.Is(err, ErrNotFound) {
+	if errors.Is(err, broker.ErrNotFound) {
 		reader, err := Dispatches(s.dispatches).ToReader()
 		if err != nil {
 			return nil, fmt.Errorf("failed to write dispatches into io.Reader: %w", err)
