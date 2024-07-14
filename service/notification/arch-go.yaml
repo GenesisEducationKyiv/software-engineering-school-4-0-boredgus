@@ -19,6 +19,7 @@ dependenciesRules:
     shouldOnlyDependsOn: 
       internal: 
         - "**.internal/entities.**"
+        - "**.internal/broker.**"
 
   - package: "**.internal/service.**"
     shouldOnlyDependsOn: 
