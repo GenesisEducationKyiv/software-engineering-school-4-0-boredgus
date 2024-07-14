@@ -63,6 +63,23 @@ func NewEventHandler(
 	}
 }
 
+func (h *eventHandler) HandleMessages() error {
+	return h.broker.ConsumeMessage(func(msg broker.ConsumedMessage) error {
+		var err error
+
+		switch msg.Subject() {
+		case SubscriptionCreatedEvent:
+			err = h.handleSubscriptionCreatedEvent(msg)
+		case SendDispatchCommand:
+			err = h.handleSendDispatchCommand(msg)
+		default:
+			err = broker.SkippedMessageErr
+		}
+
+		return err
+	})
+}
+
 func (h *eventHandler) handleSubscriptionCreatedEvent(msg broker.ConsumedMessage) error {
 	var parsedMsg broker_msgs.SubscriptionMessage
 	if err := proto.Unmarshal(msg.Data(), &parsedMsg); err != nil {
@@ -106,21 +123,4 @@ func (h *eventHandler) handleSendDispatchCommand(msg broker.ConsumedMessage) err
 	}
 
 	return nil
-}
-
-func (h *eventHandler) HandleMessages() error {
-	return h.broker.ConsumeMessage(func(msg broker.ConsumedMessage) error {
-		var err error
-
-		switch msg.Subject() {
-		case SubscriptionCreatedEvent:
-			err = h.handleSubscriptionCreatedEvent(msg)
-		case SendDispatchCommand:
-			err = h.handleSendDispatchCommand(msg)
-		default:
-			err = broker.SkippedMessageErr
-		}
-
-		return err
-	})
 }
