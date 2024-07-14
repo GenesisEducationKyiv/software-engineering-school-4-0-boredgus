@@ -17,7 +17,6 @@ func Test_EmailNotifier_Notify(t *testing.T) {
 		notification service.Notification
 	}
 
-	nextNotifier := notifier.NewBaseNotifier()
 	mailmanMock := notifier_mock.NewMailman(t)
 
 	tests := []struct {
@@ -100,7 +99,7 @@ func Test_EmailNotifier_Notify(t *testing.T) {
 			cleanup := tt.setup(tt.args)
 			defer cleanup()
 
-			n := notifier.NewEmailNotifier(nextNotifier, mailmanMock)
+			n := notifier.NewEmailNotifier(mailmanMock)
 			actualErr := n.Notify(tt.args.notification)
 
 			if tt.expectedErr != nil {

@@ -27,7 +27,7 @@ type (
 		HandleMessages() error
 	}
 	Broker interface {
-		ConsumeMessage(handler func(msg broker.ConsumedMessage)) error
+		ConsumeMessage(handler func(msg broker.ConsumedMessage) error) error
 		PublishAsync(subject string, payload []byte) error
 	}
 
