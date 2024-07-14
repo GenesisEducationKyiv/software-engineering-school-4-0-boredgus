@@ -16,13 +16,13 @@ const DispathesObjectName string = "scheduled_dispatches"
 
 type (
 	dispatchStore struct {
-		store      broker.ObjectStore
+		store      *broker.ObjectStore
 		mu         *sync.Mutex
 		dispatches map[string]entities.Dispatch
 	}
 )
 
-func NewDispatchRepo(store broker.ObjectStore) *dispatchStore {
+func NewDispatchRepo(store *broker.ObjectStore) *dispatchStore {
 	return &dispatchStore{
 		store:      store,
 		mu:         &sync.Mutex{},
