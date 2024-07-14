@@ -78,7 +78,7 @@ func (h *eventHandler) handlerFactory(subject string) func(broker.ConsumedMessag
 	}
 
 	return func(cm broker.ConsumedMessage) error {
-		return broker.SkippedMessageErr
+		return broker.ErrSkippedMessage
 	}
 }
 

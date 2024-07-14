@@ -28,7 +28,7 @@ type (
 	}
 )
 
-var SkippedMessageErr = errors.New("message is skipped")
+var ErrSkippedMessage = errors.New("message is skipped")
 
 const (
 	CreationTimeout time.Duration = 5 * time.Second
@@ -79,7 +79,7 @@ func (b *natsBroker) ConsumeMessage(handler func(msg ConsumedMessage) error) err
 	_, err := b.consumer.Consume(func(msg jetstream.Msg) {
 		err := handler(msg)
 
-		if errors.Is(err, SkippedMessageErr) {
+		if errors.Is(err, ErrSkippedMessage) {
 			b.logger.Infof("skipping message with subject %v ...", msg.Subject())
 
 			return
