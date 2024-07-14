@@ -15,7 +15,7 @@ import (
 
 type (
 	Consumer interface {
-		ConsumeMessage(handler func(msg broker.ConsumedMessage)) error
+		ConsumeMessage(handler func(msg broker.ConsumedMessage) error) error
 	}
 
 	NotificationService interface {
@@ -44,7 +44,6 @@ type (
 
 const (
 	TimeoutOfProcessing time.Duration = 2 * time.Second
-	RedeliveryDelay     time.Duration = 1 * time.Minute
 )
 
 func NewEventHandler(
@@ -61,6 +60,25 @@ func NewEventHandler(
 		broker:        broker,
 		service:       service,
 		dispatchStore: dispatchStore,
+	}
+}
+
+func (h *eventHandler) HandleMessages() error {
+	return h.broker.ConsumeMessage(func(msg broker.ConsumedMessage) error {
+		return h.handlerFactory(msg.Subject())(msg)
+	})
+}
+
+func (h *eventHandler) handlerFactory(subject string) func(broker.ConsumedMessage) error {
+	switch subject {
+	case SubscriptionCreatedEvent:
+		return h.handleSubscriptionEvent
+	case SendDispatchCommand:
+		return h.handleSendDispatchCommand
+	}
+
+	return func(cm broker.ConsumedMessage) error {
+		return broker.ErrSkippedMessage
 	}
 }
 
@@ -117,41 +135,4 @@ func (h *eventHandler) handleSendDispatchCommand(msg broker.ConsumedMessage) err
 	}
 
 	return nil
-}
-
-func (h *eventHandler) HandleMessages() error {
-	return h.broker.ConsumeMessage(func(msg broker.ConsumedMessage) {
-		var err error
-
-		switch msg.Subject() {
-		case SubscriptionCreatedEvent, SubscriptionCancelledEvent, SubscriptionRenewedEvent:
-			err = h.handleSubscriptionEvent(msg)
-		case SendDispatchCommand:
-			err = h.handleSendDispatchCommand(msg)
-		default:
-			h.logger.Infof("skipping message with subject %v ...", msg.Subject())
-
-			return
-		}
-
-		h.logger.Infof("handling message with subject %v ...", msg.Subject())
-
-		if err != nil {
-			h.logger.Errorf("failed to handle message: %v", err)
-
-			err = msg.NakWithDelay(RedeliveryDelay)
-			if err != nil {
-				h.logger.Errorf("failed to negatively acknowledge message: %v", err)
-			}
-
-			return
-		}
-
-		err = msg.Ack()
-		if err != nil {
-			h.logger.Errorf("failed to acknowledge message: %v", err)
-		}
-
-		h.logger.Info("successfully handled message")
-	})
 }
