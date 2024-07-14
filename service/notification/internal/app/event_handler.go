@@ -65,19 +65,21 @@ func NewEventHandler(
 
 func (h *eventHandler) HandleMessages() error {
 	return h.broker.ConsumeMessage(func(msg broker.ConsumedMessage) error {
-		var err error
-
-		switch msg.Subject() {
-		case SubscriptionCreatedEvent:
-			err = h.handleSubscriptionCreatedEvent(msg)
-		case SendDispatchCommand:
-			err = h.handleSendDispatchCommand(msg)
-		default:
-			err = broker.SkippedMessageErr
-		}
-
-		return err
+		return h.handlerFactory(msg.Subject())(msg)
 	})
+}
+
+func (h *eventHandler) handlerFactory(subject string) func(broker.ConsumedMessage) error {
+	switch subject {
+	case SubscriptionCreatedEvent:
+		return h.handleSubscriptionCreatedEvent
+	case SendDispatchCommand:
+		return h.handleSendDispatchCommand
+	}
+
+	return func(cm broker.ConsumedMessage) error {
+		return broker.SkippedMessageErr
+	}
 }
 
 func (h *eventHandler) handleSubscriptionCreatedEvent(msg broker.ConsumedMessage) error {
