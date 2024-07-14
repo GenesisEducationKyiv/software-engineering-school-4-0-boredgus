@@ -15,7 +15,7 @@ import (
 
 type (
 	Consumer interface {
-		ConsumeMessage(handler func(msg broker.ConsumedMessage)) error
+		ConsumeMessage(handler func(msg broker.ConsumedMessage) error) error
 	}
 
 	NotificationService interface {
@@ -45,7 +45,6 @@ const (
 	SendDispatchCommand      string = "commands.send.dispatch"
 
 	TimeoutOfProcessing time.Duration = 2 * time.Second
-	RedeliveryDelay     time.Duration = 1 * time.Minute
 )
 
 func NewEventHandler(
@@ -110,7 +109,7 @@ func (h *eventHandler) handleSendDispatchCommand(msg broker.ConsumedMessage) err
 }
 
 func (h *eventHandler) HandleMessages() error {
-	return h.broker.ConsumeMessage(func(msg broker.ConsumedMessage) {
+	return h.broker.ConsumeMessage(func(msg broker.ConsumedMessage) error {
 		var err error
 
 		switch msg.Subject() {
@@ -119,29 +118,9 @@ func (h *eventHandler) HandleMessages() error {
 		case SendDispatchCommand:
 			err = h.handleSendDispatchCommand(msg)
 		default:
-			h.logger.Infof("skipping message with subject %v ...", msg.Subject())
-
-			return
+			err = broker.SkippedMessageErr
 		}
 
-		h.logger.Infof("handling message with subject %v ...", msg.Subject())
-
-		if err != nil {
-			h.logger.Errorf("failed to handle message: %v", err)
-
-			err = msg.NakWithDelay(RedeliveryDelay)
-			if err != nil {
-				h.logger.Errorf("failed to negatively acknowledge message: %v", err)
-			}
-
-			return
-		}
-
-		err = msg.Ack()
-		if err != nil {
-			h.logger.Errorf("failed to acknowledge message: %v", err)
-		}
-
-		h.logger.Info("successfully handled message")
+		return err
 	})
 }

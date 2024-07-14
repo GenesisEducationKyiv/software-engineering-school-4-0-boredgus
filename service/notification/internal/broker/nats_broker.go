@@ -1,6 +1,7 @@
 package broker
 
 import (
+	"errors"
 	"fmt"
 
 	"context"
@@ -18,13 +19,6 @@ type (
 
 		// Data returns the message body.
 		Data() []byte
-
-		// Ack tells the server that the message was successfully processed
-		// and it can move on to the next message.
-		Ack() error
-
-		// NakWithDelay tells the server to redeliver the message after the given delay.
-		NakWithDelay(delay time.Duration) error
 	}
 
 	natsBroker struct {
@@ -34,8 +28,11 @@ type (
 	}
 )
 
+var SkippedMessageErr = errors.New("message is skipped")
+
 const (
 	CreationTimeout time.Duration = 5 * time.Second
+	RedeliveryDelay time.Duration = 1 * time.Minute
 
 	NotificationStreamName   string = "NOTIFICATIONS"
 	NotificationConsumerName string = "notification-sender"
@@ -78,9 +75,33 @@ func NewNatsBroker(
 	}, nil
 }
 
-func (b *natsBroker) ConsumeMessage(handler func(msg ConsumedMessage)) error {
+func (b *natsBroker) ConsumeMessage(handler func(msg ConsumedMessage) error) error {
 	_, err := b.consumer.Consume(func(msg jetstream.Msg) {
-		handler(msg)
+		err := handler(msg)
+
+		if errors.Is(err, SkippedMessageErr) {
+			b.logger.Infof("skipping message with subject %v ...", msg.Subject())
+
+			return
+		}
+
+		if err != nil {
+			b.logger.Errorf("failed to handle message: %v", err)
+
+			err = msg.NakWithDelay(RedeliveryDelay)
+			if err != nil {
+				b.logger.Errorf("failed to negatively acknowledge message: %v", err)
+			}
+
+			return
+		}
+
+		err = msg.Ack()
+		if err != nil {
+			b.logger.Errorf("failed to acknowledge message: %v", err)
+		}
+
+		b.logger.Info("successfully handled message")
 	})
 	if err != nil {
 		return fmt.Errorf("failed to consume message from stream '%s': %w", b.consumer.CachedInfo().Stream, err)
