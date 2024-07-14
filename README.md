@@ -10,7 +10,8 @@ API allows:
 - __[gin](https://gin-gonic.com/docs/)__ as web framework.
 - __[mockery](https://vektra.github.io/mockery/latest/)__ for generation of interface mocks.
 - __[PostgreSQL](https://www.postgresql.org/)__ as main storage.
-- __[gRPC](https://grpc.io/)__ for inter-service communication.
+- __[gRPC](https://grpc.io/)__ for synchronous inter-service communication.
+- __[NATS](https://docs.nats.io/)__ for asynchronous inter-service communication.
 - __[ExchangeRate-API](https://www.exchangerate-api.com/)__, __[Currency Beacon API](https://currencybeacon.com/)__ and __[Free Currency API](https://github.com/fawazahmed0/exchange-api)__ as third-party APIs for currency rate info.
 
 ## Quick start
@@ -19,10 +20,9 @@ API allows:
 ```
 cp ./.env.example ./.env
 ```
-2. Get API key from [third-API](https://app.exchangerate-api.com/) and set to `EXCHANGE_CURRENCY_API_KEY` value in `.env`.
-3. Update `SMTP_EMAIL` and `SMTP_USERNAME` values in `.env`.
-4. Get app password from Google ([instruction](https://support.google.com/mail/answer/185833?hl=en)) and set to `SMTP_PASSWORD` value in `.env`.
-5. Start project with command (uses docker) below:
+2. Update `SMTP_EMAIL` and `SMTP_USERNAME` values in `.env`.
+3. Get app password from Google ([instruction](https://support.google.com/mail/answer/185833?hl=en)) and set to `SMTP_PASSWORD` value in `.env`.
+4. Start project with command (uses docker) below:
 ```
 make start
 ```
@@ -32,8 +32,6 @@ make start
 ![system design](docs/system-design.png)
 
 ### Processes
-
-Keeping in mind 6th factor __Processes__ of _12-factor App_ I splitted app functionality into separate processes:
 
 1. ___Gateway___ is an entry point for external users of `SubscriptionAPI`. It is web server and\
 makes requests via gRPC to services for required functionality. For now it allows \
@@ -48,19 +46,18 @@ sending of dispatches thorough SMTP server to subscribers, and getting info abou
 In perspective it would be able to create dispatches, change dispatches, \
 customize subscriptions etc.
 
-4. ___Dispatch Daemon___ is an automatic process that gets info about dispatches, \
-schedules them, and invokes their sending.
+4. ___Notification Service___ is responsible for monitoring of subscription-related events and dispatch scheduling. Except of dispatches, when user subscibes for a dispatch, it sends details of the subscription.
 
 5. _[not implemented yet]_ ___Rate Daemon___ is an automatic process that invokes \
 updating of exchange rates.
 
 #### Per service documentation
-1. [Dispatch Daemon](./daemon/dispatch)
-2. [Gateway](./gateway)
-3. [Currency Service](./service/currency)
-4. [Dispatch Service](./service/dispatch)
+1. [Gateway](./gateway)
+2. [Currency Service](./service/currency)
+3. [Dispatch Service](./service/dispatch)
+4. [Notification Service](./service/notification)
 
 ## TODO
 1. Implement rate daemon
-2. Send welcome email when user subscribes for dispatch
-4. to be continued...
+2. Cache currency rates to decrease amount of calls to third-APIs
+3. to be continued...

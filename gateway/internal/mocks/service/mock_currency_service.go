@@ -21,9 +21,9 @@ func (_m *CurrencyService) EXPECT() *CurrencyService_Expecter {
 	return &CurrencyService_Expecter{mock: &_m.Mock}
 }
 
-// Convert provides a mock function with given fields: ctx, base, target
-func (_m *CurrencyService) Convert(ctx context.Context, base string, target []string) (map[string]float64, error) {
-	ret := _m.Called(ctx, base, target)
+// Convert provides a mock function with given fields: ctx, baseCcy, targetCcies
+func (_m *CurrencyService) Convert(ctx context.Context, baseCcy string, targetCcies []string) (map[string]float64, error) {
+	ret := _m.Called(ctx, baseCcy, targetCcies)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Convert")
@@ -32,10 +32,10 @@ func (_m *CurrencyService) Convert(ctx context.Context, base string, target []st
 	var r0 map[string]float64
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, string, []string) (map[string]float64, error)); ok {
-		return rf(ctx, base, target)
+		return rf(ctx, baseCcy, targetCcies)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, string, []string) map[string]float64); ok {
-		r0 = rf(ctx, base, target)
+		r0 = rf(ctx, baseCcy, targetCcies)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(map[string]float64)
@@ -43,7 +43,7 @@ func (_m *CurrencyService) Convert(ctx context.Context, base string, target []st
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string, []string) error); ok {
-		r1 = rf(ctx, base, target)
+		r1 = rf(ctx, baseCcy, targetCcies)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -58,13 +58,13 @@ type CurrencyService_Convert_Call struct {
 
 // Convert is a helper method to define mock.On call
 //   - ctx context.Context
-//   - base string
-//   - target []string
-func (_e *CurrencyService_Expecter) Convert(ctx interface{}, base interface{}, target interface{}) *CurrencyService_Convert_Call {
-	return &CurrencyService_Convert_Call{Call: _e.mock.On("Convert", ctx, base, target)}
+//   - baseCcy string
+//   - targetCcies []string
+func (_e *CurrencyService_Expecter) Convert(ctx interface{}, baseCcy interface{}, targetCcies interface{}) *CurrencyService_Convert_Call {
+	return &CurrencyService_Convert_Call{Call: _e.mock.On("Convert", ctx, baseCcy, targetCcies)}
 }
 
-func (_c *CurrencyService_Convert_Call) Run(run func(ctx context.Context, base string, target []string)) *CurrencyService_Convert_Call {
+func (_c *CurrencyService_Convert_Call) Run(run func(ctx context.Context, baseCcy string, targetCcies []string)) *CurrencyService_Convert_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string), args[2].([]string))
 	})

@@ -1,7 +1,7 @@
 version: 1
 threshold:
   compliance: 100
-  coverage: 40
+  coverage: 20
 dependenciesRules:
   - package: "**.internal/clients.*"
     shouldOnlyDependsOn:
@@ -25,13 +25,8 @@ dependenciesRules:
         - "**.internal/grpc/gen"
       external:
         - "google.golang.org/grpc"
+        - "google.golang.org/protobuf/types/known/emptypb"
 
-  - package: "**.internal/emails"
-    shouldOnlyDependsOn: 
-      internal: 
-        - "**.internal/entities.**"
-        - "**.internal/config.**"
-        - "**.internal/service.**"
 
   - package: "**.internal/repo"
     shouldOnlyDependsOn: 

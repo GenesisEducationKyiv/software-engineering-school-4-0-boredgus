@@ -3,6 +3,7 @@ package grpc_server
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/config"
 	grpc_gen "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/grpc/gen"
@@ -51,7 +52,7 @@ func (s *currencyServiceServer) Convert(ctx context.Context, req *grpc_gen.Conve
 	}
 
 	return &grpc_gen.ConvertResponse{
-			BaseCurrency: req.BaseCurrency,
+			BaseCurrency: strings.ToUpper(req.BaseCurrency),
 			Rates:        res,
 		},
 		nil

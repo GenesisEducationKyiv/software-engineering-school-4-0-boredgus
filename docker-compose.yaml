@@ -40,27 +40,25 @@ services:
         condition: service_started
       database:
         condition: service_healthy
-      
-
-  dispatch-daemon:
-    container_name: ${DISPATCH_DAEMON_ADDRESS}
+  
+  notification-service:
+    container_name: ${NOTIFICATION_SERVICE_ADDRESS}
     build:
-      context: ./daemon/dispatch
+      context: ./service/notification
       dockerfile: Dockerfile
-    ports:
-      - ${DISPATCH_DAEMON_PORT}:${DISPATCH_DAEMON_PORT}
     env_file:
       - ${ENV_FILE}
     depends_on:
-      dispatch-service:
+      currency-service:
         condition: service_started
-
+      database:
+        condition: service_healthy
   
   database:
     container_name: ${POSTGRESQL_ADDRESS}
     image: postgres:16.2-bullseye
     ports:
-      - ${POSTGRESQL_PORT}:${POSTGRESQL_PORT}
+      - ${POSTGRESQL_PORT}:5432
     environment:
       - POSTGRES_DB=${POSTGRESQL_DB}
       - POSTGRES_USER=${POSTGRESQL_USER}
@@ -71,8 +69,29 @@ services:
       test: ["CMD", "pg_isready", "-d", "subs", "-U", "postgres"]
       interval: 5s
       timeout: 20s
+  
+  broker:
+    container_name: ${NATS_ADDRESS}
+    image: nats:2.10-alpine
+    ports:
+      - ${NATS_MONITORING_PORT}:${NATS_MONITORING_PORT}
+      - ${NATS_CLUSTER_PORT}:${NATS_CLUSTER_PORT}
+    command: [
+      "--cluster_name", "subs",
+      "--user", "${NATS_USER}", 
+      "--pass", "${NATS_PASSWORD}", 
+      "--port", "${NATS_CLIENT_PORT}", 
+      "--http_port", "${NATS_MONITORING_PORT}",
+      "--jetstream",
+      "--store_dir", "/data"
+    ]
+    volumes:
+      - broker-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "http://localhost:${NATS_MONITORING_PORT}/healthz", "-q", "-S", "-O", "-"]
+      interval: 2s
+      timeout: 20s
 
 volumes:
   postgres-data:
-
-  
+  broker-data:

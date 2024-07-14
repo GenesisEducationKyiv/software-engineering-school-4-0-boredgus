@@ -1,0 +1,31 @@
+<style>
+  .body {
+    padding: 20px;
+    background-color: #5f9ea0;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  .title {
+    color: #00192a;
+    font-size: 30px;
+    font-weight: 800;
+    text-align: center;
+  }
+  .row {
+    color: #000000;
+    margin-bottom: 10px;
+    font-size: 20px;
+    font-weight: 500;
+  }
+</style>
+
+<div class="body">
+  <h2 class="title">You successfully subscribed for currency dispatch!</h2>
+  <br>
+  <div class="row">
+    Every day at {{ .SendAt }} (UTC) you will receive a notification with exchange rates.
+    <br>
+    Base currency: {{ .BaseCcy }}
+    <br>
+    Target currencies: {{ .TargetCcies }}
+  </div>
+</div>

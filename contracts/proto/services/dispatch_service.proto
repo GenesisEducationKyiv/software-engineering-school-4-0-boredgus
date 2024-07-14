@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package main;
+option go_package = "./";
+
+import "google/protobuf/empty.proto";
+
+service DispatchService {
+  rpc SubscribeForDispatch(SubscribeForDispatchRequest) returns (google.protobuf.Empty) {}
+}
+
+message SubscribeForDispatchRequest {
+  string email = 1;
+  string dispatch_id = 2;
+}
+
+message SubscribeForDispatchResponse {}

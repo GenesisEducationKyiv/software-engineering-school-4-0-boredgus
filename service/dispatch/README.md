@@ -1,5 +1,9 @@
 # Dispatch Service
 
+## Description
+
+Dispatch Service manages dispatches and subscriptions for them.
+
 ## Architecture
 ![architecture](./docs/service-architecture.jpg)
 

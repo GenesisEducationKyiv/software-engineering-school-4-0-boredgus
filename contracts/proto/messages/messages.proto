@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+option go_package = ".;messages";
+package messages;
+
+enum EventType {
+  SUBSCRIPTION_CREATED = 0;
+  SEND_DISPATCH = 1;
+}
