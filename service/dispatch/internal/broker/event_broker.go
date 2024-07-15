@@ -1,6 +1,7 @@
 package broker
 
 import (
+	"reflect"
 	"time"
 
 	messages "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/broker/gen"
@@ -21,10 +22,10 @@ type (
 	}
 )
 
-const (
-	SubscriptionCreatedSubject   string = "events.subscription.created"
-	SubscriptionCancelledSubject string = "events.subscription.cancelled"
-)
+var statusToSubject = map[service.SubscriptionStatus]string{
+	service.SubscriptionStatusActive:    "events.subscription.created",
+	service.SubscriptionStatusCancelled: "events.subscription.cancelled",
+}
 
 func NewEventBroker(broker Broker, logger config.Logger) *eventBroker {
 	return &eventBroker{
@@ -33,11 +34,26 @@ func NewEventBroker(broker Broker, logger config.Logger) *eventBroker {
 	}
 }
 
-func (b *eventBroker) CreateSubscription(sub service.Subscription) {
+func (b *eventBroker) Publish(msg interface{}) {
+	statusValue := reflect.ValueOf(msg).FieldByName("Status")
+	if !statusValue.CanInt() {
+		b.logger.Error("unsupported message provided")
+
+		return
+	}
+
+	status := service.SubscriptionStatus(statusValue.Int())
+	subject, ok := statusToSubject[status]
+	if !ok {
+		b.logger.Error("provided status is unsupported")
+
+		return
+	}
+
 	data, err := proto.Marshal(&messages.SubscriptionMessage{
-		EventType: messages.EventType_SUBSCRIPTION_CREATED,
+		EventType: statusToEventType[status],
 		Timestamp: timestamppb.New(time.Now().UTC()),
-		Payload:   subscriptionToProto(sub, messages.SubscriptionStatus_CREATED),
+		Payload:   subscriptionToProto(msg.(service.Subscription), statusToProtoStatus[status]),
 	})
 	if err != nil {
 		b.logger.Errorf("failed to marshal subscription message: %v", err)
@@ -45,28 +61,19 @@ func (b *eventBroker) CreateSubscription(sub service.Subscription) {
 		return
 	}
 
-	subject := SubscriptionCreatedSubject
 	if err = b.broker.PublishAsync(subject, data); err != nil {
 		b.logger.Errorf("failed to publish message to '%s' subject: %v", subject, err)
 	}
 }
 
-func (b *eventBroker) CancelSubscription(sub service.Subscription) {
-	data, err := proto.Marshal(&messages.SubscriptionMessage{
-		EventType: messages.EventType_SUBSCRIPTION_CANCELLED,
-		Timestamp: timestamppb.New(time.Now().UTC()),
-		Payload:   subscriptionToProto(sub, messages.SubscriptionStatus_CANCELLED),
-	})
-	if err != nil {
-		b.logger.Errorf("failed to marshal subscription message: %v", err)
+var statusToEventType = map[service.SubscriptionStatus]messages.EventType{
+	service.SubscriptionStatusActive:    messages.EventType_SUBSCRIPTION_CREATED,
+	service.SubscriptionStatusCancelled: messages.EventType_SUBSCRIPTION_CANCELLED,
+}
 
-		return
-	}
-
-	subject := SubscriptionCancelledSubject
-	if err = b.broker.PublishAsync(subject, data); err != nil {
-		b.logger.Errorf("failed to publish message to '%s' subject: %v", subject, err)
-	}
+var statusToProtoStatus = map[service.SubscriptionStatus]messages.SubscriptionStatus{
+	service.SubscriptionStatusActive:    messages.SubscriptionStatus_CREATED,
+	service.SubscriptionStatusCancelled: messages.SubscriptionStatus_CANCELLED,
 }
 
 func subscriptionToProto(

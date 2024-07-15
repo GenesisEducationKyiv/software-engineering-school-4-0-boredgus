@@ -173,7 +173,7 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 					CreateSubscription(a.ctx, service.SubscriptionData{Email: a.email, DispatchID: a.dispatchId}).
 					Return(nil)
 				brokerCall := brokerMock.EXPECT().
-					CreateSubscription(service.DispatchToSubscription(dispatch, a.email))
+					Publish(service.DispatchToSubscription(dispatch, a.email, service.SubscriptionStatusActive))
 
 				return func() {
 					getDispatchCall.Unset()
@@ -260,7 +260,7 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 					UpdateSubscriptionStatus(a.ctx, subData, service.SubscriptionStatusActive).
 					Return(nil)
 				brokerCall := brokerMock.EXPECT().
-					CreateSubscription(service.DispatchToSubscription(dispatch, a.email))
+					Publish(service.DispatchToSubscription(dispatch, a.email, service.SubscriptionStatusActive))
 
 				return func() {
 					getDispatchCall.Unset()
@@ -363,7 +363,7 @@ func Test_dispatchService_UnsubscribeFromDispatch(t *testing.T) {
 						service.SubscriptionStatusCancelled).
 					Return(nil)
 				brokerCall := brokerMock.EXPECT().
-					CancelSubscription(service.DispatchToSubscription(dispatch, a.email))
+					Publish(service.DispatchToSubscription(dispatch, a.email, service.SubscriptionStatusCancelled))
 
 				return func() {
 					getDispatchCall.Unset()

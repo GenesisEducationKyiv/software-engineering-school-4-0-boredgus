@@ -78,7 +78,7 @@ func (s *DispatchServiceSuite) Test_SubscribeForDispatch_SuccessfullyCreatedSubs
 	dispatchID := testdata.USD_UAH_DISPATCH_ID
 	ctx := context.Background()
 
-	s.broker.On("CreateSubscription", mock.Anything)
+	s.broker.On("Publish", mock.Anything)
 	s.NoError(s.dispatchService.SubscribeForDispatch(ctx, emailToSubscribe, dispatchID))
 
 	subscribers, err := s.dispatchRepo.GetSubscribersOfDispatch(ctx, dispatchID)
@@ -91,7 +91,7 @@ func (s *DispatchServiceSuite) Test_UnsubscribeFromDispatch_SuccessfullyCancelle
 	ctx := context.Background()
 
 	s.NoError(s.pgContainer.ExecuteSQLFiles(ctx, data.Filename))
-	s.broker.On("CancelSubscription", mock.Anything)
+	s.broker.On("Publish", mock.Anything)
 
 	s.NoError(s.dispatchService.UnsubscribeFromDispatch(ctx, data.Email, data.DispatchID))
 

@@ -51,15 +51,15 @@ type (
 		BaseCcy     string
 		TargetCcies []string
 		SendAt      time.Time
+		Status      SubscriptionStatus
 	}
 
 	Broker interface {
-		CreateSubscription(sub Subscription)
-		CancelSubscription(sub Subscription)
+		Publish(msg interface{})
 	}
 )
 
-type SubscriptionStatus int
+type SubscriptionStatus int64
 
 func (s SubscriptionStatus) IsActive() bool {
 	return s == SubscriptionStatusActive
@@ -121,7 +121,7 @@ func (s *dispatchService) SubscribeForDispatch(ctx context.Context, email, dispa
 	if err != nil {
 		return err
 	}
-	s.broker.CreateSubscription(DispatchToSubscription(dispatchData, email))
+	s.broker.Publish(DispatchToSubscription(dispatchData, email, SubscriptionStatusActive))
 
 	return nil
 }
@@ -134,7 +134,7 @@ func (s *dispatchService) createSubscription(ctx context.Context, subData Subscr
 		return err
 	}
 
-	s.broker.CreateSubscription(DispatchToSubscription(dispatch, subData.Email))
+	s.broker.Publish(DispatchToSubscription(dispatch, subData.Email, SubscriptionStatusActive))
 
 	return nil
 }
@@ -153,17 +153,22 @@ func (s *dispatchService) UnsubscribeFromDispatch(ctx context.Context, email, di
 		return err
 	}
 
-	s.broker.CancelSubscription(DispatchToSubscription(dispatch, email))
+	s.broker.Publish(DispatchToSubscription(dispatch, email, SubscriptionStatusCancelled))
 
 	return nil
 }
 
-func DispatchToSubscription(dispatchData entities.CurrencyDispatch, email string) Subscription {
+func DispatchToSubscription(
+	dispatchData entities.CurrencyDispatch,
+	email string,
+	status SubscriptionStatus,
+) Subscription {
 	return Subscription{
 		DispatchID:  dispatchData.ID,
 		Email:       email,
 		BaseCcy:     dispatchData.Details.BaseCurrency,
 		TargetCcies: dispatchData.Details.TargetCurrencies,
 		SendAt:      dispatchData.SendAt,
+		Status:      status,
 	}
 }
