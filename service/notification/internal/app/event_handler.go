@@ -104,7 +104,7 @@ func (h *eventHandler) handleSubscriptionEvent(msg broker.ConsumedMessage) error
 	}
 
 	if err != nil {
-		return fmt.Errorf("failed to save subscription: %w", err)
+		return fmt.Errorf("failed to save dispatches: %w", err)
 	}
 
 	if err := h.service.SendSubscriptionDetails(
