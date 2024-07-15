@@ -35,10 +35,10 @@ func NewDispatchServiceClient(conn grpc.ClientConnInterface) *dispatchServiceCli
 	}
 }
 
-func (c *dispatchServiceClient) SubscribeForDispatch(ctx context.Context, email, dispatchId string) error {
+func (c *dispatchServiceClient) SubscribeForDispatch(ctx context.Context, email, dispatchID string) error {
 	_, err := c.client.SubscribeForDispatch(ctx, &grpc_gen.SubscribeForDispatchRequest{
 		Email:      email,
-		DispatchId: dispatchId,
+		DispatchId: dispatchID,
 	})
 	if status.Code(err) == codes.AlreadyExists {
 		return SubscriptionToDispatchAlreadyExistsErr
@@ -47,10 +47,10 @@ func (c *dispatchServiceClient) SubscribeForDispatch(ctx context.Context, email,
 	return err
 }
 
-func (c *dispatchServiceClient) UnsubscribeFromDispatch(ctx context.Context, email, dispatchId string) error {
+func (c *dispatchServiceClient) UnsubscribeFromDispatch(ctx context.Context, email, dispatchID string) error {
 	_, err := c.client.SubscribeForDispatch(ctx, &grpc_gen.SubscribeForDispatchRequest{
 		Email:      email,
-		DispatchId: dispatchId,
+		DispatchId: dispatchID,
 	})
 	if status.Code(err) == codes.NotFound {
 		return errors.Join(NotFoundErr, err)
