@@ -27,6 +27,7 @@ type (
 	SubRepo interface {
 		CreateSubscription(ctx context.Context, args SubscriptionData) error
 		UpdateSubscriptionStatus(ctx context.Context, args SubscriptionData, status SubscriptionStatus) error
+		GetStatusOfSubscription(ctx context.Context, args SubscriptionData) (SubscriptionStatus, error)
 	}
 
 	DispatchRepo interface {
@@ -103,19 +104,37 @@ func (s *dispatchService) SubscribeForDispatch(ctx context.Context, email, dispa
 		return err
 	}
 
-	if err := s.userRepo.CreateUser(ctx, email); err != nil && !errors.Is(err, UniqueViolationErr) {
-		return err
-	}
-
-	err = s.subRepo.CreateSubscription(ctx, SubscriptionData{Email: email, DispatchID: dispatchID})
-	if errors.Is(err, UniqueViolationErr) {
-		return AlreadyExistsErr
+	subData := SubscriptionData{Email: email, DispatchID: dispatchID}
+	status, err := s.subRepo.GetStatusOfSubscription(ctx, subData)
+	if err != nil && errors.Is(err, NotFoundErr) {
+		return s.createSubscription(ctx, subData, dispatchData)
 	}
 	if err != nil {
 		return err
 	}
 
+	if status.IsActive() {
+		return AlreadyExistsErr
+	}
+
+	err = s.subRepo.UpdateSubscriptionStatus(ctx, subData, SubscriptionStatusActive)
+	if err != nil {
+		return err
+	}
 	s.broker.CreateSubscription(DispatchToSubscription(dispatchData, email))
+
+	return nil
+}
+
+func (s *dispatchService) createSubscription(ctx context.Context, subData SubscriptionData, dispatch entities.CurrencyDispatch) error {
+	if err := s.userRepo.CreateUser(ctx, subData.Email); err != nil && !errors.Is(err, UniqueViolationErr) {
+		return err
+	}
+	if err := s.subRepo.CreateSubscription(ctx, subData); err != nil {
+		return err
+	}
+
+	s.broker.CreateSubscription(DispatchToSubscription(dispatch, subData.Email))
 
 	return nil
 }

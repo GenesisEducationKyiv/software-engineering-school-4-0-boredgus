@@ -64,3 +64,30 @@ func (r *subscriptionRepo) UpdateSubscriptionStatus(ctx context.Context, sub ser
 
 	return err
 }
+
+const getStatusOfSubscriptionQ = `
+	select cs.status
+	from subs."currency_dispatches" cd
+	left join subs."currency_subscriptions" cs
+	on cd.id = cs.dispatch_id
+	left join subs."users" u
+	on cs.user_id = u.id
+	where u.email = $1 and cd.u_id = $2 and cs.status is not null;
+`
+
+func (r *subscriptionRepo) GetStatusOfSubscription(ctx context.Context, args service.SubscriptionData) (service.SubscriptionStatus, error) {
+	rows, err := r.db.QueryContext(ctx, getStatusOfSubscriptionQ, args.Email, args.DispatchID)
+	if err != nil {
+		return 0, err
+	}
+	if !rows.Next() {
+		return 0, service.NotFoundErr
+	}
+
+	var status service.SubscriptionStatus
+	if err := rows.Scan(&status); err != nil {
+		return 0, err
+	}
+
+	return status, nil
+}
