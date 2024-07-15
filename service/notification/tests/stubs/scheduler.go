@@ -9,5 +9,5 @@ func NewSchedulerMock() *schedulerMock {
 	return &schedulerMock{}
 }
 
-func (m *schedulerMock) AddSubscription(*entities.Subscription)    {}
-func (m *schedulerMock) CancelSubscription(*entities.Subscription) {}
+func (m *schedulerMock) AddSubscriberToDispatch(*entities.Subscription)        {}
+func (m *schedulerMock) RemoveSubscriberFromDispatch(email, dispatchID string) {}

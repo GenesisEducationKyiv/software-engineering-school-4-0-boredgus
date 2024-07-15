@@ -126,7 +126,7 @@ func (s *dispatchScheduler) AddDispatches(ds map[string]entities.Dispatch) {
 	}
 }
 
-func (s *dispatchScheduler) AddSubscription(sub *entities.Subscription) {
+func (s *dispatchScheduler) AddSubscriberToDispatch(sub *entities.Subscription) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -151,15 +151,15 @@ func (s *dispatchScheduler) AddSubscription(sub *entities.Subscription) {
 	s.scheduledDispatches[sub.DispatchID] = dispatch
 }
 
-func (s *dispatchScheduler) CancelSubscription(sub *entities.Subscription) {
+func (s *dispatchScheduler) RemoveSubscriberFromDispatch(email, dispatchID string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	schdledDispatch, ok := s.scheduledDispatches[sub.DispatchID]
+	schdledDispatch, ok := s.scheduledDispatches[dispatchID]
 	if !ok {
 		return
 	}
-	emailIndex := slices.Index(schdledDispatch.Data.Emails, sub.Email)
+	emailIndex := slices.Index(schdledDispatch.Data.Emails, email)
 	if emailIndex < 0 {
 		return
 	}
@@ -167,7 +167,7 @@ func (s *dispatchScheduler) CancelSubscription(sub *entities.Subscription) {
 	s.cron.Remove(schdledDispatch.EntryID)
 	countOfSubscribers := len(schdledDispatch.Data.Emails)
 	if countOfSubscribers == 1 {
-		delete(s.scheduledDispatches, sub.DispatchID)
+		delete(s.scheduledDispatches, dispatchID)
 
 		return
 	}

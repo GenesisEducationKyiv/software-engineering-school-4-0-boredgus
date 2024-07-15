@@ -29,8 +29,8 @@ type (
 	}
 
 	Scheduler interface {
-		AddSubscription(*entities.Subscription)
-		CancelSubscription(*entities.Subscription)
+		AddSubscriberToDispatch(*entities.Subscription)
+		RemoveSubscriberFromDispatch(email, dispatchID string)
 	}
 
 	eventHandler struct {
@@ -96,10 +96,10 @@ func (h *eventHandler) handleSubscriptionEvent(msg broker.ConsumedMessage) error
 	var err error
 	switch parsedMsg.EventType {
 	case broker_msgs.EventType_SUBSCRIPTION_CREATED:
-		h.scheduler.AddSubscription(sub)
+		h.scheduler.AddSubscriberToDispatch(sub)
 		err = h.dispatchStore.AddSubscription(ctx, sub)
 	case broker_msgs.EventType_SUBSCRIPTION_CANCELLED:
-		h.scheduler.CancelSubscription(sub)
+		h.scheduler.RemoveSubscriberFromDispatch(sub.Email, sub.DispatchID)
 		err = h.dispatchStore.CancelSubscription(ctx, sub)
 	}
 
