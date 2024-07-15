@@ -71,7 +71,7 @@ func (h *eventHandler) HandleMessages() error {
 
 func (h *eventHandler) handlerFactory(subject string) func(broker.ConsumedMessage) error {
 	switch subject {
-	case SubscriptionCreatedEvent:
+	case SubscriptionCreatedEvent, SubscriptionCancelledEvent, SubscriptionRenewedEvent:
 		return h.handleSubscriptionEvent
 	case SendDispatchCommand:
 		return h.handleSendDispatchCommand
