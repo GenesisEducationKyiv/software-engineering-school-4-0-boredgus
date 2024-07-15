@@ -50,7 +50,7 @@ func (s *dispatchServiceServer) SubscribeForDispatch(ctx context.Context, req *g
 	return &emptypb.Empty{}, nil
 }
 
-func (s *dispatchServiceServer) UnsubscribeFromDispatch(ctx context.Context, req *grpc_gen.UnsubscribeFromDispatchRequest) (*grpc_gen.UnsubscribeFromDispatchResponse, error) {
+func (s *dispatchServiceServer) UnsubscribeFromDispatch(ctx context.Context, req *grpc_gen.UnsubscribeFromDispatchRequest) (*emptypb.Empty, error) {
 	s.log("UnsubscribeFromDispatch", req.String())
 
 	err := s.service.UnsubscribeFromDispatch(ctx, req.Email, req.DispatchId)
@@ -61,5 +61,5 @@ func (s *dispatchServiceServer) UnsubscribeFromDispatch(ctx context.Context, req
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &grpc_gen.UnsubscribeFromDispatchResponse{}, nil
+	return &emptypb.Empty{}, nil
 }

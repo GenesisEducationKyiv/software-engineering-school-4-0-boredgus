@@ -24,7 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DispatchServiceClient interface {
 	SubscribeForDispatch(ctx context.Context, in *SubscribeForDispatchRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	UnsubscribeFromDispatch(ctx context.Context, in *UnsubscribeFromDispatchRequest, opts ...grpc.CallOption) (*UnsubscribeFromDispatchResponse, error)
+	UnsubscribeFromDispatch(ctx context.Context, in *UnsubscribeFromDispatchRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type dispatchServiceClient struct {
@@ -44,8 +44,8 @@ func (c *dispatchServiceClient) SubscribeForDispatch(ctx context.Context, in *Su
 	return out, nil
 }
 
-func (c *dispatchServiceClient) UnsubscribeFromDispatch(ctx context.Context, in *UnsubscribeFromDispatchRequest, opts ...grpc.CallOption) (*UnsubscribeFromDispatchResponse, error) {
-	out := new(UnsubscribeFromDispatchResponse)
+func (c *dispatchServiceClient) UnsubscribeFromDispatch(ctx context.Context, in *UnsubscribeFromDispatchRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/main.DispatchService/UnsubscribeFromDispatch", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func (c *dispatchServiceClient) UnsubscribeFromDispatch(ctx context.Context, in 
 // for forward compatibility
 type DispatchServiceServer interface {
 	SubscribeForDispatch(context.Context, *SubscribeForDispatchRequest) (*emptypb.Empty, error)
-	UnsubscribeFromDispatch(context.Context, *UnsubscribeFromDispatchRequest) (*UnsubscribeFromDispatchResponse, error)
+	UnsubscribeFromDispatch(context.Context, *UnsubscribeFromDispatchRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedDispatchServiceServer()
 }
 
@@ -69,7 +69,7 @@ type UnimplementedDispatchServiceServer struct {
 func (UnimplementedDispatchServiceServer) SubscribeForDispatch(context.Context, *SubscribeForDispatchRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubscribeForDispatch not implemented")
 }
-func (UnimplementedDispatchServiceServer) UnsubscribeFromDispatch(context.Context, *UnsubscribeFromDispatchRequest) (*UnsubscribeFromDispatchResponse, error) {
+func (UnimplementedDispatchServiceServer) UnsubscribeFromDispatch(context.Context, *UnsubscribeFromDispatchRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnsubscribeFromDispatch not implemented")
 }
 func (UnimplementedDispatchServiceServer) mustEmbedUnimplementedDispatchServiceServer() {}

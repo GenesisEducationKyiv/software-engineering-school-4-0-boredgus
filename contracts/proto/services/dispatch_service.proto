@@ -7,7 +7,7 @@ import "google/protobuf/empty.proto";
 
 service DispatchService {
   rpc SubscribeForDispatch(SubscribeForDispatchRequest) returns (google.protobuf.Empty) {}
-  rpc UnsubscribeFromDispatch(UnsubscribeFromDispatchRequest) returns (UnsubscribeFromDispatchResponse) {}
+  rpc UnsubscribeFromDispatch(UnsubscribeFromDispatchRequest) returns (google.protobuf.Empty) {}
 }
 
 message SubscribeForDispatchRequest {
@@ -19,5 +19,3 @@ message UnsubscribeFromDispatchRequest {
   string email = 1;
   string dispatch_id = 2;
 }
-
-message UnsubscribeFromDispatchResponse {}
