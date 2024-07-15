@@ -86,39 +86,6 @@ func (_c *Broker_CreateSubscription_Call) RunAndReturn(run func(service.Subscrip
 	return _c
 }
 
-// RenewSubscription provides a mock function with given fields: sub
-func (_m *Broker) RenewSubscription(sub service.Subscription) {
-	_m.Called(sub)
-}
-
-// Broker_RenewSubscription_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RenewSubscription'
-type Broker_RenewSubscription_Call struct {
-	*mock.Call
-}
-
-// RenewSubscription is a helper method to define mock.On call
-//   - sub service.Subscription
-func (_e *Broker_Expecter) RenewSubscription(sub interface{}) *Broker_RenewSubscription_Call {
-	return &Broker_RenewSubscription_Call{Call: _e.mock.On("RenewSubscription", sub)}
-}
-
-func (_c *Broker_RenewSubscription_Call) Run(run func(sub service.Subscription)) *Broker_RenewSubscription_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(service.Subscription))
-	})
-	return _c
-}
-
-func (_c *Broker_RenewSubscription_Call) Return() *Broker_RenewSubscription_Call {
-	_c.Call.Return()
-	return _c
-}
-
-func (_c *Broker_RenewSubscription_Call) RunAndReturn(run func(service.Subscription)) *Broker_RenewSubscription_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // NewBroker creates a new instance of Broker. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewBroker(t interface {

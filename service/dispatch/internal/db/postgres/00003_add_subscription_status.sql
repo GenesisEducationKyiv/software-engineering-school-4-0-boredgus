@@ -10,7 +10,7 @@ create table subs."subscription_status" (
 
 -- +goose StatementBegin
 insert into subs."subscription_status" (label)
-values ('created'), ('cancelled'), ('renewed');
+values ('active'), ('cancelled');
 -- +goose StatementEnd
 
 -- +goose StatementBegin

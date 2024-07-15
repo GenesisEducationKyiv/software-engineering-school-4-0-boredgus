@@ -24,7 +24,6 @@ type (
 const (
 	SubscriptionCreatedSubject   string = "events.subscription.created"
 	SubscriptionCancelledSubject string = "events.subscription.cancelled"
-	SubscriptionRenewedSubject   string = "events.subscription.renewed"
 )
 
 func NewEventBroker(broker Broker, logger config.Logger) *eventBroker {
@@ -65,24 +64,6 @@ func (b *eventBroker) CancelSubscription(sub service.Subscription) {
 	}
 
 	subject := SubscriptionCancelledSubject
-	if err = b.broker.PublishAsync(subject, data); err != nil {
-		b.logger.Errorf("failed to publish message to '%s' subject: %v", subject, err)
-	}
-}
-
-func (b *eventBroker) RenewSubscription(sub service.Subscription) {
-	data, err := proto.Marshal(&messages.SubscriptionMessage{
-		EventType: messages.EventType_SUBSCRIPTION_RENEWED,
-		Timestamp: timestamppb.New(time.Now().UTC()),
-		Payload:   subscriptionToProto(sub, messages.SubscriptionStatus_RENEWED),
-	})
-	if err != nil {
-		b.logger.Errorf("failed to marshal subscription message: %v", err)
-
-		return
-	}
-
-	subject := SubscriptionRenewedSubject
 	if err = b.broker.PublishAsync(subject, data); err != nil {
 		b.logger.Errorf("failed to publish message to '%s' subject: %v", subject, err)
 	}

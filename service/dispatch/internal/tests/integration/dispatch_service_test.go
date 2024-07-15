@@ -86,48 +86,18 @@ func (s *DispatchServiceSuite) Test_SubscribeForDispatch_SuccessfullyCreatedSubs
 	s.True(slices.Contains(subscribers, emailToSubscribe))
 }
 
-func (s *DispatchServiceSuite) Test_SubscribeForDispatch_SuccessfullyRenewedSubscription() {
-	data := testdata.CancelledSubscriptionData
-	ctx := context.Background()
-	s.NoError(s.pgContainer.ExecuteSQLFiles(ctx, data.Filename))
-	s.broker.On("RenewSubscription", mock.Anything)
-
-	s.NoError(s.dispatchService.SubscribeForDispatch(ctx, data.Email, data.DispatchID))
-
-	subscribers, err := s.dispatchRepo.GetSubscribersOfDispatch(ctx, data.DispatchID)
-	s.NoError(err)
-	s.True(slices.Contains(subscribers, data.Email))
-}
-
-func (s *DispatchServiceSuite) Test_SubscribeForDispatch_UserAlreadySubscribedForThisDispatch() {
-	email := "duplicated_email@gmail.com"
-	dispatchId := testdata.USD_UAH_DISPATCH_ID
-	ctx := context.Background()
-
-	s.broker.On("CreateSubscription", mock.Anything)
-	s.NoError(s.dispatchService.SubscribeForDispatch(ctx, email, dispatchId))
-	s.ErrorIs(
-		s.dispatchService.SubscribeForDispatch(ctx, email, dispatchId),
-		service.AlreadyExistsErr,
-	)
-}
-
 func (s *DispatchServiceSuite) Test_UnsubscribeFromDispatch_SuccessfullyCancelledSubscription() {
 	data := testdata.NewSubscriptionData
 	ctx := context.Background()
 
+	s.NoError(s.pgContainer.ExecuteSQLFiles(ctx, data.Filename))
 	s.broker.On("CancelSubscription", mock.Anything)
-	s.NoError(s.pgContainer.ExecuteSQLFiles(ctx, data.Filename))
 
 	s.NoError(s.dispatchService.UnsubscribeFromDispatch(ctx, data.Email, data.DispatchID))
-}
 
-func (s *DispatchServiceSuite) Test_UnsubscribeFromDispatch_SubscriptionIsAlreadyCancelled() {
-	data := testdata.CancelledSubscriptionData2
-	ctx := context.Background()
-	s.NoError(s.pgContainer.ExecuteSQLFiles(ctx, data.Filename))
-
-	s.NoError(s.dispatchService.UnsubscribeFromDispatch(ctx, data.Email, data.DispatchID))
+	subscribers, err := s.dispatchRepo.GetSubscribersOfDispatch(ctx, data.DispatchID)
+	s.NoError(err)
+	s.False(slices.Contains(subscribers, data.Email))
 }
 
 func TestIntegration_DispatchService(t *testing.T) {

@@ -32,16 +32,3 @@ var SubscriptionCancelledMessage = &messages.SubscriptionMessage{
 		SendAt:      timestamppb.New(time.Now().UTC()),
 	},
 }
-
-var SubscriptionRenewedMessage = &messages.SubscriptionMessage{
-	EventType: messages.EventType_SUBSCRIPTION_RENEWED,
-	Timestamp: timestamppb.New(time.Now().UTC()),
-	Payload: &messages.Subscription{
-		DispatchID:  "dispatch-id",
-		Email:       "renewed_sub_email@gmail.com",
-		BaseCcy:     "UAH",
-		TargetCcies: []string{"USD", "EUR"},
-		Status:      messages.SubscriptionStatus_RENEWED,
-		SendAt:      timestamppb.New(time.Now().UTC()),
-	},
-}

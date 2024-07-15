@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"errors"
@@ -26,7 +25,6 @@ type (
 		Email, DispatchID string
 	}
 	SubRepo interface {
-		GetStatusOfSubscription(ctx context.Context, args SubscriptionData) (SubscriptionStatus, error)
 		CreateSubscription(ctx context.Context, args SubscriptionData) error
 		UpdateSubscriptionStatus(ctx context.Context, args SubscriptionData, status SubscriptionStatus) error
 	}
@@ -57,20 +55,18 @@ type (
 	Broker interface {
 		CreateSubscription(sub Subscription)
 		CancelSubscription(sub Subscription)
-		RenewSubscription(sub Subscription)
 	}
 )
 
 type SubscriptionStatus int
 
 func (s SubscriptionStatus) IsActive() bool {
-	return s == SubscriptionCreatedStatus || s == SubscriptionRenewedStatus
+	return s == SubscriptionStatusActive
 }
 
 const (
-	SubscriptionCreatedStatus SubscriptionStatus = iota + 1
-	SubscriptionCancelledStatus
-	SubscriptionRenewedStatus
+	SubscriptionStatusActive SubscriptionStatus = iota + 1
+	SubscriptionStatusCancelled
 )
 
 var (
@@ -101,51 +97,25 @@ func NewDispatchService(
 	}
 }
 
-func (s *dispatchService) SubscribeForDispatch(ctx context.Context, email, dispatchId string) error {
-	dispatchData, err := s.dispatchRepo.GetDispatchByID(ctx, dispatchId)
+func (s *dispatchService) SubscribeForDispatch(ctx context.Context, email, dispatchID string) error {
+	dispatchData, err := s.dispatchRepo.GetDispatchByID(ctx, dispatchID)
 	if err != nil {
 		return err
 	}
 
-	subscription := DispatchToSubscription(dispatchData, email)
-	status, err := s.subRepo.GetStatusOfSubscription(ctx, SubscriptionData{Email: email, DispatchID: dispatchId})
-	if errors.Is(err, NotFoundErr) {
-		return s.createSubscription(ctx, subscription)
-	}
-	if err != nil {
+	if err := s.userRepo.CreateUser(ctx, email); err != nil && !errors.Is(err, UniqueViolationErr) {
 		return err
 	}
-	if status.IsActive() {
+
+	err = s.subRepo.CreateSubscription(ctx, SubscriptionData{Email: email, DispatchID: dispatchID})
+	if errors.Is(err, UniqueViolationErr) {
 		return AlreadyExistsErr
 	}
-
-	return s.renewSubscription(ctx, subscription)
-}
-
-func (s *dispatchService) createSubscription(ctx context.Context, sub Subscription) error {
-	if err := s.userRepo.CreateUser(ctx, sub.Email); err != nil && !errors.Is(err, UniqueViolationErr) {
-		return err
-	}
-
-	err := s.subRepo.CreateSubscription(ctx, SubscriptionData{Email: sub.Email, DispatchID: sub.DispatchID})
 	if err != nil {
 		return err
 	}
 
-	s.broker.CreateSubscription(sub)
-
-	return nil
-}
-
-func (s *dispatchService) renewSubscription(ctx context.Context, sub Subscription) error {
-	if err := s.subRepo.UpdateSubscriptionStatus(ctx,
-		SubscriptionData{Email: sub.Email, DispatchID: sub.DispatchID},
-		SubscriptionRenewedStatus,
-	); err != nil {
-		return err
-	}
-
-	s.broker.RenewSubscription(sub)
+	s.broker.CreateSubscription(DispatchToSubscription(dispatchData, email))
 
 	return nil
 }
@@ -156,20 +126,10 @@ func (s *dispatchService) UnsubscribeFromDispatch(ctx context.Context, email, di
 		return err
 	}
 
-	subData := SubscriptionData{Email: email, DispatchID: dispatchId}
-	status, err := s.subRepo.GetStatusOfSubscription(ctx, subData)
-	if errors.Is(err, NotFoundErr) {
-		return fmt.Errorf("%w: user is not subscired to provided dispatch", err)
-	}
-	if err != nil {
-		return err
-	}
-
-	if status == SubscriptionCancelledStatus {
-		return nil
-	}
-
-	err = s.subRepo.UpdateSubscriptionStatus(ctx, subData, SubscriptionCancelledStatus)
+	err = s.subRepo.UpdateSubscriptionStatus(ctx,
+		SubscriptionData{Email: email, DispatchID: dispatchId},
+		SubscriptionStatusCancelled,
+	)
 	if err != nil {
 		return err
 	}

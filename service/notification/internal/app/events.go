@@ -8,14 +8,12 @@ import (
 const (
 	SubscriptionCreatedEvent   string = "events.subscription.created"
 	SubscriptionCancelledEvent string = "events.subscription.cancelled"
-	SubscriptionRenewedEvent   string = "events.subscription.renewed"
 	SendDispatchCommand        string = "commands.send.dispatch"
 )
 
 var messageToNotificationMapper = map[messages.EventType]service.NotificationType{
 	messages.EventType_SUBSCRIPTION_CREATED:   service.SubscriptionCreated,
 	messages.EventType_SUBSCRIPTION_CANCELLED: service.SubscriptionCancelled,
-	messages.EventType_SUBSCRIPTION_RENEWED:   service.SubscriptionRenewed,
 }
 
 // MessageTypeToNotificationType transforms message type to notification type.

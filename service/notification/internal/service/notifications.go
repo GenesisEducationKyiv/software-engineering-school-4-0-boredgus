@@ -6,7 +6,6 @@ const (
 	SubscriptionCreated NotificationType = iota
 	SendExchangeRates
 	SubscriptionCancelled
-	SubscriptionRenewed
 )
 
 type NotificationData struct {

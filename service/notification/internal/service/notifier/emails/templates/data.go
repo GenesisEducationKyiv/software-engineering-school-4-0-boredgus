@@ -24,10 +24,6 @@ var notificationTypeToTemplate = map[service.NotificationType]Template{
 		Name:    "subscription_cancelled",
 		Subject: "Subscription cancellation",
 	},
-	service.SubscriptionRenewed: {
-		Name:    "subscription_renewed",
-		Subject: "Subscription renovation",
-	},
 }
 
 var UnknownNotificationTypeErr = errors.New("unknown notification type")

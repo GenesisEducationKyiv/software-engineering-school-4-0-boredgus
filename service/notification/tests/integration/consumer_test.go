@@ -111,15 +111,6 @@ func (t *NATSConsumerSuite) TestConsumingOf_SubscriptionCancelledEvent() {
 	t.service.AssertNotificationTypeOfLastCall(t.T(), service.SubscriptionCancelled)
 }
 
-func (t *NATSConsumerSuite) TestConsumingOf_SubscriptionRenewedEvent() {
-	msg := testdata.SubscriptionRenewedMessage
-	err := t.broker.PublishAsync(app.SubscriptionRenewedEvent, t.marshalMessage(msg))
-
-	t.NoErrorf(err, "failed to publish message to broker")
-	time.Sleep(300 * time.Millisecond)
-	t.service.AssertNotificationTypeOfLastCall(t.T(), service.SubscriptionRenewed)
-}
-
 func TestNATSConsumerSuite(t *testing.T) {
 	suite.Run(t, new(NATSConsumerSuite))
 }

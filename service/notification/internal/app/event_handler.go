@@ -71,7 +71,7 @@ func (h *eventHandler) HandleMessages() error {
 
 func (h *eventHandler) handlerFactory(subject string) func(broker.ConsumedMessage) error {
 	switch subject {
-	case SubscriptionCreatedEvent, SubscriptionCancelledEvent, SubscriptionRenewedEvent:
+	case SubscriptionCreatedEvent, SubscriptionCancelledEvent:
 		return h.handleSubscriptionEvent
 	case SendDispatchCommand:
 		return h.handleSendDispatchCommand
@@ -95,8 +95,7 @@ func (h *eventHandler) handleSubscriptionEvent(msg broker.ConsumedMessage) error
 
 	var err error
 	switch parsedMsg.EventType {
-	case broker_msgs.EventType_SUBSCRIPTION_CREATED,
-		broker_msgs.EventType_SUBSCRIPTION_RENEWED:
+	case broker_msgs.EventType_SUBSCRIPTION_CREATED:
 		h.scheduler.AddSubscription(sub)
 		err = h.dispatchStore.AddSubscription(ctx, sub)
 	case broker_msgs.EventType_SUBSCRIPTION_CANCELLED:

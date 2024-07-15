@@ -14,12 +14,6 @@ var CancelledSubscriptionData = SetupData{
 	DispatchID: USD_UAH_DISPATCH_ID,
 }
 
-var CancelledSubscriptionData2 = SetupData{
-	Filename:   "add_cancelled_subscription_2",
-	Email:      "cancelled_2@gmail.com",
-	DispatchID: USD_UAH_DISPATCH_ID,
-}
-
 var NewSubscriptionData = SetupData{
 	Filename:   "add_new_subscription",
 	Email:      "created@gmail.com",

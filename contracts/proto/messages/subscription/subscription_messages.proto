@@ -9,7 +9,6 @@ import "messages/messages.proto";
 enum SubscriptionStatus {
   CREATED = 0;
   CANCELLED = 1;
-  RENEWED = 2;
 }
 
 message Subscription {

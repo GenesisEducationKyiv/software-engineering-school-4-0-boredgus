@@ -20,7 +20,3 @@ func (b *BrokerStub) CreateSubscription(sub service.Subscription) {
 func (b *BrokerStub) CancelSubscription(sub service.Subscription) {
 	b.Called(sub)
 }
-
-func (b *BrokerStub) RenewSubscription(sub service.Subscription) {
-	b.Called(sub)
-}
