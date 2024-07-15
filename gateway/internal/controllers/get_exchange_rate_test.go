@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_GetExchangeRate_Controller(t *testing.T) {
+func Test_Controller_GetExchangeRate(t *testing.T) {
 	type mocked struct {
 		ctx                    context.Context
 		expectedRates          map[string]float64
@@ -71,7 +71,7 @@ func Test_GetExchangeRate_Controller(t *testing.T) {
 			cleanup := setup(tt.mocked)
 			defer cleanup()
 
-			GetExchangeRate(contextMock, csClientMock)
+			NewRateController(csClientMock).GetExchangeRate(contextMock)
 		})
 	}
 }

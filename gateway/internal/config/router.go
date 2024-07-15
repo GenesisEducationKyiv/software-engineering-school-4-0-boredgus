@@ -48,10 +48,11 @@ func GetRouter(params *APIParams) *gin.Engine {
 		return NewContext(ctx, context.Background(), params.Logger)
 	}
 
+	rateController := controllers.NewRateController(params.CurrencyService)
 	subscriptionController := controllers.NewSubscriptionController(params.DispatchService)
 
 	r.GET("/rate", func(ctx *gin.Context) {
-		controllers.GetExchangeRate(newContext(ctx), params.CurrencyService)
+		rateController.GetExchangeRate(newContext(ctx))
 	})
 
 	r.POST("/subscribe", func(ctx *gin.Context) {

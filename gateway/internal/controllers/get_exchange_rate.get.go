@@ -6,13 +6,24 @@ import (
 	"strconv"
 )
 
-type CurrencyService interface {
-	Convert(ctx context.Context, baseCcy string, targetCcies []string) (map[string]float64, error)
+type (
+	CurrencyService interface {
+		Convert(ctx context.Context, baseCcy string, targetCcies []string) (map[string]float64, error)
+	}
+	rateController struct {
+		service CurrencyService
+	}
+)
+
+func NewRateController(service CurrencyService) *rateController {
+	return &rateController{
+		service: service,
+	}
 }
 
-func GetExchangeRate(ctx Context, cs CurrencyService) {
+func (c *rateController) GetExchangeRate(ctx Context) {
 	from, to := "USD", "UAH"
-	res, err := cs.Convert(ctx.Context(), from, []string{to})
+	res, err := c.service.Convert(ctx.Context(), from, []string{to})
 	if err != nil {
 		ctx.Status(http.StatusInternalServerError)
 
