@@ -14,7 +14,7 @@ type (
 		UnsubscribeFromDispatch(ctx context.Context, email, dispatchId string) error
 	}
 
-	params struct {
+	subscriptionRequest struct {
 		Email string `json:"email"`
 	}
 
@@ -32,7 +32,7 @@ func NewSubscriptionController(service DispatchService) *subscriptionController 
 }
 
 func (c *subscriptionController) SubscribeForDailyDispatch(ctx Context) {
-	var params params
+	var params subscriptionRequest
 	if err := ctx.BindJSON(&params); err != nil {
 		ctx.String(http.StatusBadRequest, "invalid data provided")
 
@@ -55,7 +55,7 @@ func (c *subscriptionController) SubscribeForDailyDispatch(ctx Context) {
 }
 
 func (c *subscriptionController) UnsubscribeFromDailyDispatch(ctx Context) {
-	var params params
+	var params subscriptionRequest
 	if err := ctx.BindJSON(&params); err != nil {
 		ctx.String(http.StatusBadRequest, "invalid data provided")
 
