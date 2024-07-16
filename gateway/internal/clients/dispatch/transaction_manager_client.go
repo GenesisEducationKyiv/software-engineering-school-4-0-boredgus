@@ -12,15 +12,8 @@ import (
 )
 
 type (
-	dispatchServiceClient struct {
+	transactionManagerClient struct {
 		client grpc_gen.TransactionManagerClient
-	}
-
-	DispatchData struct {
-		Id                 string
-		Label              string
-		SendAt             string
-		CountOfSubscribers int
 	}
 )
 
@@ -29,13 +22,13 @@ var (
 	ErrSubscriptionToDispatchAlreadyExists = errors.New("subscription already exists")
 )
 
-func NewDispatchServiceClient(conn grpc.ClientConnInterface) *dispatchServiceClient {
-	return &dispatchServiceClient{
+func NewTransactionManagerClient(conn grpc.ClientConnInterface) *transactionManagerClient {
+	return &transactionManagerClient{
 		client: grpc_gen.NewTransactionManagerClient(conn),
 	}
 }
 
-func (c *dispatchServiceClient) SubscribeForDispatch(ctx context.Context, email, dispatchID string) error {
+func (c *transactionManagerClient) SubscribeForDispatch(ctx context.Context, email, dispatchID string) error {
 	_, err := c.client.SubscribeForDispatch(ctx, &grpc_gen.SubscribeForDispatchRequest{
 		Email:      email,
 		DispatchId: dispatchID,
@@ -47,7 +40,7 @@ func (c *dispatchServiceClient) SubscribeForDispatch(ctx context.Context, email,
 	return err
 }
 
-func (c *dispatchServiceClient) UnsubscribeFromDispatch(ctx context.Context, email, dispatchID string) error {
+func (c *transactionManagerClient) UnsubscribeFromDispatch(ctx context.Context, email, dispatchID string) error {
 	_, err := c.client.SubscribeForDispatch(ctx, &grpc_gen.SubscribeForDispatchRequest{
 		Email:      email,
 		DispatchId: dispatchID,

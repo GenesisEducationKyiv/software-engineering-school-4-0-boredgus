@@ -5,7 +5,9 @@ option go_package = "./";
 
 import "services/dispatch_service.proto";
 
+import "google/protobuf/empty.proto";
+
 service TransactionManager {
-  rpc SubscribeForDispatch(services.SubscribeForDispatchRequest) returns (services.SubscribeForDispatchResponse) {}
-  rpc UnsubscribeFromDispatch(services.UnsubscribeFromDispatchRequest) returns (services.UnsubscribeFromDispatchResponse) {}
+  rpc SubscribeForDispatch(services.SubscribeForDispatchRequest) returns (google.protobuf.Empty) {}
+  rpc UnsubscribeFromDispatch(services.UnsubscribeFromDispatchRequest) returns (google.protobuf.Empty) {}
 }

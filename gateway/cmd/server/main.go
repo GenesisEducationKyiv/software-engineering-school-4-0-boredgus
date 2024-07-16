@@ -42,7 +42,7 @@ func main() {
 
 	router := config.GetRouter(&config.APIParams{
 		CurrencyService: currency.NewCurrencyServiceClient(currencyServiceConn),
-		DispatchService: dispatch.NewDispatchServiceClient(dispatchServiceConn),
+		DispatchService: dispatch.NewTransactionManagerClient(dispatchServiceConn),
 		Logger:          logger,
 	})
 

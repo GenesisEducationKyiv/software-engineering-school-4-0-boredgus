@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -22,8 +23,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TransactionManagerClient interface {
-	SubscribeForDispatch(ctx context.Context, in *SubscribeForDispatchRequest, opts ...grpc.CallOption) (*SubscribeForDispatchResponse, error)
-	UnsubscribeFromDispatch(ctx context.Context, in *UnsubscribeFromDispatchRequest, opts ...grpc.CallOption) (*UnsubscribeFromDispatchResponse, error)
+	SubscribeForDispatch(ctx context.Context, in *SubscribeForDispatchRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	UnsubscribeFromDispatch(ctx context.Context, in *UnsubscribeFromDispatchRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type transactionManagerClient struct {
@@ -34,8 +35,8 @@ func NewTransactionManagerClient(cc grpc.ClientConnInterface) TransactionManager
 	return &transactionManagerClient{cc}
 }
 
-func (c *transactionManagerClient) SubscribeForDispatch(ctx context.Context, in *SubscribeForDispatchRequest, opts ...grpc.CallOption) (*SubscribeForDispatchResponse, error) {
-	out := new(SubscribeForDispatchResponse)
+func (c *transactionManagerClient) SubscribeForDispatch(ctx context.Context, in *SubscribeForDispatchRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/services.TransactionManager/SubscribeForDispatch", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -43,8 +44,8 @@ func (c *transactionManagerClient) SubscribeForDispatch(ctx context.Context, in 
 	return out, nil
 }
 
-func (c *transactionManagerClient) UnsubscribeFromDispatch(ctx context.Context, in *UnsubscribeFromDispatchRequest, opts ...grpc.CallOption) (*UnsubscribeFromDispatchResponse, error) {
-	out := new(UnsubscribeFromDispatchResponse)
+func (c *transactionManagerClient) UnsubscribeFromDispatch(ctx context.Context, in *UnsubscribeFromDispatchRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/services.TransactionManager/UnsubscribeFromDispatch", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -56,8 +57,8 @@ func (c *transactionManagerClient) UnsubscribeFromDispatch(ctx context.Context, 
 // All implementations must embed UnimplementedTransactionManagerServer
 // for forward compatibility
 type TransactionManagerServer interface {
-	SubscribeForDispatch(context.Context, *SubscribeForDispatchRequest) (*SubscribeForDispatchResponse, error)
-	UnsubscribeFromDispatch(context.Context, *UnsubscribeFromDispatchRequest) (*UnsubscribeFromDispatchResponse, error)
+	SubscribeForDispatch(context.Context, *SubscribeForDispatchRequest) (*emptypb.Empty, error)
+	UnsubscribeFromDispatch(context.Context, *UnsubscribeFromDispatchRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedTransactionManagerServer()
 }
 
@@ -65,10 +66,10 @@ type TransactionManagerServer interface {
 type UnimplementedTransactionManagerServer struct {
 }
 
-func (UnimplementedTransactionManagerServer) SubscribeForDispatch(context.Context, *SubscribeForDispatchRequest) (*SubscribeForDispatchResponse, error) {
+func (UnimplementedTransactionManagerServer) SubscribeForDispatch(context.Context, *SubscribeForDispatchRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubscribeForDispatch not implemented")
 }
-func (UnimplementedTransactionManagerServer) UnsubscribeFromDispatch(context.Context, *UnsubscribeFromDispatchRequest) (*UnsubscribeFromDispatchResponse, error) {
+func (UnimplementedTransactionManagerServer) UnsubscribeFromDispatch(context.Context, *UnsubscribeFromDispatchRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnsubscribeFromDispatch not implemented")
 }
 func (UnimplementedTransactionManagerServer) mustEmbedUnimplementedTransactionManagerServer() {}
