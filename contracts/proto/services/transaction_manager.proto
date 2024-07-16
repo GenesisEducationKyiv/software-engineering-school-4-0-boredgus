@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package services;
+option go_package = "./";
+
+import "services/dispatch_service.proto";
+
+service TransactionManager {
+  rpc SubscribeForDispatch(services.SubscribeForDispatchRequest) returns (services.SubscribeForDispatchResponse) {}
+  rpc UnsubscribeFromDispatch(services.UnsubscribeFromDispatchRequest) returns (services.UnsubscribeFromDispatchResponse) {}
+}

@@ -1,11 +1,10 @@
 syntax = "proto3";
 
-package messages.dispatch;
-option go_package = ".;messages";
+package messages;
+option go_package = "./";
 
 import "google/protobuf/timestamp.proto";
-import "messages/messages.proto";
-
+import "messages/event_type.proto";
 
 message Dispatch {
   repeated string emails = 1;

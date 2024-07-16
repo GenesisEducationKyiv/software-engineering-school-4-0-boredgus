@@ -1,13 +1,14 @@
 syntax = "proto3";
 
-package main;
+package services;
 option go_package = "./";
 
-import "google/protobuf/empty.proto";
+import "subscription.proto";
 
 service DispatchService {
-  rpc SubscribeForDispatch(SubscribeForDispatchRequest) returns (google.protobuf.Empty) {}
-  rpc UnsubscribeFromDispatch(UnsubscribeFromDispatchRequest) returns (google.protobuf.Empty) {}
+  rpc SubscribeForDispatch(SubscribeForDispatchRequest) returns (SubscribeForDispatchResponse) {}
+  rpc SubscribeForDispatchRevert(SubscribeForDispatchRequest) returns (SubscribeForDispatchResponse) {}
+  rpc UnsubscribeFromDispatch(UnsubscribeFromDispatchRequest) returns (UnsubscribeFromDispatchResponse) {}
 }
 
 message SubscribeForDispatchRequest {
@@ -15,7 +16,15 @@ message SubscribeForDispatchRequest {
   string dispatch_id = 2;
 }
 
+message SubscribeForDispatchResponse {
+  main.Subscription subscription = 1;
+}
+
 message UnsubscribeFromDispatchRequest {
   string email = 1;
   string dispatch_id = 2;
+}
+
+message UnsubscribeFromDispatchResponse {
+  main.Subscription subscription = 1;
 }

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = ".;messages";
+option go_package = "./";
 package messages;
 
 enum EventType {

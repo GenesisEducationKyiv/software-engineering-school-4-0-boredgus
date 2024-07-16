@@ -1,10 +1,9 @@
 syntax = "proto3";
 
-package messages.subscription;
-option go_package = ".;messages";
+package main;
+option go_package = "./";
 
 import "google/protobuf/timestamp.proto";
-import "messages/messages.proto";
 
 enum SubscriptionStatus {
   CREATED = 0;
@@ -18,10 +17,4 @@ message Subscription {
   SubscriptionStatus status = 4;
   string email = 5;
   google.protobuf.Timestamp sendAt = 6;
-}
-
-message SubscriptionMessage {
-  messages.EventType eventType = 1;
-  google.protobuf.Timestamp timestamp = 2;
-  Subscription payload = 3;
 }
