@@ -40,7 +40,7 @@ func (c *subscriptionController) SubscribeForDailyDispatch(ctx Context) {
 	}
 
 	err := c.service.SubscribeForDispatch(ctx.Context(), params.Email, USD_UAH_DISPATCH_ID)
-	if err == dispatch.SubscriptionToDispatchAlreadyExistsErr {
+	if err == dispatch.ErrSubscriptionToDispatchAlreadyExists {
 		ctx.Status(http.StatusConflict)
 
 		return
@@ -63,7 +63,7 @@ func (c *subscriptionController) UnsubscribeFromDailyDispatch(ctx Context) {
 	}
 
 	err := c.service.UnsubscribeFromDispatch(ctx.Context(), params.Email, USD_UAH_DISPATCH_ID)
-	if errors.Is(err, dispatch.NotFoundErr) {
+	if errors.Is(err, dispatch.ErrNotFound) {
 		ctx.Status(http.StatusNotFound)
 
 		return

@@ -11,7 +11,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -23,8 +22,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DispatchServiceClient interface {
-	SubscribeForDispatch(ctx context.Context, in *SubscribeForDispatchRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	UnsubscribeFromDispatch(ctx context.Context, in *UnsubscribeFromDispatchRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	SubscribeForDispatch(ctx context.Context, in *SubscribeForDispatchRequest, opts ...grpc.CallOption) (*SubscribeForDispatchResponse, error)
+	SubscribeForDispatchRevert(ctx context.Context, in *SubscribeForDispatchRequest, opts ...grpc.CallOption) (*SubscribeForDispatchResponse, error)
+	UnsubscribeFromDispatch(ctx context.Context, in *UnsubscribeFromDispatchRequest, opts ...grpc.CallOption) (*UnsubscribeFromDispatchResponse, error)
 }
 
 type dispatchServiceClient struct {
@@ -35,18 +35,27 @@ func NewDispatchServiceClient(cc grpc.ClientConnInterface) DispatchServiceClient
 	return &dispatchServiceClient{cc}
 }
 
-func (c *dispatchServiceClient) SubscribeForDispatch(ctx context.Context, in *SubscribeForDispatchRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/main.DispatchService/SubscribeForDispatch", in, out, opts...)
+func (c *dispatchServiceClient) SubscribeForDispatch(ctx context.Context, in *SubscribeForDispatchRequest, opts ...grpc.CallOption) (*SubscribeForDispatchResponse, error) {
+	out := new(SubscribeForDispatchResponse)
+	err := c.cc.Invoke(ctx, "/services.DispatchService/SubscribeForDispatch", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *dispatchServiceClient) UnsubscribeFromDispatch(ctx context.Context, in *UnsubscribeFromDispatchRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/main.DispatchService/UnsubscribeFromDispatch", in, out, opts...)
+func (c *dispatchServiceClient) SubscribeForDispatchRevert(ctx context.Context, in *SubscribeForDispatchRequest, opts ...grpc.CallOption) (*SubscribeForDispatchResponse, error) {
+	out := new(SubscribeForDispatchResponse)
+	err := c.cc.Invoke(ctx, "/services.DispatchService/SubscribeForDispatchRevert", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dispatchServiceClient) UnsubscribeFromDispatch(ctx context.Context, in *UnsubscribeFromDispatchRequest, opts ...grpc.CallOption) (*UnsubscribeFromDispatchResponse, error) {
+	out := new(UnsubscribeFromDispatchResponse)
+	err := c.cc.Invoke(ctx, "/services.DispatchService/UnsubscribeFromDispatch", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -57,8 +66,9 @@ func (c *dispatchServiceClient) UnsubscribeFromDispatch(ctx context.Context, in 
 // All implementations must embed UnimplementedDispatchServiceServer
 // for forward compatibility
 type DispatchServiceServer interface {
-	SubscribeForDispatch(context.Context, *SubscribeForDispatchRequest) (*emptypb.Empty, error)
-	UnsubscribeFromDispatch(context.Context, *UnsubscribeFromDispatchRequest) (*emptypb.Empty, error)
+	SubscribeForDispatch(context.Context, *SubscribeForDispatchRequest) (*SubscribeForDispatchResponse, error)
+	SubscribeForDispatchRevert(context.Context, *SubscribeForDispatchRequest) (*SubscribeForDispatchResponse, error)
+	UnsubscribeFromDispatch(context.Context, *UnsubscribeFromDispatchRequest) (*UnsubscribeFromDispatchResponse, error)
 	mustEmbedUnimplementedDispatchServiceServer()
 }
 
@@ -66,10 +76,13 @@ type DispatchServiceServer interface {
 type UnimplementedDispatchServiceServer struct {
 }
 
-func (UnimplementedDispatchServiceServer) SubscribeForDispatch(context.Context, *SubscribeForDispatchRequest) (*emptypb.Empty, error) {
+func (UnimplementedDispatchServiceServer) SubscribeForDispatch(context.Context, *SubscribeForDispatchRequest) (*SubscribeForDispatchResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubscribeForDispatch not implemented")
 }
-func (UnimplementedDispatchServiceServer) UnsubscribeFromDispatch(context.Context, *UnsubscribeFromDispatchRequest) (*emptypb.Empty, error) {
+func (UnimplementedDispatchServiceServer) SubscribeForDispatchRevert(context.Context, *SubscribeForDispatchRequest) (*SubscribeForDispatchResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SubscribeForDispatchRevert not implemented")
+}
+func (UnimplementedDispatchServiceServer) UnsubscribeFromDispatch(context.Context, *UnsubscribeFromDispatchRequest) (*UnsubscribeFromDispatchResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnsubscribeFromDispatch not implemented")
 }
 func (UnimplementedDispatchServiceServer) mustEmbedUnimplementedDispatchServiceServer() {}
@@ -95,10 +108,28 @@ func _DispatchService_SubscribeForDispatch_Handler(srv interface{}, ctx context.
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/main.DispatchService/SubscribeForDispatch",
+		FullMethod: "/services.DispatchService/SubscribeForDispatch",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DispatchServiceServer).SubscribeForDispatch(ctx, req.(*SubscribeForDispatchRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DispatchService_SubscribeForDispatchRevert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SubscribeForDispatchRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DispatchServiceServer).SubscribeForDispatchRevert(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/services.DispatchService/SubscribeForDispatchRevert",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DispatchServiceServer).SubscribeForDispatchRevert(ctx, req.(*SubscribeForDispatchRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -113,7 +144,7 @@ func _DispatchService_UnsubscribeFromDispatch_Handler(srv interface{}, ctx conte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/main.DispatchService/UnsubscribeFromDispatch",
+		FullMethod: "/services.DispatchService/UnsubscribeFromDispatch",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DispatchServiceServer).UnsubscribeFromDispatch(ctx, req.(*UnsubscribeFromDispatchRequest))
@@ -125,12 +156,16 @@ func _DispatchService_UnsubscribeFromDispatch_Handler(srv interface{}, ctx conte
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var DispatchService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "main.DispatchService",
+	ServiceName: "services.DispatchService",
 	HandlerType: (*DispatchServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "SubscribeForDispatch",
 			Handler:    _DispatchService_SubscribeForDispatch_Handler,
+		},
+		{
+			MethodName: "SubscribeForDispatchRevert",
+			Handler:    _DispatchService_SubscribeForDispatchRevert_Handler,
 		},
 		{
 			MethodName: "UnsubscribeFromDispatch",

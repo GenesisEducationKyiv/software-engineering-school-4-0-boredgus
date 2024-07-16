@@ -13,7 +13,7 @@ import (
 
 type (
 	dispatchServiceClient struct {
-		client grpc_gen.DispatchServiceClient
+		client grpc_gen.TransactionManagerClient
 	}
 
 	DispatchData struct {
@@ -25,13 +25,13 @@ type (
 )
 
 var (
-	NotFoundErr                            = errors.New("not found")
-	SubscriptionToDispatchAlreadyExistsErr = errors.New("subscription already exists")
+	ErrNotFound                            = errors.New("not found")
+	ErrSubscriptionToDispatchAlreadyExists = errors.New("subscription already exists")
 )
 
 func NewDispatchServiceClient(conn grpc.ClientConnInterface) *dispatchServiceClient {
 	return &dispatchServiceClient{
-		client: grpc_gen.NewDispatchServiceClient(conn),
+		client: grpc_gen.NewTransactionManagerClient(conn),
 	}
 }
 
@@ -41,7 +41,7 @@ func (c *dispatchServiceClient) SubscribeForDispatch(ctx context.Context, email,
 		DispatchId: dispatchID,
 	})
 	if status.Code(err) == codes.AlreadyExists {
-		return SubscriptionToDispatchAlreadyExistsErr
+		return ErrSubscriptionToDispatchAlreadyExists
 	}
 
 	return err
@@ -53,7 +53,7 @@ func (c *dispatchServiceClient) UnsubscribeFromDispatch(ctx context.Context, ema
 		DispatchId: dispatchID,
 	})
 	if status.Code(err) == codes.NotFound {
-		return errors.Join(NotFoundErr, err)
+		return errors.Join(ErrNotFound, err)
 	}
 
 	return err
