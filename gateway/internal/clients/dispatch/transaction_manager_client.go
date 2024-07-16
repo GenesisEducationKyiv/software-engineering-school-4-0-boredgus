@@ -33,6 +33,9 @@ func (c *transactionManagerClient) SubscribeForDispatch(ctx context.Context, ema
 		Email:      email,
 		DispatchId: dispatchID,
 	})
+	if status.Code(err) == codes.NotFound {
+		return errors.Join(ErrNotFound, err)
+	}
 	if status.Code(err) == codes.AlreadyExists {
 		return ErrSubscriptionToDispatchAlreadyExists
 	}
