@@ -49,12 +49,12 @@ func (b *eventBroker) Publish(msg interface{}) {
 		return
 	}
 
-	subscription := msg.(messages.Subscription)
+	subscription := msg.(*messages.Subscription)
 
 	data, err := proto.Marshal(&messages.SubscriptionMessage{
 		EventType: statusToEventType[status],
 		Timestamp: timestamppb.New(time.Now().UTC()),
-		Payload:   &subscription,
+		Payload:   subscription,
 	})
 	if err != nil {
 		b.logger.Errorf("failed to marshal subscription message: %v", err)
