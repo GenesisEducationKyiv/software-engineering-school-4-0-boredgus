@@ -35,12 +35,16 @@ test-coverage:
 	go tool cover -html="test-coverage.txt"
 
 
-currency_service_proto=contracts/proto/services/currency_service.proto
-dispatch_service_proto=contracts/proto/services/dispatch_service.proto
+subscription_proto=contracts/proto/subscription.proto
 
-messages_proto=contracts/proto/messages/messages.proto
-dispatch_messages_proto=contracts/proto/messages/dispatch/dispatch_messages.proto ${messages_proto}
-subscription_messages_proto=contracts/proto/messages/subscription/subscription_messages.proto ${messages_proto}
+currency_service_proto=contracts/proto/services/currency_service.proto
+dispatch_service_proto=contracts/proto/services/dispatch_service.proto ${subscription_proto}
+customer_service_proto=contracts/proto/services/customer_service.proto
+transaction_manager_proto=contracts/proto/services/transaction_manager.proto
+
+event_type_proto=contracts/proto/messages/event_type.proto
+dispatch_messages_proto=contracts/proto/messages/dispatch_messages.proto ${event_type_proto} ${subscription_proto}
+subscription_messages_proto=contracts/proto/messages/subscription_messages.proto ${event_type_proto} ${subscription_proto}
 
 generate-proto:
 # for gateway
@@ -52,7 +56,14 @@ generate-proto:
 	protoc --go_out=./gateway/internal/clients/dispatch/gen  \
 		--go-grpc_out=./gateway/internal/clients/dispatch/gen \
 		--proto_path=contracts/proto \
+		${transaction_manager_proto} \
 		${dispatch_service_proto}
+
+# for customer service
+	protoc --go_out=./service/customer/internal/grpc/gen \
+		--go-grpc_out=./service/customer/internal/grpc/gen \
+		--proto_path=contracts/proto \
+		${customer_service_proto}
 
 # for currency service
 	protoc --go_out=./service/currency/internal/grpc/gen \
@@ -66,20 +77,31 @@ generate-proto:
 		--proto_path=contracts/proto \
 		${dispatch_service_proto}
 
-	protoc --go_out=./service/dispatch/internal/broker/gen \
-		--proto_path=contracts/proto \
-		${subscription_messages_proto}
 
 # for notification service
 	protoc --go_out=./service/notification/internal/broker/gen \
 		--proto_path=contracts/proto \
-		${subscription_messages_proto}
-
-	protoc --go_out=./service/notification/internal/broker/gen \
-		--proto_path=contracts/proto \
-		${dispatch_messages_proto}
+		${subscription_messages_proto} \
+    ${dispatch_messages_proto}
 
 	protoc --go_out=./service/notification/internal/clients/currency/gen  \
 		--go-grpc_out=./service/notification/internal/clients/currency/gen \
 		--proto_path=contracts/proto \
 		${currency_service_proto}
+
+# for transaction manager
+	protoc --go_out=./transactions/internal/grpc/gen \
+		--go-grpc_out=./transactions/internal/grpc/gen \
+		--proto_path=contracts/proto \
+		${dispatch_service_proto} \
+		${transaction_manager_proto}
+
+	protoc --go_out=./transactions/internal/clients/gen \
+		--go-grpc_out=./transactions/internal/clients/gen \
+		--proto_path=contracts/proto \
+		${dispatch_service_proto} \
+		${customer_service_proto}
+
+	protoc --go_out=./transactions/internal/broker/gen \
+		--proto_path=contracts/proto \
+		${subscription_messages_proto}

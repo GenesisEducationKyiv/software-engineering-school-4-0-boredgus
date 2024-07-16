@@ -41,6 +41,19 @@ services:
       database:
         condition: service_healthy
   
+  customer-service:
+    container_name: ${CUSTOMER_SERVICE_ADDRESS}
+    build:
+      context: ./service/customer
+      dockerfile: Dockerfile
+    ports:
+      - ${DISPATCH_SERVICE_PORT}:${DISPATCH_SERVICE_PORT}
+    env_file:
+      - ${ENV_FILE}
+    depends_on:
+      database:
+        condition: service_healthy
+  
   notification-service:
     container_name: ${NOTIFICATION_SERVICE_ADDRESS}
     build:
@@ -54,17 +67,32 @@ services:
       database:
         condition: service_healthy
   
+  transaction-manager:
+    container_name: ${TRANSACTION_MANAGER_ADDRESS}
+    build:
+      context: ./transactions
+      dockerfile: Dockerfile
+    env_file:
+      - ${ENV_FILE}
+    depends_on:
+      dispatch-service:
+        condition: service_started
+      customer-service:
+        condition: service_started
+  
   database:
     container_name: ${POSTGRESQL_ADDRESS}
     image: postgres:16.2-bullseye
     ports:
       - ${POSTGRESQL_PORT}:5432
     environment:
-      - POSTGRES_DB=${POSTGRESQL_DB}
+      - POSTGRES_DATABASES=${SUBS_DB} ${CUSTOMERS_DB}
       - POSTGRES_USER=${POSTGRESQL_USER}
       - POSTGRES_PASSWORD=${POSTGRESQL_PASSWORD}
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - ./postgres-entrypoint.sh:/docker-entrypoint-initdb.d/multiple-databases.sh
+
     healthcheck:
       test: ["CMD", "pg_isready", "-d", "subs", "-U", "postgres"]
       interval: 5s
