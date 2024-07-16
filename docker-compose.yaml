@@ -47,7 +47,7 @@ services:
       context: ./service/customer
       dockerfile: Dockerfile
     ports:
-      - ${DISPATCH_SERVICE_PORT}:${DISPATCH_SERVICE_PORT}
+      - ${CUSTOMER_SERVICE_PORT}:${CUSTOMER_SERVICE_PORT}
     env_file:
       - ${ENV_FILE}
     depends_on:
@@ -86,7 +86,7 @@ services:
     ports:
       - ${POSTGRESQL_PORT}:5432
     environment:
-      - POSTGRES_DATABASES=${SUBS_DB} ${CUSTOMERS_DB}
+      - POSTGRES_DATABASES=${SUBS_DB},${CUSTOMERS_DB}
       - POSTGRES_USER=${POSTGRESQL_USER}
       - POSTGRES_PASSWORD=${POSTGRESQL_PASSWORD}
     volumes:
