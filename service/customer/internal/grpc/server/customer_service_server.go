@@ -15,6 +15,7 @@ import (
 
 type CustomerService interface {
 	CreateCustomer(ctx context.Context, email string) error
+	DeleteCustomer(ctx context.Context, email string) error
 }
 
 type customerServiceServer struct {
@@ -33,10 +34,22 @@ func (s *customerServiceServer) log(method string, req any) {
 
 func (s *customerServiceServer) CreateCustomer(ctx context.Context, req *grpc_gen.CreateCustomerRequest) (*emptypb.Empty, error) {
 	s.log("CreateCustomer", req)
+
 	err := s.service.CreateCustomer(ctx, req.Email)
-	if errors.Is(err, service.AlreadyExistsErr) {
+	if errors.Is(err, service.ErrAlreadyExists) {
 		return nil, status.Error(codes.AlreadyExists, err.Error())
 	}
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &emptypb.Empty{}, nil
+}
+
+func (s *customerServiceServer) CreateCustomerRevert(ctx context.Context, req *grpc_gen.CreateCustomerRequest) (*emptypb.Empty, error) {
+	s.log("CreateCustomerRevert", req)
+
+	err := s.service.DeleteCustomer(ctx, req.Email)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

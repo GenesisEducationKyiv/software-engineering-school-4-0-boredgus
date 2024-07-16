@@ -11,13 +11,17 @@ type (
 		Email string
 	}
 	CustomerRepo interface {
+		CreateCustomer(email string) error
+		DeleteCustomer(email string) error
 	}
 	customerService struct {
 		repo CustomerRepo
 	}
 )
 
-var AlreadyExistsErr = errors.New("already exists")
+var (
+	ErrAlreadyExists = errors.New("already exists")
+)
 
 func NewCustomerService(repo CustomerRepo) *customerService {
 	return &customerService{
@@ -26,5 +30,9 @@ func NewCustomerService(repo CustomerRepo) *customerService {
 }
 
 func (s *customerService) CreateCustomer(ctx context.Context, email string) error {
-	return nil
+	return s.repo.CreateCustomer(email)
+}
+
+func (s *customerService) DeleteCustomer(ctx context.Context, email string) error {
+	return s.repo.DeleteCustomer(email)
 }

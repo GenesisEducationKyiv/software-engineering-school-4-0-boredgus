@@ -25,11 +25,11 @@ func main() {
 
 	logger := config.InitLogger(env.Mode, config.WithProcess("customer-service"))
 
-	database, err := db.NewDatabase(env.DatabaseURL)
+	database, err := db.NewDatabase(env.DatabaseURL, env.DatabaseSchema)
 	panicOnError(err, "failed to setup database")
 
 	customerService := service.NewCustomerService(
-		repo.NewCustomerRepo(database, db.IsError),
+		repo.NewCustomerRepo(database),
 	)
 	customerServer := server.NewCustomerServiceServer(customerService, logger)
 

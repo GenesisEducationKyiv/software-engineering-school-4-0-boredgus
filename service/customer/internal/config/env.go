@@ -12,7 +12,8 @@ type envVars struct {
 	CustomerServiceAddress string `env:"CUSTOMER_SERVICE_ADDRESS"`
 	CustomerServicePort    string `env:"CUSTOMER_SERVICE_PORT"`
 
-	DatabaseURL string `env:"SUBS_DB_CONN_STRING"`
+	DatabaseSchema string `env:"CUSTOMERS_DB"`
+	DatabaseURL    string `env:"CUSTOMMERS_DB_CONN_STRING"`
 }
 
 func GetEnv() (*envVars, error) {

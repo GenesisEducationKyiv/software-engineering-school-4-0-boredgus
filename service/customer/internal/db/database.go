@@ -6,6 +6,7 @@ import (
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/customer/internal/repo"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
 
 var models = map[string]interface{}{
@@ -16,8 +17,12 @@ type database struct {
 	db *gorm.DB
 }
 
-func NewDatabase(url string) (*database, error) {
-	db, err := gorm.Open(postgres.Open(url))
+func NewDatabase(url, schemaName string) (*database, error) {
+	db, err := gorm.Open(postgres.Open(url), &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix: fmt.Sprintf("%s.", schemaName),
+		},
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to open connection to postgres db: %w", err)
 	}
@@ -37,4 +42,8 @@ func (d *database) Create(value interface{}) error {
 
 func (d *database) Delete(value interface{}) error {
 	return d.db.Delete(value).Error
+}
+
+func (d *database) Where(query any, args ...any) repo.DB {
+	return &database{db: d.db.Where(query, args...)}
 }
