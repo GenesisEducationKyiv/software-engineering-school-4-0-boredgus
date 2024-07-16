@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/entities"
-	broker_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mocks/broker"
 	repo_mocks "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mocks/repo"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service"
 	"github.com/stretchr/testify/assert"
@@ -21,7 +20,6 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 	dispatchRepoMock := repo_mocks.NewDispatchRepo(t)
 	userRepoMock := repo_mocks.NewUserRepo(t)
 	subRepoMock := repo_mocks.NewSubRepo(t)
-	brokerMock := broker_mock.NewBroker(t)
 
 	a := args{
 		ctx:        context.Background(),
@@ -29,11 +27,16 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 		dispatchId: "dispatch-id",
 	}
 
+	dispatch := entities.CurrencyDispatch{
+		ID: a.dispatchId,
+	}
+
 	tests := []struct {
-		name        string
-		setup       func(*args) func()
-		args        *args
-		expectedErr error
+		name                 string
+		setup                func(*args) func()
+		args                 *args
+		expectedSubscription *entities.Subscription
+		expectedErr          error
 	}{
 		{
 			name: "failed: got error from GetDispatchByID",
@@ -55,7 +58,7 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 			setup: func(a *args) func() {
 				getDispatchCall := dispatchRepoMock.EXPECT().
 					GetDispatchByID(a.ctx, a.dispatchId).Once().
-					Return(entities.CurrencyDispatch{}, assert.AnError)
+					Return(entities.CurrencyDispatch{}, nil)
 				getStatusCall := subRepoMock.EXPECT().
 					GetStatusOfSubscription(a.ctx, service.SubscriptionData{Email: a.email, DispatchID: a.dispatchId}).
 					Return(0, assert.AnError)
@@ -76,14 +79,14 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 					Return(entities.CurrencyDispatch{}, nil)
 				getStatusCall := subRepoMock.EXPECT().
 					GetStatusOfSubscription(a.ctx, service.SubscriptionData{Email: a.email, DispatchID: a.dispatchId}).
-					Return(service.SubscriptionStatusActive, nil)
+					Return(entities.SubscriptionStatusActive, nil)
 
 				return func() {
 					getDispatchCall.Unset()
 					getStatusCall.Unset()
 				}
 			},
-			expectedErr: service.AlreadyExistsErr,
+			expectedErr: service.ErrAlreadyExists,
 		},
 		{
 			name: "failed: got an error on create user attempt",
@@ -94,29 +97,7 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 					Return(entities.CurrencyDispatch{ID: a.dispatchId}, nil)
 				getStatusCall := subRepoMock.EXPECT().
 					GetStatusOfSubscription(a.ctx, service.SubscriptionData{Email: a.email, DispatchID: a.dispatchId}).
-					Return(0, service.NotFoundErr)
-				createUserCall := userRepoMock.EXPECT().
-					CreateUser(a.ctx, a.email).Once().
-					Return(assert.AnError)
-
-				return func() {
-					getDispatchCall.Unset()
-					getStatusCall.Unset()
-					createUserCall.Unset()
-				}
-			},
-			expectedErr: assert.AnError,
-		},
-		{
-			name: "failed: got an error on create user attempt",
-			args: &a,
-			setup: func(a *args) func() {
-				getDispatchCall := dispatchRepoMock.EXPECT().
-					GetDispatchByID(a.ctx, a.dispatchId).Once().
-					Return(entities.CurrencyDispatch{ID: a.dispatchId}, nil)
-				getStatusCall := subRepoMock.EXPECT().
-					GetStatusOfSubscription(a.ctx, service.SubscriptionData{Email: a.email, DispatchID: a.dispatchId}).
-					Return(0, service.NotFoundErr)
+					Return(0, service.ErrNotFound)
 				createUserCall := userRepoMock.EXPECT().
 					CreateUser(a.ctx, a.email).Once().
 					Return(assert.AnError)
@@ -138,7 +119,7 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 					Return(entities.CurrencyDispatch{ID: a.dispatchId}, nil)
 				getStatusCall := subRepoMock.EXPECT().
 					GetStatusOfSubscription(a.ctx, service.SubscriptionData{Email: a.email, DispatchID: a.dispatchId}).
-					Return(0, service.NotFoundErr)
+					Return(0, service.ErrNotFound)
 				createUserCall := userRepoMock.EXPECT().
 					CreateUser(a.ctx, a.email).Once().
 					Return(nil)
@@ -165,28 +146,30 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 					Return(dispatch, nil)
 				getStatusCall := subRepoMock.EXPECT().
 					GetStatusOfSubscription(a.ctx, service.SubscriptionData{Email: a.email, DispatchID: a.dispatchId}).
-					Return(0, service.NotFoundErr)
+					Return(0, service.ErrNotFound)
 				createUserCall := userRepoMock.EXPECT().
 					CreateUser(a.ctx, a.email).Once().
 					Return(nil)
 				createSubscriptionCall := subRepoMock.EXPECT().
 					CreateSubscription(a.ctx, service.SubscriptionData{Email: a.email, DispatchID: a.dispatchId}).
 					Return(nil)
-				brokerCall := brokerMock.EXPECT().
-					Publish(service.DispatchToSubscription(dispatch, a.email, service.SubscriptionStatusActive))
 
 				return func() {
 					getDispatchCall.Unset()
 					getStatusCall.Unset()
 					createUserCall.Unset()
 					createSubscriptionCall.Unset()
-					brokerCall.Unset()
 				}
+			},
+			expectedSubscription: &entities.Subscription{
+				DispatchID: a.dispatchId,
+				Email:      a.email,
+				Status:     entities.SubscriptionStatusActive,
 			},
 			expectedErr: nil,
 		},
 		{
-			name: "failed: subscription already exists",
+			name: "failed: got an error from UpdateSubscriptionStatus",
 			args: &a,
 			setup: func(a *args) func() {
 				getDispatchCall := dispatchRepoMock.EXPECT().
@@ -194,47 +177,11 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 					Return(entities.CurrencyDispatch{ID: a.dispatchId}, nil)
 				getStatusCall := subRepoMock.EXPECT().
 					GetStatusOfSubscription(a.ctx, service.SubscriptionData{Email: a.email, DispatchID: a.dispatchId}).
-					Return(service.SubscriptionStatusActive, nil)
-
-				return func() {
-					getDispatchCall.Unset()
-					getStatusCall.Unset()
-				}
-			},
-			expectedErr: service.AlreadyExistsErr,
-		},
-		{
-			name: "failed: got unknown error from GetStatusOfSubscription",
-			args: &a,
-			setup: func(a *args) func() {
-				getDispatchCall := dispatchRepoMock.EXPECT().
-					GetDispatchByID(a.ctx, a.dispatchId).Once().
-					Return(entities.CurrencyDispatch{ID: a.dispatchId}, nil)
-				getStatusCall := subRepoMock.EXPECT().
-					GetStatusOfSubscription(a.ctx, service.SubscriptionData{Email: a.email, DispatchID: a.dispatchId}).
-					Return(0, assert.AnError)
-
-				return func() {
-					getDispatchCall.Unset()
-					getStatusCall.Unset()
-				}
-			},
-			expectedErr: assert.AnError,
-		},
-		{
-			name: "failed: got unknown error from GetStatusOfSubscription",
-			args: &a,
-			setup: func(a *args) func() {
-				subData := service.SubscriptionData{Email: a.email, DispatchID: a.dispatchId}
-				getDispatchCall := dispatchRepoMock.EXPECT().
-					GetDispatchByID(a.ctx, a.dispatchId).Once().
-					Return(entities.CurrencyDispatch{ID: a.dispatchId}, nil)
-				getStatusCall := subRepoMock.EXPECT().
-					GetStatusOfSubscription(a.ctx, subData).
-					Return(service.SubscriptionStatusCancelled, nil)
+					Return(entities.SubscriptionStatusCancelled, nil)
 				updateStatusCall := subRepoMock.EXPECT().
-					UpdateSubscriptionStatus(a.ctx, subData, service.SubscriptionStatusActive).
-					Return(assert.AnError)
+					UpdateSubscriptionStatus(a.ctx,
+						service.SubscriptionData{Email: a.email, DispatchID: a.dispatchId},
+						entities.SubscriptionStatusActive).Return(assert.AnError)
 
 				return func() {
 					getDispatchCall.Unset()
@@ -245,31 +192,28 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 			expectedErr: assert.AnError,
 		},
 		{
-			name: "success: renewed subscription",
+			name: "success: reactivated subscription",
 			args: &a,
 			setup: func(a *args) func() {
-				dispatch := entities.CurrencyDispatch{ID: a.dispatchId}
-				subData := service.SubscriptionData{Email: a.email, DispatchID: a.dispatchId}
 				getDispatchCall := dispatchRepoMock.EXPECT().
 					GetDispatchByID(a.ctx, a.dispatchId).Once().
-					Return(entities.CurrencyDispatch{ID: a.dispatchId}, nil)
+					Return(dispatch, nil)
 				getStatusCall := subRepoMock.EXPECT().
-					GetStatusOfSubscription(a.ctx, subData).
-					Return(service.SubscriptionStatusCancelled, nil)
+					GetStatusOfSubscription(a.ctx, service.SubscriptionData{Email: a.email, DispatchID: a.dispatchId}).
+					Return(entities.SubscriptionStatusCancelled, nil)
 				updateStatusCall := subRepoMock.EXPECT().
-					UpdateSubscriptionStatus(a.ctx, subData, service.SubscriptionStatusActive).
-					Return(nil)
-				brokerCall := brokerMock.EXPECT().
-					Publish(service.DispatchToSubscription(dispatch, a.email, service.SubscriptionStatusActive))
+					UpdateSubscriptionStatus(a.ctx,
+						service.SubscriptionData{Email: a.email, DispatchID: a.dispatchId},
+						entities.SubscriptionStatusActive).Return(nil)
 
 				return func() {
 					getDispatchCall.Unset()
 					getStatusCall.Unset()
 					updateStatusCall.Unset()
-					brokerCall.Unset()
 				}
 			},
-			expectedErr: nil,
+			expectedSubscription: dispatch.ToSubscription(a.email, entities.SubscriptionStatusActive),
+			expectedErr:          nil,
 		},
 	}
 	for _, tt := range tests {
@@ -277,9 +221,10 @@ func Test_DispatchService_SubscribeForDispatch(t *testing.T) {
 			cleanup := tt.setup(tt.args)
 			defer cleanup()
 
-			s := service.NewDispatchService(userRepoMock, subRepoMock, dispatchRepoMock, brokerMock)
-			actualErr := s.SubscribeForDispatch(tt.args.ctx, tt.args.email, tt.args.dispatchId)
+			s := service.NewDispatchService(userRepoMock, subRepoMock, dispatchRepoMock)
+			actualSubscrioption, actualErr := s.SubscribeForDispatch(tt.args.ctx, tt.args.email, tt.args.dispatchId)
 
+			assert.Equal(t, tt.expectedSubscription, actualSubscrioption)
 			if tt.expectedErr != nil {
 				assert.ErrorIs(t, actualErr, tt.expectedErr)
 
@@ -300,7 +245,6 @@ func Test_dispatchService_UnsubscribeFromDispatch(t *testing.T) {
 	dispatchRepoMock := repo_mocks.NewDispatchRepo(t)
 	userRepoMock := repo_mocks.NewUserRepo(t)
 	subRepoMock := repo_mocks.NewSubRepo(t)
-	brokerMock := broker_mock.NewBroker(t)
 
 	arguments := args{
 		ctx:        context.Background(),
@@ -309,10 +253,11 @@ func Test_dispatchService_UnsubscribeFromDispatch(t *testing.T) {
 	}
 
 	tests := []struct {
-		name        string
-		args        args
-		setup       func(args) func()
-		expectedErr error
+		name                 string
+		args                 args
+		setup                func(args) func()
+		expectedSubscription *entities.Subscription
+		expectedErr          error
 	}{
 		{
 			name: "failed: got an error from GetDispatchByID",
@@ -339,15 +284,15 @@ func Test_dispatchService_UnsubscribeFromDispatch(t *testing.T) {
 				updateStatusCall := subRepoMock.EXPECT().
 					UpdateSubscriptionStatus(a.ctx,
 						service.SubscriptionData{Email: a.email, DispatchID: a.dispatchId},
-						service.SubscriptionStatusCancelled).
-					Return(service.NotFoundErr)
+						entities.SubscriptionStatusCancelled).
+					Return(service.ErrNotFound)
 
 				return func() {
 					getDispatchCall.Unset()
 					updateStatusCall.Unset()
 				}
 			},
-			expectedErr: service.NotFoundErr,
+			expectedErr: service.ErrNotFound,
 		},
 		{
 			name: "success: subcription cancelled",
@@ -360,16 +305,18 @@ func Test_dispatchService_UnsubscribeFromDispatch(t *testing.T) {
 				updateStatusCall := subRepoMock.EXPECT().
 					UpdateSubscriptionStatus(a.ctx,
 						service.SubscriptionData{Email: a.email, DispatchID: a.dispatchId},
-						service.SubscriptionStatusCancelled).
+						entities.SubscriptionStatusCancelled).
 					Return(nil)
-				brokerCall := brokerMock.EXPECT().
-					Publish(service.DispatchToSubscription(dispatch, a.email, service.SubscriptionStatusCancelled))
 
 				return func() {
 					getDispatchCall.Unset()
 					updateStatusCall.Unset()
-					brokerCall.Unset()
 				}
+			},
+			expectedSubscription: &entities.Subscription{
+				DispatchID: arguments.dispatchId,
+				Email:      arguments.email,
+				Status:     entities.SubscriptionStatusCancelled,
 			},
 			expectedErr: nil,
 		},
@@ -379,9 +326,10 @@ func Test_dispatchService_UnsubscribeFromDispatch(t *testing.T) {
 			cleanup := tt.setup(tt.args)
 			defer cleanup()
 
-			s := service.NewDispatchService(userRepoMock, subRepoMock, dispatchRepoMock, brokerMock)
-			actualErr := s.UnsubscribeFromDispatch(tt.args.ctx, tt.args.email, tt.args.dispatchId)
+			s := service.NewDispatchService(userRepoMock, subRepoMock, dispatchRepoMock)
+			actualSubscription, actualErr := s.UnsubscribeFromDispatch(tt.args.ctx, tt.args.email, tt.args.dispatchId)
 
+			assert.Equal(t, tt.expectedSubscription, actualSubscription)
 			if tt.expectedErr != nil {
 				assert.ErrorIs(t, actualErr, tt.expectedErr)
 

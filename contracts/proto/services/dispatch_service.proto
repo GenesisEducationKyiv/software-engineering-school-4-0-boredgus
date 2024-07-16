@@ -7,7 +7,6 @@ import "subscription.proto";
 
 service DispatchService {
   rpc SubscribeForDispatch(SubscribeForDispatchRequest) returns (SubscribeForDispatchResponse) {}
-  rpc SubscribeForDispatchRevert(SubscribeForDispatchRequest) returns (SubscribeForDispatchResponse) {}
   rpc UnsubscribeFromDispatch(UnsubscribeFromDispatchRequest) returns (UnsubscribeFromDispatchResponse) {}
 }
 

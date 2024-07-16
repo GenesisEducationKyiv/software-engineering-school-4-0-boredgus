@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/entities"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service"
 )
 
@@ -31,7 +32,7 @@ const createSubscriptionQ string = `
 func (r *subscriptionRepo) CreateSubscription(ctx context.Context, args service.SubscriptionData) error {
 	_, err := r.db.ExecContext(ctx, createSubscriptionQ, args.Email, args.DispatchID)
 	if r.db.IsError(err, UniqueViolation) {
-		return fmt.Errorf("%w: user has already subscribed for this dispatch", service.UniqueViolationErr)
+		return fmt.Errorf("%w: user has already subscribed for this dispatch", service.ErrUniqueViolation)
 	}
 
 	return err
@@ -48,7 +49,7 @@ const updateSubscriptionStatusQ = `
 		cds.u_id = $3 and dispatch_id = cds.id;
 `
 
-func (r *subscriptionRepo) UpdateSubscriptionStatus(ctx context.Context, sub service.SubscriptionData, status service.SubscriptionStatus) error {
+func (r *subscriptionRepo) UpdateSubscriptionStatus(ctx context.Context, sub service.SubscriptionData, status entities.SubscriptionStatus) error {
 	rows, err := r.db.ExecContext(ctx, updateSubscriptionStatusQ, status, sub.Email, sub.DispatchID)
 	if err != nil {
 		return err
@@ -59,7 +60,7 @@ func (r *subscriptionRepo) UpdateSubscriptionStatus(ctx context.Context, sub ser
 		return err
 	}
 	if count == 0 {
-		return service.NotFoundErr
+		return service.ErrNotFound
 	}
 
 	return err
@@ -75,16 +76,16 @@ const getStatusOfSubscriptionQ = `
 	where u.email = $1 and cd.u_id = $2 and cs.status is not null;
 `
 
-func (r *subscriptionRepo) GetStatusOfSubscription(ctx context.Context, args service.SubscriptionData) (service.SubscriptionStatus, error) {
+func (r *subscriptionRepo) GetStatusOfSubscription(ctx context.Context, args service.SubscriptionData) (entities.SubscriptionStatus, error) {
 	rows, err := r.db.QueryContext(ctx, getStatusOfSubscriptionQ, args.Email, args.DispatchID)
 	if err != nil {
 		return 0, err
 	}
 	if !rows.Next() {
-		return 0, service.NotFoundErr
+		return 0, service.ErrNotFound
 	}
 
-	var status service.SubscriptionStatus
+	var status entities.SubscriptionStatus
 	if err := rows.Scan(&status); err != nil {
 		return 0, err
 	}

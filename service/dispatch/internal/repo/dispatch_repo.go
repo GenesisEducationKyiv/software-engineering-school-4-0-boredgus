@@ -31,14 +31,14 @@ func (r *dispatchRepo) GetDispatchByID(ctx context.Context, dispatchId string) (
 	row := r.db.QueryRowContext(ctx, getDispatchByIdQ, dispatchId)
 	err := row.Err()
 	if err != nil && r.db.IsError(err, InvalidTextRepresentation) {
-		return dispatch, fmt.Errorf("%w: incorrect format for uuid", service.InvalidArgumentErr)
+		return dispatch, fmt.Errorf("%w: incorrect format for uuid", service.ErrInvalidArgument)
 	}
 	if err != nil {
 		return dispatch, err
 	}
 	var targetCurrencies string
 	if err := row.Scan(&dispatch.ID, &dispatch.Label, &dispatch.TemplateName, &dispatch.Details.BaseCurrency, &targetCurrencies, &dispatch.SendAt, &dispatch.CountOfSubscribers); err != nil {
-		return dispatch, fmt.Errorf("%w: dispatch with such id does not exists", service.NotFoundErr)
+		return dispatch, fmt.Errorf("%w: dispatch with such id does not exists", service.ErrNotFound)
 	}
 	dispatch.Details.TargetCurrencies = strings.Split(targetCurrencies, ",")
 
@@ -63,7 +63,7 @@ func (r *dispatchRepo) GetSubscribersOfDispatch(ctx context.Context, dispatchId 
 	var result []string
 	rows, err := r.db.QueryContext(ctx, getSubscribersOfDispatchQ, dispatchId)
 	if r.db.IsError(err, InvalidTextRepresentation) {
-		return result, fmt.Errorf("%w: incorrect format for uuid", service.InvalidArgumentErr)
+		return result, fmt.Errorf("%w: incorrect format for uuid", service.ErrInvalidArgument)
 	}
 	if err != nil {
 		return nil, err

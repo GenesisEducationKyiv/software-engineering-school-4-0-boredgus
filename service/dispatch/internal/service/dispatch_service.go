@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"time"
 
 	"errors"
 
@@ -25,9 +24,9 @@ type (
 		Email, DispatchID string
 	}
 	SubRepo interface {
+		GetStatusOfSubscription(ctx context.Context, args SubscriptionData) (entities.SubscriptionStatus, error)
 		CreateSubscription(ctx context.Context, args SubscriptionData) error
-		UpdateSubscriptionStatus(ctx context.Context, args SubscriptionData, status SubscriptionStatus) error
-		GetStatusOfSubscription(ctx context.Context, args SubscriptionData) (SubscriptionStatus, error)
+		UpdateSubscriptionStatus(ctx context.Context, args SubscriptionData, status entities.SubscriptionStatus) error
 	}
 
 	DispatchRepo interface {
@@ -44,131 +43,91 @@ type (
 	Mailman interface {
 		Send(email Email) error
 	}
-
-	Subscription struct {
-		DispatchID  string
-		Email       string
-		BaseCcy     string
-		TargetCcies []string
-		SendAt      time.Time
-		Status      SubscriptionStatus
-	}
-
-	Broker interface {
-		Publish(msg interface{})
-	}
-)
-
-type SubscriptionStatus int64
-
-func (s SubscriptionStatus) IsActive() bool {
-	return s == SubscriptionStatusActive
-}
-
-const (
-	SubscriptionStatusActive SubscriptionStatus = iota + 1
-	SubscriptionStatusCancelled
 )
 
 var (
-	InvalidArgumentErr = errors.New("invalid argument")
-	NotFoundErr        = errors.New("not found")
-	UniqueViolationErr = errors.New("unique violation")
-	AlreadyExistsErr   = errors.New("subscription already exists")
+	ErrInvalidArgument = errors.New("invalid argument")
+	ErrNotFound        = errors.New("not found")
+	ErrUniqueViolation = errors.New("unique violation")
+	ErrAlreadyExists   = errors.New("subscription already exists")
 )
 
 type dispatchService struct {
 	userRepo     UserRepo
 	subRepo      SubRepo
 	dispatchRepo DispatchRepo
-	broker       Broker
 }
 
 func NewDispatchService(
 	userRepo UserRepo,
 	subRepo SubRepo,
 	dispatchRepo DispatchRepo,
-	broker Broker,
 ) *dispatchService {
 	return &dispatchService{
 		userRepo:     userRepo,
 		subRepo:      subRepo,
 		dispatchRepo: dispatchRepo,
-		broker:       broker,
 	}
 }
 
-func (s *dispatchService) SubscribeForDispatch(ctx context.Context, email, dispatchID string) error {
-	dispatchData, err := s.dispatchRepo.GetDispatchByID(ctx, dispatchID)
+func (s *dispatchService) SubscribeForDispatch(ctx context.Context, email, dispatchId string) (*entities.Subscription, error) {
+	dispatchData, err := s.dispatchRepo.GetDispatchByID(ctx, dispatchId)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	subData := SubscriptionData{Email: email, DispatchID: dispatchID}
+	subscription := dispatchData.ToSubscription(email, entities.SubscriptionStatusActive)
+	subData := SubscriptionData{Email: email, DispatchID: dispatchId}
+
 	status, err := s.subRepo.GetStatusOfSubscription(ctx, subData)
-	if err != nil && errors.Is(err, NotFoundErr) {
-		return s.createSubscription(ctx, subData, dispatchData)
+	if errors.Is(err, ErrNotFound) {
+		err = s.createSubscription(ctx, subData)
+		if err != nil {
+			return nil, err
+		}
+
+		return subscription, nil
 	}
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if status.IsActive() {
-		return AlreadyExistsErr
+		return nil, ErrAlreadyExists
 	}
 
-	err = s.subRepo.UpdateSubscriptionStatus(ctx, subData, SubscriptionStatusActive)
+	err = s.subRepo.UpdateSubscriptionStatus(ctx, subData, entities.SubscriptionStatusActive)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	s.broker.Publish(DispatchToSubscription(dispatchData, email, SubscriptionStatusActive))
 
-	return nil
+	return subscription, nil
 }
 
-func (s *dispatchService) createSubscription(ctx context.Context, subData SubscriptionData, dispatch entities.CurrencyDispatch) error {
-	if err := s.userRepo.CreateUser(ctx, subData.Email); err != nil && !errors.Is(err, UniqueViolationErr) {
+func (s *dispatchService) createSubscription(ctx context.Context, subData SubscriptionData) error {
+	if err := s.userRepo.CreateUser(ctx, subData.Email); err != nil && !errors.Is(err, ErrUniqueViolation) {
 		return err
 	}
 	if err := s.subRepo.CreateSubscription(ctx, subData); err != nil {
 		return err
 	}
 
-	s.broker.Publish(DispatchToSubscription(dispatch, subData.Email, SubscriptionStatusActive))
-
 	return nil
 }
 
-func (s *dispatchService) UnsubscribeFromDispatch(ctx context.Context, email, dispatchId string) error {
+func (s *dispatchService) UnsubscribeFromDispatch(ctx context.Context, email, dispatchId string) (*entities.Subscription, error) {
 	dispatch, err := s.dispatchRepo.GetDispatchByID(ctx, dispatchId)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = s.subRepo.UpdateSubscriptionStatus(ctx,
 		SubscriptionData{Email: email, DispatchID: dispatchId},
-		SubscriptionStatusCancelled,
+		entities.SubscriptionStatusCancelled,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	s.broker.Publish(DispatchToSubscription(dispatch, email, SubscriptionStatusCancelled))
-
-	return nil
-}
-
-func DispatchToSubscription(
-	dispatchData entities.CurrencyDispatch,
-	email string,
-	status SubscriptionStatus,
-) Subscription {
-	return Subscription{
-		DispatchID:  dispatchData.ID,
-		Email:       email,
-		BaseCcy:     dispatchData.Details.BaseCurrency,
-		TargetCcies: dispatchData.Details.TargetCurrencies,
-		SendAt:      dispatchData.SendAt,
-		Status:      status,
-	}
+	return dispatch.ToSubscription(email, entities.SubscriptionStatusCancelled), nil
 }
