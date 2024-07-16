@@ -4,7 +4,10 @@ import (
 	"context"
 
 	grpc_gen "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/clients/gen"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/service"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type customerServiceClient struct {
@@ -19,6 +22,9 @@ func NewCustomerServiceClient(conn grpc.ClientConnInterface) *customerServiceCli
 
 func (c *customerServiceClient) CreateCustomer(ctx context.Context, email string) error {
 	_, err := c.client.CreateCustomer(ctx, &grpc_gen.CreateCustomerRequest{Email: email})
+	if status.Code(err) == codes.AlreadyExists {
+		return service.ErrAlreadyExists
+	}
 
 	return err
 }

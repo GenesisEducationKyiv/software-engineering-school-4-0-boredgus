@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	grpc_gen "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/clients/gen"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/config"
@@ -44,8 +45,14 @@ func NewTransactionManager(
 	}
 }
 
+var (
+	ErrAlreadyExists = errors.New("already exists")
+	ErrNotFound      = errors.New("not found")
+)
+
 func (m *transactionManager) SubscribeForDispatch(ctx context.Context, email, dispatchID string) error {
-	if err := m.customerService.CreateCustomer(ctx, email); err != nil {
+	err := m.customerService.CreateCustomer(ctx, email)
+	if err != nil && !errors.Is(err, ErrAlreadyExists) {
 		m.logger.Errorf("failed to create a customer: %v", err)
 
 		return err
@@ -55,7 +62,7 @@ func (m *transactionManager) SubscribeForDispatch(ctx context.Context, email, di
 	if err != nil {
 		m.logger.Errorf("failed to subscribe for a dispatch: %v", err)
 
-		if err = m.customerService.CreateCustomerRevert(ctx, email); err != nil {
+		if err := m.customerService.CreateCustomerRevert(ctx, email); err != nil {
 			m.logger.Errorf("failed to revert creation of customer: %v", err)
 		}
 

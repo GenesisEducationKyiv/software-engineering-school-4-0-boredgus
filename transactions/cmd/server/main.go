@@ -5,10 +5,14 @@ import (
 	"net"
 
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/broker"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/clients"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/config"
+	grpc_gen "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/grpc/gen"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/grpc/server"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/service"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func panicOnError(err error, msg string) {
@@ -33,17 +37,37 @@ func main() {
 	natsBroker, err := broker.NewNatsBroker(natsConnection, logger)
 	panicOnError(err, "failed to create broker client")
 
-	serverURL := fmt.Sprintf("%s:%s", env.TransactionManagerAddress, env.TransactionManagerPort)
 	customerServiceURL := fmt.Sprintf("%s:%s", env.CustomerServiceAddress, env.CustomerServicePort)
 	dispatchServiceURL := fmt.Sprintf("%s:%s", env.DispatchServiceAddress, env.DispatchServicePort)
 
+	// connection to gRPC server of customer service
+	customerServiceConn, err := grpc.NewClient(
+		customerServiceURL,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	panicOnError(err, "failed to connect to customer service grpc server")
+	defer customerServiceConn.Close()
+
+	// connection to gRPC server of customer service
+	dispatchServiceConn, err := grpc.NewClient(
+		dispatchServiceURL,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	panicOnError(err, "failed to connect to customer service grpc server")
+	defer dispatchServiceConn.Close()
+
+	// initialization of transaction manager
+	serverURL := fmt.Sprintf("%s:%s", env.TransactionManagerAddress, env.TransactionManagerPort)
 	transactionManager := service.NewTransactionManager(
 		serverURL,
-		service.NewCustomerService(customerServiceURL),
-		service.NewDispatchService(dispatchServiceURL),
-		natsBroker,
+		clients.NewCustomerServiceClient(customerServiceConn),
+		clients.NewDispatchServiceClient(dispatchServiceConn),
+		broker.NewEventBroker(natsBroker, logger),
+		logger,
 	)
+	transactionManagerServer := server.NewTransactionManagerServer(transactionManager, logger)
 	server := grpc.NewServer()
+	grpc_gen.RegisterTransactionManagerServer(server, transactionManagerServer)
 
 	lis, err := net.Listen("tcp", serverURL)
 	panicOnError(err, fmt.Sprintf("failed to listen %s", serverURL))
