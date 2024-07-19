@@ -81,7 +81,6 @@ func (t *NATSConsumerSuite) SetupSuite() {
 
 	handler := app.NewEventHandler(
 		t.broker,
-		stubs.NewSchedulerMock(),
 		t.service,
 		t.logger,
 		stubs.NewDispatchStoreMock(),
