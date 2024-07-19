@@ -9,10 +9,6 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-var models = map[string]interface{}{
-	"customer": repo.Customer{},
-}
-
 type database struct {
 	db *gorm.DB
 }
@@ -27,10 +23,8 @@ func NewDatabase(url, schemaName string) (*database, error) {
 		return nil, fmt.Errorf("failed to open connection to postgres db: %w", err)
 	}
 
-	for model, value := range models {
-		if err = db.AutoMigrate(&value); err != nil {
-			return nil, fmt.Errorf("failed to automigrate model '%s': %w", model, err)
-		}
+	if err = db.AutoMigrate(&repo.Customer{}); err != nil {
+		return nil, fmt.Errorf("failed to automigrate model 'customer': %w", err)
 	}
 
 	return &database{db: db}, nil
