@@ -57,7 +57,7 @@ const getSubscribersOfDispatchQ string = `
 
 func (r *dispatchRepo) GetSubscribersOfDispatch(ctx context.Context, dispatchId string) ([]string, error) {
 	var result []string
-	rows, err := r.db.QueryContext(ctx, getSubscribersOfDispatchQ, dispatchId, service.SubscriptionStatusCancelled)
+	rows, err := r.db.QueryContext(ctx, getSubscribersOfDispatchQ, dispatchId, entities.SubscriptionStatusCancelled)
 	if r.db.IsError(err, InvalidTextRepresentation) {
 		return result, fmt.Errorf("%w: incorrect format for uuid", service.ErrInvalidArgument)
 	}
