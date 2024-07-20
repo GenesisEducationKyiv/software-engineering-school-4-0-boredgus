@@ -8,6 +8,7 @@ import "messages/messages.proto";
 
 enum SubscriptionStatus {
   CREATED = 0;
+  CANCELLED = 1;
 }
 
 message Subscription {

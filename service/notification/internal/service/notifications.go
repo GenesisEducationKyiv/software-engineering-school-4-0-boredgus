@@ -5,6 +5,7 @@ type NotificationType int
 const (
 	SubscriptionCreated NotificationType = iota
 	SendExchangeRates
+	SubscriptionCancelled
 )
 
 type NotificationData struct {

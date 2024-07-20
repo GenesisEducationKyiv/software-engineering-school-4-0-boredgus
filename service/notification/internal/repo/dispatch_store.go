@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"sync"
 
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/broker"
@@ -32,6 +33,8 @@ func NewDispatchRepo(store *broker.ObjectStore) *dispatchStore {
 
 func (s *dispatchStore) AddSubscription(ctx context.Context, sub *entities.Subscription) error {
 	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	dispatch, ok := s.dispatches[sub.DispatchID]
 	if !ok {
 		s.dispatches[sub.DispatchID] = *sub.ToDispatch()
@@ -39,7 +42,41 @@ func (s *dispatchStore) AddSubscription(ctx context.Context, sub *entities.Subsc
 		dispatch.Emails = append(s.dispatches[sub.DispatchID].Emails, sub.Email)
 		s.dispatches[sub.DispatchID] = dispatch
 	}
-	s.mu.Unlock()
+
+	reader, err := Dispatches(s.dispatches).ToReader()
+	if err != nil {
+		return fmt.Errorf("failed to write dispatches into io.Reader: %w", err)
+	}
+
+	err = s.store.Put(ctx, DispathesObjectName, reader)
+	if err != nil {
+		return fmt.Errorf("failed to updated dispatches: %w", err)
+	}
+
+	return nil
+}
+
+func (s *dispatchStore) CancelSubscription(ctx context.Context, sub *entities.Subscription) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	dispatch, ok := s.dispatches[sub.DispatchID]
+	if !ok {
+		return nil
+	}
+
+	idx := slices.Index(dispatch.Emails, sub.Email)
+	if idx < 0 {
+		return nil
+	}
+	countOfSubscribers := len(dispatch.Emails)
+	if countOfSubscribers == 1 {
+		delete(s.dispatches, sub.DispatchID)
+	} else {
+		dispatch.Emails[idx] = dispatch.Emails[countOfSubscribers-1]
+		dispatch.Emails = dispatch.Emails[:countOfSubscribers-1]
+		s.dispatches[sub.DispatchID] = dispatch
+	}
 
 	reader, err := Dispatches(s.dispatches).ToReader()
 	if err != nil {

@@ -25,15 +25,11 @@ type (
 
 	DispatchStore interface {
 		AddSubscription(ctx context.Context, sub *entities.Subscription) error
-	}
-
-	Scheduler interface {
-		AddSubscription(*entities.Subscription)
+		CancelSubscription(ctx context.Context, sub *entities.Subscription) error
 	}
 
 	eventHandler struct {
 		broker        Consumer
-		scheduler     Scheduler
 		logger        config.Logger
 		service       NotificationService
 		dispatchStore DispatchStore
@@ -41,25 +37,21 @@ type (
 )
 
 const (
-	SubscriptionCreatedEvent string = "events.subscription.created"
-	SendDispatchCommand      string = "commands.send.dispatch"
-
 	TimeoutOfProcessing time.Duration = 2 * time.Second
 )
 
 func NewEventHandler(
 	broker Consumer,
-	dispatchScheduler Scheduler,
 	service NotificationService,
 	logger config.Logger,
 	dispatchStore DispatchStore,
 ) *eventHandler {
 
 	return &eventHandler{
-		logger:    logger,
-		scheduler: dispatchScheduler,
-		broker:    broker,
-		service:   service,
+		logger:        logger,
+		broker:        broker,
+		service:       service,
+		dispatchStore: dispatchStore,
 	}
 }
 
@@ -71,8 +63,8 @@ func (h *eventHandler) HandleMessages() error {
 
 func (h *eventHandler) handlerFactory(subject string) func(broker.ConsumedMessage) error {
 	switch subject {
-	case SubscriptionCreatedEvent:
-		return h.handleSubscriptionCreatedEvent
+	case SubscriptionCreatedEvent, SubscriptionCancelledEvent:
+		return h.handleSubscriptionEvent
 	case SendDispatchCommand:
 		return h.handleSendDispatchCommand
 	}
@@ -82,10 +74,10 @@ func (h *eventHandler) handlerFactory(subject string) func(broker.ConsumedMessag
 	}
 }
 
-func (h *eventHandler) handleSubscriptionCreatedEvent(msg broker.ConsumedMessage) error {
+func (h *eventHandler) handleSubscriptionEvent(msg broker.ConsumedMessage) error {
 	var parsedMsg broker_msgs.SubscriptionMessage
 	if err := proto.Unmarshal(msg.Data(), &parsedMsg); err != nil {
-		return fmt.Errorf("failed to unmarshal message from %s: %w", SubscriptionCreatedEvent, err)
+		return fmt.Errorf("failed to unmarshal subscription message: %w", err)
 	}
 
 	sub := ProtoToSubscription(&parsedMsg)
@@ -93,14 +85,21 @@ func (h *eventHandler) handleSubscriptionCreatedEvent(msg broker.ConsumedMessage
 	ctx, cancel := context.WithTimeout(context.Background(), TimeoutOfProcessing)
 	defer cancel()
 
-	h.scheduler.AddSubscription(sub)
-	if err := h.dispatchStore.AddSubscription(ctx, sub); err != nil {
-		return fmt.Errorf("failed to save subscription: %w", err)
+	var err error
+	switch parsedMsg.EventType {
+	case broker_msgs.EventType_SUBSCRIPTION_CREATED:
+		err = h.dispatchStore.AddSubscription(ctx, sub)
+	case broker_msgs.EventType_SUBSCRIPTION_CANCELLED:
+		err = h.dispatchStore.CancelSubscription(ctx, sub)
+	}
+
+	if err != nil {
+		return fmt.Errorf("failed to save dispatches: %w", err)
 	}
 
 	if err := h.service.SendSubscriptionDetails(
 		ctx,
-		*ProtoToDispatchDetailsNotification(&parsedMsg, service.SubscriptionCreated),
+		*ProtoToDispatchDetailsNotification(&parsedMsg, MessageTypeToNotificationType(parsedMsg.EventType)),
 	); err != nil {
 		return fmt.Errorf("failed to send subscription details: %w", err)
 	}

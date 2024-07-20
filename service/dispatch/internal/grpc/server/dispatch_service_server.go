@@ -16,6 +16,7 @@ import (
 type (
 	DispatchService interface {
 		SubscribeForDispatch(ctx context.Context, email, dispatch string) error
+		UnsubscribeFromDispatch(ctx context.Context, email, dispatch string) error
 	}
 
 	dispatchServiceServer struct {
@@ -39,6 +40,20 @@ func (s *dispatchServiceServer) SubscribeForDispatch(ctx context.Context, req *g
 	if errors.Is(err, service.UniqueViolationErr) {
 		return nil, status.Error(codes.AlreadyExists, err.Error())
 	}
+	if errors.Is(err, service.NotFoundErr) {
+		return nil, status.Error(codes.NotFound, err.Error())
+	}
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &emptypb.Empty{}, nil
+}
+
+func (s *dispatchServiceServer) UnsubscribeFromDispatch(ctx context.Context, req *grpc_gen.UnsubscribeFromDispatchRequest) (*emptypb.Empty, error) {
+	s.log("UnsubscribeFromDispatch", req.String())
+
+	err := s.service.UnsubscribeFromDispatch(ctx, req.Email, req.DispatchId)
 	if errors.Is(err, service.NotFoundErr) {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}

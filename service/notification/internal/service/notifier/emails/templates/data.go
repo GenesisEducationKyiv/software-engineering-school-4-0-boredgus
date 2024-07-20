@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/service"
@@ -19,12 +20,18 @@ var notificationTypeToTemplate = map[service.NotificationType]Template{
 		Name:    "exchange_rate",
 		Subject: "Exchange rates",
 	},
+	service.SubscriptionCancelled: {
+		Name:    "subscription_cancelled",
+		Subject: "Subscription cancellation",
+	},
 }
+
+var UnknownNotificationTypeErr = errors.New("unknown notification type")
 
 func NotificationTypeToTemplate(ntfctionType service.NotificationType) (Template, error) {
 	subjectTemplate, ok := notificationTypeToTemplate[ntfctionType]
 	if !ok {
-		return Template{}, fmt.Errorf("email template for '%v' notification is not configured", ntfctionType)
+		return Template{}, fmt.Errorf("%w: email template for '%v' notification is not configured", UnknownNotificationTypeErr, ntfctionType)
 	}
 
 	return subjectTemplate, nil

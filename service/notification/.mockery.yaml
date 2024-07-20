@@ -1,0 +1,13 @@
+with-expecter: true
+outpkg: "{{.PackageName}}_mocks"
+dir: "internal/mocks/{{.PackageName}}"
+mockname: "{{.InterfaceName}}"
+filename: "mock_{{ .InterfaceName | snakecase }}.go"
+
+packages:
+  github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/service/notifier:
+    interfaces:
+      Mailman:
+        config:
+          dir: "internal/mocks/notifier"
+          outpkg: "notifier_mock"

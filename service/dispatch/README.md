@@ -8,7 +8,7 @@ Dispatch Service manages dispatches and subscriptions for them.
 ![architecture](./docs/service-architecture.jpg)
 
 ## ER diagram
-![er-diagram](./docs/er-diagram.png)
+![er-diagram](./docs/er-diagram.jpg)
 
 ## Tests
 
