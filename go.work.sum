@@ -64,6 +64,7 @@ github.com/docker/cli v23.0.3+incompatible/go.mod h1:JLrzqnKDaYBop7H2jaqPtU4hHvM
 github.com/docker/distribution v2.8.1+incompatible/go.mod h1:J2gT2udsDAN96Uj4KfcMRqY0/ypR+oyYUYmja8H+y+w=
 github.com/docker/docker-credential-helpers v0.7.0/go.mod h1:rETQfLdHNT3foU5kuNkFR1R1V12OJRRO5lzt2D1b5X0=
 github.com/docker/go-events v0.0.0-20190806004212-e31b211e4f1c/go.mod h1:Uw6UezgYA44ePAFQYUehOuCzmy5zmg/+nl2ZfMWGkpA=
+github.com/docker/go-metrics v0.0.1 h1:AgB/0SvBxihN0X8OR4SjsblXkbMvalQ8cjmtKQ2rQV8=
 github.com/docker/go-metrics v0.0.1/go.mod h1:cG1hvH2utMXtqgqqYE9plW6lDxS3/5ayHzueweSI3Vw=
 github.com/dtm-labs/dtm v1.18.0/go.mod h1:FIW1ujpFhxcV4xCPq0xw6oyDmQeZWTmZ2TIEBtQEwqo=
 github.com/dtm-labs/dtmdriver v0.0.6/go.mod h1:V5E1uFsExb6Do32ezpB8bMX6be+izLhkcboniLP5shU=
