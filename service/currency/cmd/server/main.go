@@ -19,12 +19,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-func panicOnError(err error, msg string) {
-	if err != nil {
-		panic(fmt.Sprintf("%s: %v", msg, err.Error()))
-	}
-}
-
 const (
 	MicroserviceName   string        = "currency-service"
 	MetricPushInterval time.Duration = 15 * time.Second
@@ -81,8 +75,14 @@ func main() {
 	go scheduleMetricsPush(ctx, env.MetricsGatewayURL, serverMetrics, logger)
 
 	// start of the server
-	logger.Infof("currency service started at %s", url)
+	logger.Infof("%s started at %s", MicroserviceName, url)
 	panicOnError(grpcServer.Serve(lis), "failed to serve")
+}
+
+func panicOnError(err error, msg string) {
+	if err != nil {
+		panic(fmt.Sprintf("%s: %v", msg, err.Error()))
+	}
 }
 
 func scheduleMetricsPush(ctx context.Context, urlToPush string, collector prometheus.Collector, logger config.Logger) {
