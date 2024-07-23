@@ -78,7 +78,7 @@ func main() {
 	// schedulling of metrics push
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	go scheduleMetricsPush(ctx, env.MetricStorageURL, serverMetrics, logger)
+	go scheduleMetricsPush(ctx, env.MetricsGatewayURL, serverMetrics, logger)
 
 	// start of the server
 	logger.Infof("currency service started at %s", url)

@@ -14,7 +14,7 @@ type envVars struct {
 	ExchangeCurrencyAPIKey string `env:"EXCHANGE_CURRENCY_API_KEY"`
 	CurrencyBeaconAPIKey   string `env:"CURRENCY_BEACON_API_KEY"`
 
-	MetricStorageURL string `env:"METRIC_STORAGE_URL"`
+	MetricsGatewayURL string `env:"METRICS_GATEWAY_URL"`
 }
 
 func GetEnv() (*envVars, error) {
