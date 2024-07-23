@@ -35,11 +35,10 @@ func (c *ctx) Logger() logger.Logger {
 }
 
 type APIParams struct {
-	CurrencyService   controllers.CurrencyService
-	DispatchService   controllers.DispatchService
-	Logger            logger.Logger
-	MetricsGatewayURL string
-	MicroserviceName  string
+	CurrencyService  controllers.CurrencyService
+	DispatchService  controllers.DispatchService
+	Logger           logger.Logger
+	MicroserviceName string
 }
 
 const MetricsURL string = "/metrics"

@@ -55,11 +55,10 @@ func main() {
 
 	// initialization of router
 	router := config.GetRouter(&config.APIParams{
-		CurrencyService:   currency.NewCurrencyServiceClient(currencyServiceConn),
-		DispatchService:   dispatch.NewTransactionManagerClient(transactionManagerConn),
-		Logger:            logger,
-		MetricsGatewayURL: env.MetricsGatewayURL,
-		MicroserviceName:  MicroserviceName,
+		CurrencyService:  currency.NewCurrencyServiceClient(currencyServiceConn),
+		DispatchService:  dispatch.NewTransactionManagerClient(transactionManagerConn),
+		Logger:           logger,
+		MicroserviceName: MicroserviceName,
 	})
 
 	logger.Infof("started %s at %v port", MicroserviceName, env.Port)
