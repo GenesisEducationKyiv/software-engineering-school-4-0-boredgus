@@ -7,6 +7,7 @@ import (
 
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/clients/dispatch"
 	context_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/mocks/context"
+	logger_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/mocks/logger"
 	service_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/mocks/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -35,6 +36,8 @@ func Test_Controller_SubscribeForDailyDispatch(t *testing.T) {
 			Return(m.expectedSubscribeErr)
 		statusCall := contextMock.EXPECT().
 			Status(m.expectedResponseStatus).NotBefore(subscribeCall).Maybe()
+		loggerCall := contextMock.EXPECT().
+			Logger().Maybe().Return(logger_mock.NewLoggerMock())
 
 		return func() {
 			bindCall.Unset()
@@ -42,6 +45,7 @@ func Test_Controller_SubscribeForDailyDispatch(t *testing.T) {
 			contextCall.Unset()
 			subscribeCall.Unset()
 			statusCall.Unset()
+			loggerCall.Unset()
 		}
 	}
 
@@ -111,6 +115,8 @@ func Test_Controller_UnsubscribeFromDailyDispatch(t *testing.T) {
 			Return(m.expectedUnsubscribeErr)
 		statusCall := contextMock.EXPECT().
 			Status(m.expectedResponseStatus).NotBefore(subscribeCall).Maybe()
+		loggerCall := contextMock.EXPECT().
+			Logger().Maybe().Return(logger_mock.NewLoggerMock())
 
 		return func() {
 			bindCall.Unset()
@@ -118,6 +124,7 @@ func Test_Controller_UnsubscribeFromDailyDispatch(t *testing.T) {
 			contextCall.Unset()
 			subscribeCall.Unset()
 			statusCall.Unset()
+			loggerCall.Unset()
 		}
 	}
 
