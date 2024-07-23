@@ -87,15 +87,15 @@ func main() {
 
 func scheduleMetricsPush(ctx context.Context, urlToPush string, collector prometheus.Collector, logger config.Logger) {
 	pusher := push.New(urlToPush, MicroserviceName).Collector(collector)
+	ticker := time.NewTicker(MetricPushInterval)
 
 	for {
 		select {
 		case <-ctx.Done():
+			ticker.Stop()
 			return
 
-		default:
-			time.Sleep(MetricPushInterval)
-
+		case <-ticker.C:
 			if err := pusher.Push(); err != nil {
 				logger.Errorf("failed to push metrics: %v", err)
 			}
