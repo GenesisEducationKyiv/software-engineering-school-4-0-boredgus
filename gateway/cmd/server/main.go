@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/clients/currency"
@@ -27,6 +28,7 @@ func main() {
 	logger := logger.InitLogger(env.Mode, logger.WithProcess(MicroserviceName))
 	defer logger.Flush()
 
+	// initialization of service clients
 	currencyServiceConn, err := grpc.NewClient(
 		fmt.Sprintf("%s:%s", env.CurrencyServiceAddress, env.CurrencyServicePort),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -41,8 +43,17 @@ func main() {
 	panicOnError(err, "failed to connect to dispatch service grpc server")
 	defer dispatchServiceConn.Close()
 
-	logger.Infof("started subscription API at %v port", env.Port)
+	// schedulling of metrics push
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go metrics.NewMetricsPusher(logger).
+		Push(ctx, metrics.PushParams{
+			URLToFetchMetrics: fmt.Sprintf("http://localhost:%v%v", env.Port, config.MetricsURL),
+			URLToPushMetrics:  env.MetricsGatewayURL,
+			PushInterval:      metrics.MetricsPushInterval,
+		})
 
+	// initialization of router
 	router := config.GetRouter(&config.APIParams{
 		CurrencyService:   currency.NewCurrencyServiceClient(currencyServiceConn),
 		DispatchService:   dispatch.NewTransactionManagerClient(dispatchServiceConn),
@@ -51,12 +62,7 @@ func main() {
 		MicroserviceName:  MicroserviceName,
 	})
 
-	go metrics.NewMetricsPusher(logger).
-		Push(
-			fmt.Sprintf("http://localhost:%v%v", env.Port, config.MetricsURL),
-			env.MetricsGatewayURL,
-			metrics.MetricsPushInterval,
-		)
+	logger.Infof("started %s at %v port", MicroserviceName, env.Port)
 
 	panicOnError(router.Run(":"+env.Port), "failed to start server")
 }

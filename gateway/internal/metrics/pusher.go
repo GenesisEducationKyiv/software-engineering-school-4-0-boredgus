@@ -11,34 +11,43 @@ import (
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/config/logger"
 )
 
-const (
-	MetricsPushInterval time.Duration = 15 * time.Second
-	requestTimeout      time.Duration = 2 * time.Second
-)
+const MetricsPushInterval time.Duration = 15 * time.Second
 
-type metricsPusher struct {
-	logger logger.Logger
-}
+type (
+	PushParams struct {
+		URLToFetchMetrics string
+		URLToPushMetrics  string
+		PushInterval      time.Duration
+	}
+	metricsPusher struct {
+		logger logger.Logger
+	}
+)
 
 func NewMetricsPusher(logger logger.Logger) *metricsPusher {
 	return &metricsPusher{logger: logger}
 }
 
-func (p *metricsPusher) Push(urlToFetchMetrics, urlToPushMetrics string, pushInterval time.Duration) {
-	ticker := time.NewTicker(pushInterval)
+func (p *metricsPusher) Push(ctx context.Context, params PushParams) {
+	ticker := time.NewTicker(params.PushInterval)
 
-	for range ticker.C {
-		data, err := p.getMetrics(urlToFetchMetrics)
-		if err != nil {
-			p.logger.Error(err)
+	for {
+		select {
+		case <-ctx.Done():
+			ticker.Stop()
+			return
 
-			continue
-		}
+		case <-ticker.C:
+			data, err := p.getMetrics(params.URLToFetchMetrics)
+			if err != nil {
+				p.logger.Error(err)
 
-		if err = p.pushMetrics(urlToPushMetrics, data); err != nil {
-			p.logger.Error(err)
+				continue
+			}
 
-			continue
+			if err = p.pushMetrics(params.URLToPushMetrics, data); err != nil {
+				p.logger.Error(err)
+			}
 		}
 	}
 }
@@ -69,10 +78,7 @@ func (p *metricsPusher) getMetrics(url string) (io.Reader, error) {
 }
 
 func (p *metricsPusher) makeRequest(method, url string, body io.Reader) (io.ReadCloser, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
-	defer cancel()
-
-	request, err := http.NewRequestWithContext(ctx, method, url, body)
+	request, err := http.NewRequestWithContext(context.Background(), method, url, body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
