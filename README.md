@@ -29,7 +29,7 @@ make start
 
 
 ## System design
-![system design](docs/system-design.png)
+![system design](docs/system-design.jpg)
 
 ### Processes
 
@@ -67,6 +67,7 @@ updating of exchange rates.
 | :------------------- | :------------------------------------------------------------- | :---------------------------------------- | :------- |
 | every                | service is not alive for longer than 10min in a row            | availabitlity check                       | minor    |
 | every                | percent of used CPU is higher than 70%                         | resource check                            | major    |
+| every                | duration of request processing is in                          | resource check                            | major    |
 | currency-service     | more than 35% of Convert method calls per 30min are failed     | third-parties are misbehaving             | minor    |
 | notification-service | more than 10% of consumed messages weren't handled successfuly | check correctness of notification sending | major    |
 
