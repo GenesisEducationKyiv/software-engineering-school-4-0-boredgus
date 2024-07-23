@@ -3,6 +3,7 @@ module github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/
 go 1.22.4
 
 require (
+	github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/metrics v0.1.3
 	github.com/caarlos0/env/v9 v9.0.0
 	github.com/lib/pq v1.10.9
 	github.com/stretchr/testify v1.9.0
@@ -34,15 +35,12 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.1.0 // indirect
 	github.com/jackc/pgx/v5 v5.6.0 // indirect
 	github.com/klauspost/compress v1.17.4 // indirect
-	github.com/kr/pretty v0.3.1 // indirect
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
-	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/mfridman/interpolate v0.0.2 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/patternmatcher v0.6.0 // indirect
@@ -55,10 +53,9 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
-	github.com/prometheus/client_model v0.3.0 // indirect
-	github.com/prometheus/common v0.37.0 // indirect
+	github.com/prometheus/client_model v0.5.0 // indirect
+	github.com/prometheus/common v0.48.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
-	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/sethvargo/go-retry v0.2.4 // indirect
 	github.com/shirou/gopsutil/v3 v3.23.12 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
@@ -86,6 +83,8 @@ require (
 require (
 	github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus v1.0.1
 	github.com/pressly/goose/v3 v3.21.1
-	github.com/prometheus/client_golang v1.14.0
+	github.com/prometheus/client_golang v1.19.1
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.31.0
 )
+
+replace github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/metrics => ../../metrics

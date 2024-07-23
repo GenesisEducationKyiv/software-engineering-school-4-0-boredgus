@@ -8,7 +8,7 @@ import (
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/clients/dispatch"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/config"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/config/logger"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/metrics"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/metrics"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -50,7 +50,7 @@ func main() {
 		Push(ctx, metrics.PushParams{
 			URLToFetchMetrics: fmt.Sprintf("http://localhost:%v%v", env.Port, config.MetricsURL),
 			URLToPushMetrics:  env.MetricsGatewayURL,
-			PushInterval:      metrics.MetricsPushInterval,
+			PushInterval:      metrics.DefaultMetricsPushInterval,
 		})
 
 	// initialization of router

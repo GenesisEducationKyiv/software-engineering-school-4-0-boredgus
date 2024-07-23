@@ -3,6 +3,7 @@ module github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/
 go 1.22.4
 
 require (
+	github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/metrics v0.1.3
 	github.com/caarlos0/env/v9 v9.0.0
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus v1.0.1
@@ -30,3 +31,5 @@ require (
 	golang.org/x/text v0.15.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240528184218-531527333157 // indirect
 )
+
+replace github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/metrics => ../metrics

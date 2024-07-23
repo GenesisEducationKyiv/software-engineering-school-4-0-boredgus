@@ -4,30 +4,29 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"time"
 
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/metrics"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/clients"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/clients/chain"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/config"
 	grpc_gen "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/grpc/gen"
 	grpc_server "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/grpc/server"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/currency/internal/service"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/push"
-
 	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
+	"github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"
 )
 
 const (
-	MicroserviceName   string        = "currency-service"
-	MetricPushInterval time.Duration = 15 * time.Second
+	microserviceName string = "currency-service"
+	metricsPath      string = "/metrics"
+	metricsPort      string = "8012"
 )
 
 func main() {
 	env, err := config.GetEnv()
 	panicOnError(err, "failed to gen envirinment variables")
-	logger := config.InitLogger(env.Mode, config.WithProcess(MicroserviceName))
+	logger := config.InitLogger(env.Mode, config.WithProcess(microserviceName))
 	defer logger.Flush()
 
 	// initialization of currency API clients
@@ -52,7 +51,7 @@ func main() {
 	)
 
 	// initialization of metrics interceptor
-	commonMetricLabels := prometheus.Labels{"service": MicroserviceName}
+	commonMetricLabels := prometheus.Labels{"service": microserviceName}
 	serverMetrics := grpcprom.NewServerMetrics(
 		grpcprom.WithServerCounterOptions(grpcprom.WithConstLabels(commonMetricLabels)),
 		grpcprom.WithServerHandlingTimeHistogram(grpcprom.WithHistogramConstLabels(commonMetricLabels)),
@@ -65,40 +64,32 @@ func main() {
 	grpc_gen.RegisterCurrencyServiceServer(grpcServer, currencyServiceServer)
 	serverMetrics.InitializeMetrics(grpcServer)
 
+	// expose metrics
+	promRegistry := prometheus.NewRegistry()
+	promRegistry.MustRegister(serverMetrics)
+	go metrics.ExposeMetrics(":"+metricsPort, metricsPath, promRegistry)
+
 	url := fmt.Sprintf("%s:%s", env.CurrencyServiceAddress, env.CurrencyServicePort)
 	lis, err := net.Listen("tcp", url)
 	panicOnError(err, fmt.Sprintf("failed to listen %s", url))
 
-	// schedulling of metrics push
+	// scheduling of metrics push
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	go scheduleMetricsPush(ctx, env.MetricsGatewayURL, serverMetrics, logger)
+	go metrics.NewMetricsPusher(logger).
+		Push(ctx, metrics.PushParams{
+			URLToFetchMetrics: fmt.Sprintf("http://localhost:%v%v", metricsPort, metricsPath),
+			URLToPushMetrics:  env.MetricsGatewayURL,
+			PushInterval:      metrics.DefaultMetricsPushInterval,
+		})
 
 	// start of the server
-	logger.Infof("%s started at %s", MicroserviceName, url)
+	logger.Infof("%s started at %s", microserviceName, url)
 	panicOnError(grpcServer.Serve(lis), "failed to serve")
 }
 
 func panicOnError(err error, msg string) {
 	if err != nil {
 		panic(fmt.Sprintf("%s: %v", msg, err.Error()))
-	}
-}
-
-func scheduleMetricsPush(ctx context.Context, urlToPush string, collector prometheus.Collector, logger config.Logger) {
-	pusher := push.New(urlToPush, MicroserviceName).Collector(collector)
-	ticker := time.NewTicker(MetricPushInterval)
-
-	for {
-		select {
-		case <-ctx.Done():
-			ticker.Stop()
-			return
-
-		case <-ticker.C:
-			if err := pusher.Push(); err != nil {
-				logger.Errorf("failed to push metrics: %v", err)
-			}
-		}
 	}
 }
