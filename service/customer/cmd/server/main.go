@@ -54,10 +54,12 @@ func main() {
 	// expose metrics
 	promRegistry := prometheus.NewRegistry()
 	promRegistry.MustRegister(serverMetrics)
-	go panicOnError(
-		metrics.ExposeMetrics(":"+metricsPort, metricsPath, promRegistry),
-		"failed to expose metrics",
-	)
+	go func() {
+		panicOnError(
+			metrics.ExposeMetrics(":"+metricsPort, metricsPath, promRegistry),
+			"failed to expose metrics",
+		)
+	}()
 	url := fmt.Sprintf("%s:%s", env.CustomerServiceAddress, env.CustomerServicePort)
 	lis, err := net.Listen("tcp", url)
 	panicOnError(err, fmt.Sprintf("failed to listen %s", url))
@@ -71,7 +73,7 @@ func main() {
 		PushInterval:      metrics.DefaultMetricsPushInterval,
 	})
 
-	logger.Infof("customer service started at %s", url)
+	logger.Infof("%s started at %s", microserviceName, url)
 	panicOnError(grpcServer.Serve(lis), "failed to serve")
 }
 
