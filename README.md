@@ -46,16 +46,30 @@ sending of dispatches thorough SMTP server to subscribers, and getting info abou
 In perspective it would be able to create dispatches, change dispatches, \
 customize subscriptions etc.
 
-4. ___Notification Service___ is responsible for monitoring of subscription-related events and dispatch scheduling. Except of dispatches, when user subscibes for a dispatch, it sends details of the subscription.
+4. ___Customer Service___ is a pretty dumb service and it is responsible only for creation of customer.
 
-5. _[not implemented yet]_ ___Rate Daemon___ is an automatic process that invokes \
+5. ___Notification Service___ is responsible for monitoring of subscription-related events and dispatch scheduling. Except of dispatches, when user subscibes for a dispatch, it sends details of the subscription.
+
+6. ___Transaction Manager___ is responsible for SAGA transactions.
+
+7. _[not implemented yet]_ ___Rate Daemon___ is an automatic process that invokes \
 updating of exchange rates.
 
-#### Per service documentation
+#### More detailed documentation
 1. [Gateway](./gateway)
 2. [Currency Service](./service/currency)
 3. [Dispatch Service](./service/dispatch)
 4. [Notification Service](./service/notification)
+
+### Possible alerts to create
+
+| Microservice         | Trigger                                                        | Reason                                    | Severity |
+| :------------------- | :------------------------------------------------------------- | :---------------------------------------- | :------- |
+| every                | service is not alive for longer than 10min in a row            | availabitlity check                       | minor    |
+| every                | percent of used CPU is higher than 70%                         | resource check                            | major    |
+| currency-service     | more than 35% of Convert method calls per 30min are failed     | third-parties are misbehaving             | minor    |
+| notification-service | more than 10% of consumed messages weren't handled successfuly | check correctness of notification sending | major    |
+
 
 ## TODO
 1. Implement rate daemon
