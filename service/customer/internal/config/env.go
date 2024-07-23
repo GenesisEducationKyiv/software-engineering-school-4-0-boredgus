@@ -14,6 +14,8 @@ type envVars struct {
 
 	DatabaseSchema string `env:"CUSTOMERS_DB"`
 	DatabaseURL    string `env:"CUSTOMMERS_DB_CONN_STRING"`
+
+	MetricsGatewayURL string `env:"METRICS_GATEWAY_URL"`
 }
 
 func GetEnv() (*envVars, error) {
