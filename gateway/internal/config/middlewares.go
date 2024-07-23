@@ -4,24 +4,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gin-contrib/timeout"
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
+	timeout "github.com/s-wijaya/gin-timeout"
 )
 
-func LoggerMiddleware(logger zap.SugaredLogger) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-
-	}
-}
-
-func onTimeoutRunOut(ctx *gin.Context) {
-	ctx.Status(http.StatusRequestTimeout)
-}
+const HandlerTimeout time.Duration = 2 * time.Second
 
 func TimeoutMiddleware() gin.HandlerFunc {
-	return timeout.New(
-		timeout.WithTimeout(2*time.Second),
-		timeout.WithResponse(onTimeoutRunOut),
-	)
+	return timeout.TimeoutHandler(HandlerTimeout, http.StatusRequestTimeout, nil)
 }
