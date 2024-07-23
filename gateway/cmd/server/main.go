@@ -31,18 +31,18 @@ func main() {
 	panicOnError(err, "failed to connect to currency service grpc server")
 	defer currencyServiceConn.Close()
 
-	dispatchServiceConn, err := grpc.NewClient(
-		fmt.Sprintf("%s:%s", env.DispatchServiceAddress, env.DispatchServicePort),
+	transactionManagerConn, err := grpc.NewClient(
+		fmt.Sprintf("%s:%s", env.TransactionManagerAddress, env.TransactionManagerPort),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	panicOnError(err, "failed to connect to dispatch service grpc server")
-	defer dispatchServiceConn.Close()
+	defer transactionManagerConn.Close()
 
 	logger.Infof("started subscription API at %v port", env.Port)
 
 	router := config.GetRouter(&config.APIParams{
 		CurrencyService: currency.NewCurrencyServiceClient(currencyServiceConn),
-		DispatchService: dispatch.NewTransactionManagerClient(dispatchServiceConn),
+		DispatchService: dispatch.NewTransactionManagerClient(transactionManagerConn),
 		Logger:          logger,
 	})
 
