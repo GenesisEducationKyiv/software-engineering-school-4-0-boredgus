@@ -19,6 +19,8 @@ type envVars struct {
 	CustomerServicePort    string `env:"CUSTOMER_SERVICE_PORT"`
 
 	BrokerURL string `env:"NATS_URL"`
+
+	MetricsGatewayURL string `env:"METRICS_GATEWAY_URL"`
 }
 
 func Env() (*envVars, error) {

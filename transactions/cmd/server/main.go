@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/broker"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/clients"
@@ -10,27 +12,29 @@ import (
 	grpc_gen "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/grpc/gen"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/grpc/server"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/service"
+	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	"github.com/nats-io/nats.go"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/push"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func panicOnError(err error, msg string) {
-	if err != nil {
-		panic(fmt.Sprintf("%s: %v", msg, err.Error()))
-	}
-}
+const (
+	MicroserviceName   string        = "transaction-manager"
+	MetricPushInterval time.Duration = 15 * time.Second
+)
 
 func main() {
 	env, err := config.Env()
 	panicOnError(err, "failed to init environment variables")
 
-	logger := config.InitLogger(env.Mode, config.WithProcess("transaction-manager"))
+	logger := config.InitLogger(env.Mode, config.WithProcess(MicroserviceName))
 
 	// connection to NATS broker
 	natsConnection, err := nats.Connect(
 		env.BrokerURL,
-		nats.Name("subscription-service"),
+		nats.Name(MicroserviceName),
 	)
 	panicOnError(err, "failed to connect to broker")
 
@@ -65,13 +69,55 @@ func main() {
 		broker.NewEventBroker(natsBroker, logger),
 		logger,
 	)
+
+	// initialization of metrics interceptor
+	commonMetricLabels := prometheus.Labels{"service": MicroserviceName}
+	serverMetrics := grpcprom.NewServerMetrics(
+		grpcprom.WithServerCounterOptions(grpcprom.WithConstLabels(commonMetricLabels)),
+		grpcprom.WithServerHandlingTimeHistogram(grpcprom.WithHistogramConstLabels(commonMetricLabels)),
+	)
+
+	// initialization of grpc server
 	transactionManagerServer := server.NewTransactionManagerServer(transactionManager, logger)
-	server := grpc.NewServer()
+	server := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(serverMetrics.UnaryServerInterceptor()),
+	)
 	grpc_gen.RegisterTransactionManagerServer(server, transactionManagerServer)
+	serverMetrics.InitializeMetrics(server)
 
 	lis, err := net.Listen("tcp", serverURL)
 	panicOnError(err, fmt.Sprintf("failed to listen %s", serverURL))
 
-	logger.Infof("transaction manager started at %s", serverURL)
+	// schedulling of metrics push
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go scheduleMetricsPush(ctx, env.MetricsGatewayURL, serverMetrics, logger)
+
+	// start of the server
+	logger.Infof("%s started at %s", MicroserviceName, serverURL)
 	panicOnError(server.Serve(lis), "failed to serve")
+}
+
+func panicOnError(err error, msg string) {
+	if err != nil {
+		panic(fmt.Sprintf("%s: %v", msg, err.Error()))
+	}
+}
+
+func scheduleMetricsPush(ctx context.Context, urlToPush string, collector prometheus.Collector, logger config.Logger) {
+	pusher := push.New(urlToPush, MicroserviceName).Collector(collector)
+	ticker := time.NewTicker(MetricPushInterval)
+
+	for {
+		select {
+		case <-ctx.Done():
+			ticker.Stop()
+			return
+
+		case <-ticker.C:
+			if err := pusher.Push(); err != nil {
+				logger.Errorf("failed to push metrics: %v", err)
+			}
+		}
+	}
 }
