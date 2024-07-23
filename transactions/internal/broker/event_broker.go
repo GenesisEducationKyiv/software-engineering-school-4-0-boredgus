@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"time"
 
-	messages "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/broker/gen"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/config"
+	messages "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/grpc/gen"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
