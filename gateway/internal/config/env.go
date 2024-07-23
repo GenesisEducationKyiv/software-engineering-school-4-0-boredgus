@@ -14,6 +14,7 @@ type envVars struct {
 	CurrencyServicePort    string      `env:"CURRENCY_SERVICE_PORT"`
 	DispatchServiceAddress string      `env:"DISPATCH_SERVICE_ADDRESS"`
 	DispatchServicePort    string      `env:"DISPATCH_SERVICE_PORT"`
+	MetricsGatewayURL      string      `env:"METRICS_GATEWAY_URL"`
 }
 
 func Env() (*envVars, error) {

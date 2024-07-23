@@ -7,9 +7,12 @@ import (
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/clients/dispatch"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/config"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/config/logger"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/metrics"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
+
+const MicroserviceName string = "gateway"
 
 func panicOnError(err error, msg string) {
 	if err != nil {
@@ -21,7 +24,7 @@ func main() {
 	env, err := config.Env()
 	panicOnError(err, "failed to get environment variables")
 
-	logger := logger.InitLogger(env.Mode, logger.WithProcess("api"))
+	logger := logger.InitLogger(env.Mode, logger.WithProcess(MicroserviceName))
 	defer logger.Flush()
 
 	currencyServiceConn, err := grpc.NewClient(
@@ -41,10 +44,19 @@ func main() {
 	logger.Infof("started subscription API at %v port", env.Port)
 
 	router := config.GetRouter(&config.APIParams{
-		CurrencyService: currency.NewCurrencyServiceClient(currencyServiceConn),
-		DispatchService: dispatch.NewTransactionManagerClient(dispatchServiceConn),
-		Logger:          logger,
+		CurrencyService:   currency.NewCurrencyServiceClient(currencyServiceConn),
+		DispatchService:   dispatch.NewTransactionManagerClient(dispatchServiceConn),
+		Logger:            logger,
+		MetricsGatewayURL: env.MetricsGatewayURL,
+		MicroserviceName:  MicroserviceName,
 	})
+
+	go metrics.NewMetricsPusher(logger).
+		Push(
+			fmt.Sprintf("http://localhost:%v%v", env.Port, config.MetricsURL),
+			env.MetricsGatewayURL,
+			metrics.MetricsPushInterval,
+		)
 
 	panicOnError(router.Run(":"+env.Port), "failed to start server")
 }
