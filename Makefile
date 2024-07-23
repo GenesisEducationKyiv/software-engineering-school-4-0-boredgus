@@ -94,14 +94,6 @@ generate-proto:
 		--go-grpc_out=./transactions/internal/grpc/gen \
 		--proto_path=contracts/proto \
 		${dispatch_service_proto} \
-		${transaction_manager_proto}
-
-	protoc --go_out=./transactions/internal/clients/gen \
-		--go-grpc_out=./transactions/internal/clients/gen \
-		--proto_path=contracts/proto \
-		${dispatch_service_proto} \
-		${customer_service_proto}
-
-	protoc --go_out=./transactions/internal/broker/gen \
-		--proto_path=contracts/proto \
+		${customer_service_proto} \
+		${transaction_manager_proto} \
 		${subscription_messages_proto}

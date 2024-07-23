@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	grpc_gen "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/clients/gen"
+	grpc_gen "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/grpc/gen"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/service"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
