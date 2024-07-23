@@ -51,8 +51,6 @@ func (p *metricsPusher) Push(ctx context.Context, params PushParams) {
 			if err = p.pushMetrics(params.URLToPushMetrics, data); err != nil {
 				p.logger.Error(err)
 			}
-
-			fmt.Println("metrics were pushed")
 		}
 	}
 }

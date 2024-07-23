@@ -88,8 +88,10 @@ func main() {
 	// expose metrics
 	promRegistry := prometheus.NewRegistry()
 	promRegistry.MustRegister(serverMetrics)
-	go metrics.ExposeMetrics(":"+metricsPort, metricsPath, promRegistry)
-
+	go panicOnError(
+		metrics.ExposeMetrics(":"+metricsPort, metricsPath, promRegistry),
+		"failed to expose metrics",
+	)
 	lis, err := net.Listen("tcp", serverURL)
 	panicOnError(err, fmt.Sprintf("failed to listen %s", serverURL))
 
