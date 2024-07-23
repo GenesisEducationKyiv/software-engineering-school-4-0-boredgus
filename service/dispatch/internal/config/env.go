@@ -13,6 +13,7 @@ type envVars struct {
 	DispatchServicePort    string `env:"DISPATCH_SERVICE_PORT"`
 
 	PostgreSQLConnString string `env:"SUBS_DB_CONN_STRING"`
+	MetricsGatewayURL    string `env:"METRICS_GATEWAY_URL"`
 }
 
 func Env() (*envVars, error) {
