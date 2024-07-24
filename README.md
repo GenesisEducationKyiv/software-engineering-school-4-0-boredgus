@@ -67,7 +67,7 @@ updating of exchange rates.
 | :------------------- | :------------------------------------------------------------- | :---------------------------------------- | :------- |
 | every                | service is not alive for longer than 10min in a row            | availabitlity check                       | minor    |
 | every                | percent of used CPU is higher than 70%                         | efficiency check                          | major    |
-| gateway              | average response time is longer than 1500ms                    | performance check                         | major    |
+| gateway              | average response time for last 10min is longer than 1500ms     | performance check                         | major    |
 | currency-service     | more than 35% of Convert method calls per 30min are failed     | third-parties are misbehaving             | minor    |
 | notification-service | more than 10% of consumed messages weren't handled successfuly | check correctness of notification sending | major    |
 
