@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/config"
 	grpc_gen "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/grpc/gen"
@@ -46,23 +47,49 @@ func NewTransactionManager(
 }
 
 var (
-	ErrAlreadyExists = errors.New("already exists")
-	ErrNotFound      = errors.New("not found")
+	ErrTransportProblem = errors.New("transport problem")
+	ErrAlreadyExists    = errors.New("already exists")
+	ErrNotFound         = errors.New("not found")
+)
+
+const (
+	MaxCountOfRetries int           = 3
+	RetryInterval     time.Duration = 100 * time.Millisecond
 )
 
 func (m *transactionManager) SubscribeForDispatch(ctx context.Context, email, dispatchID string) error {
-	err := m.customerService.CreateCustomer(ctx, email)
+	var err error
+
+	m.retryIfFails(func() error {
+		e := m.customerService.CreateCustomer(ctx, email)
+		err = e
+
+		return e
+	}, isTransportProblem)
+
 	if err != nil && !errors.Is(err, ErrAlreadyExists) {
 		m.logger.Errorf("failed to create a customer: %v", err)
 
 		return err
 	}
 
-	subscription, err := m.dispatchService.SubscribeForDispatch(ctx, email, dispatchID)
+	var subscription *grpc_gen.Subscription
+	m.retryIfFails(func() error {
+		subscription, err = m.dispatchService.SubscribeForDispatch(ctx, email, dispatchID)
+
+		return err
+	}, isTransportProblem)
+
 	if err != nil {
 		m.logger.Errorf("failed to subscribe for a dispatch: %v", err)
 
-		if err := m.customerService.CreateCustomerRevert(ctx, email); err != nil {
+		m.retryIfFails(func() error {
+			e := m.customerService.CreateCustomerRevert(ctx, email)
+			err = e
+
+			return e
+		}, isTransportProblem)
+		if err != nil {
 			m.logger.Errorf("failed to revert creation of customer: %v", err)
 		}
 
@@ -75,7 +102,15 @@ func (m *transactionManager) SubscribeForDispatch(ctx context.Context, email, di
 }
 
 func (m *transactionManager) UnsubscribeFromDispatch(ctx context.Context, email, dispatchID string) error {
-	subscription, err := m.dispatchService.UnsubscribeFromDispatch(ctx, email, dispatchID)
+	var subscription *grpc_gen.Subscription
+	var err error
+
+	m.retryIfFails(func() error {
+		subscription, err = m.dispatchService.UnsubscribeFromDispatch(ctx, email, dispatchID)
+
+		return err
+	}, isTransportProblem)
+
 	if err != nil {
 		m.logger.Errorf("failed to subscribe for a dispatch: %v", err)
 
@@ -85,4 +120,18 @@ func (m *transactionManager) UnsubscribeFromDispatch(ctx context.Context, email,
 	m.broker.Publish(subscription)
 
 	return nil
+}
+
+func (m *transactionManager) retryIfFails(action func() error, successCondition func(error) bool) {
+	for i := 0; i < MaxCountOfRetries; i++ {
+		if successCondition(action()) {
+			return
+		}
+
+		time.Sleep(RetryInterval)
+	}
+}
+
+func isTransportProblem(err error) bool {
+	return !errors.Is(err, ErrTransportProblem)
 }
