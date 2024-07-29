@@ -22,6 +22,9 @@ func NewCustomerServiceClient(conn grpc.ClientConnInterface) *customerServiceCli
 
 func (c *customerServiceClient) CreateCustomer(ctx context.Context, email string) error {
 	_, err := c.client.CreateCustomer(ctx, &grpc_gen.CreateCustomerRequest{Email: email})
+	if isTransportError(err) {
+		return service.ErrTransportProblem
+	}
 	if status.Code(err) == codes.AlreadyExists {
 		return service.ErrAlreadyExists
 	}
@@ -30,6 +33,9 @@ func (c *customerServiceClient) CreateCustomer(ctx context.Context, email string
 }
 func (c *customerServiceClient) CreateCustomerRevert(ctx context.Context, email string) error {
 	_, err := c.client.CreateCustomerRevert(ctx, &grpc_gen.CreateCustomerRequest{Email: email})
+	if isTransportError(err) {
+		return service.ErrTransportProblem
+	}
 
 	return err
 }

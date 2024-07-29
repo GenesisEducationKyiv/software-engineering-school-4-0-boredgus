@@ -26,6 +26,9 @@ func (c *dispatchServiceClient) SubscribeForDispatch(ctx context.Context, email,
 		Email:      email,
 		DispatchId: dispatchID,
 	})
+	if isTransportError(err) {
+		return nil, service.ErrTransportProblem
+	}
 	if status.Code(err) == codes.NotFound {
 		return nil, errors.Join(service.ErrNotFound, err)
 	}
@@ -44,6 +47,9 @@ func (c *dispatchServiceClient) UnsubscribeFromDispatch(ctx context.Context, ema
 		Email:      email,
 		DispatchId: dispatchID,
 	})
+	if isTransportError(err) {
+		return nil, service.ErrTransportProblem
+	}
 	if status.Code(err) == codes.NotFound {
 		return nil, errors.Join(service.ErrNotFound, err)
 	}
