@@ -2,11 +2,9 @@ package server
 
 import (
 	"context"
-	"errors"
 
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/config"
 	grpc_gen "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/grpc/gen"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/transactions/internal/service"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -39,12 +37,6 @@ func (s *transactionManagerServer) SubscribeForDispatch(ctx context.Context, req
 	s.log("SubscribeForDispatch", req.String())
 
 	err := s.manager.SubscribeForDispatch(ctx, req.Email, req.DispatchId)
-	if errors.Is(err, service.ErrNotFound) {
-		return nil, status.Error(codes.NotFound, err.Error())
-	}
-	if errors.Is(err, service.ErrAlreadyExists) {
-		return nil, status.Error(codes.AlreadyExists, err.Error())
-	}
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -56,9 +48,6 @@ func (s *transactionManagerServer) UnsubscribeFromDispatch(ctx context.Context, 
 	s.log("UnsubscribeFromDispatch", req.String())
 
 	err := s.manager.UnsubscribeFromDispatch(ctx, req.Email, req.DispatchId)
-	if errors.Is(err, service.ErrNotFound) {
-		return nil, status.Error(codes.NotFound, err.Error())
-	}
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
