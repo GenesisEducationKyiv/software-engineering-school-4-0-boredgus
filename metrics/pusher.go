@@ -38,20 +38,26 @@ func (p *metricsPusher) Push(ctx context.Context, params PushParams) {
 		select {
 		case <-ctx.Done():
 			ticker.Stop()
+			p.push(params.URLToFetchMetrics, params.URLToPushMetrics)
+
 			return
 
 		case <-ticker.C:
-			data, err := p.getMetrics(params.URLToFetchMetrics)
-			if err != nil {
-				p.logger.Error(err)
-
-				continue
-			}
-
-			if err = p.pushMetrics(params.URLToPushMetrics, data); err != nil {
-				p.logger.Error(err)
-			}
+			p.push(params.URLToFetchMetrics, params.URLToPushMetrics)
 		}
+	}
+}
+
+func (p *metricsPusher) push(from, to string) {
+	data, err := p.getMetrics(from)
+	if err != nil {
+		p.logger.Error(err)
+
+		return
+	}
+
+	if err = p.pushMetrics(to, data); err != nil {
+		p.logger.Error(err)
 	}
 }
 
