@@ -90,7 +90,7 @@ func main() {
 	promRegistry.MustRegister(serverMetrics)
 	go func() {
 		panicOnError(
-			metrics.ExposeMetrics(":"+metricsPort, metricsPath, promRegistry),
+			metrics.RunMetricsServer(":"+metricsPort, metricsPath, promRegistry),
 			"failed to expose metrics",
 		)
 	}()
