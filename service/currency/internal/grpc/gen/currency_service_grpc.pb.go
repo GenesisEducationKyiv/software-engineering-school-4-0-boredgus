@@ -35,7 +35,7 @@ func NewCurrencyServiceClient(cc grpc.ClientConnInterface) CurrencyServiceClient
 
 func (c *currencyServiceClient) Convert(ctx context.Context, in *ConvertRequest, opts ...grpc.CallOption) (*ConvertResponse, error) {
 	out := new(ConvertResponse)
-	err := c.cc.Invoke(ctx, "/main.CurrencyService/Convert", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/services.CurrencyService/Convert", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func _CurrencyService_Convert_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/main.CurrencyService/Convert",
+		FullMethod: "/services.CurrencyService/Convert",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CurrencyServiceServer).Convert(ctx, req.(*ConvertRequest))
@@ -92,7 +92,7 @@ func _CurrencyService_Convert_Handler(srv interface{}, ctx context.Context, dec 
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var CurrencyService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "main.CurrencyService",
+	ServiceName: "services.CurrencyService",
 	HandlerType: (*CurrencyServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

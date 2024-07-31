@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package messages;
+option go_package = "./";
+
+import "google/protobuf/timestamp.proto";
+
+import "messages/event_type.proto";
+import "subscription.proto";
+
+message SubscriptionMessage {
+  messages.EventType eventType = 1;
+  google.protobuf.Timestamp timestamp = 2;
+  main.Subscription payload = 3;
+}

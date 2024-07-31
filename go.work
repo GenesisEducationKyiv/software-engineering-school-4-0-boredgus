@@ -1,8 +1,10 @@
 go 1.22.4
 
 use (
-  ./gateway
+	./gateway
 	./service/currency
+	./service/customer
 	./service/dispatch
 	./service/notification
+	./transactions
 )

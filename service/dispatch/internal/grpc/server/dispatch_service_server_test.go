@@ -3,7 +3,9 @@ package server
 import (
 	"context"
 	"testing"
+	"time"
 
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/entities"
 	grpc_gen "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/grpc/gen"
 
 	logger_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/mocks/logger"
@@ -12,7 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func Test_DispatchServiceServer_SubscribeForDispatch(t *testing.T) {
@@ -21,7 +22,8 @@ func Test_DispatchServiceServer_SubscribeForDispatch(t *testing.T) {
 		req *grpc_gen.SubscribeForDispatchRequest
 	}
 	type mocked struct {
-		expectedSubscribeErr error
+		subscription *entities.Subscription
+		subscribeErr error
 	}
 
 	dsMock := service_mock.NewDispatchService(t)
@@ -29,7 +31,7 @@ func Test_DispatchServiceServer_SubscribeForDispatch(t *testing.T) {
 	setup := func(m *mocked, a *args) func() {
 		dsCall := dsMock.EXPECT().
 			SubscribeForDispatch(a.ctx, a.req.Email, a.req.DispatchId).
-			Once().Return(m.expectedSubscribeErr)
+			Once().Return(m.subscription, m.subscribeErr)
 
 		return func() {
 			dsCall.Unset()
@@ -44,36 +46,40 @@ func Test_DispatchServiceServer_SubscribeForDispatch(t *testing.T) {
 		},
 	}
 
+	subscription := entities.Subscription{}
+
 	tests := []struct {
-		name         string
-		args         *args
-		mockedValues *mocked
-		want         *emptypb.Empty
-		wantErr      error
+		name             string
+		args             *args
+		mockedValues     *mocked
+		expectedResponse *grpc_gen.SubscribeForDispatchResponse
+		expectedErr      error
 	}{
 		{
 			name:         "failed: user already subscribed for this dispatch",
 			args:         arguments,
-			mockedValues: &mocked{expectedSubscribeErr: service.UniqueViolationErr},
-			wantErr:      status.Error(codes.AlreadyExists, service.UniqueViolationErr.Error()),
+			mockedValues: &mocked{subscribeErr: service.ErrUniqueViolation},
+			expectedErr:  status.Error(codes.AlreadyExists, service.ErrUniqueViolation.Error()),
 		},
 		{
 			name:         "failed: dispatch with such id does not exist",
 			args:         arguments,
-			mockedValues: &mocked{expectedSubscribeErr: service.NotFoundErr},
-			wantErr:      status.Error(codes.NotFound, service.NotFoundErr.Error()),
+			mockedValues: &mocked{subscribeErr: service.ErrNotFound},
+			expectedErr:  status.Error(codes.NotFound, service.ErrNotFound.Error()),
 		},
 		{
 			name:         "failed: got unknown error from SubscribeForDispatch",
 			args:         arguments,
-			mockedValues: &mocked{expectedSubscribeErr: assert.AnError},
-			wantErr:      status.Error(codes.Internal, assert.AnError.Error()),
+			mockedValues: &mocked{subscribeErr: assert.AnError},
+			expectedErr:  status.Error(codes.Internal, assert.AnError.Error()),
 		},
 		{
-			name:         "successfuly subscribed for a dispatch",
+			name:         "success: subscribed for a dispatch",
 			args:         arguments,
-			mockedValues: &mocked{},
-			want:         &emptypb.Empty{},
+			mockedValues: &mocked{subscription: &subscription},
+			expectedResponse: &grpc_gen.SubscribeForDispatchResponse{
+				Subscription: subscriptionToProto(&subscription),
+			},
 		},
 	}
 
@@ -87,15 +93,104 @@ func Test_DispatchServiceServer_SubscribeForDispatch(t *testing.T) {
 				logger:                             loggerMock,
 				UnimplementedDispatchServiceServer: grpc_gen.UnimplementedDispatchServiceServer{},
 			}
-			got, err := s.SubscribeForDispatch(tt.args.ctx, tt.args.req)
+			actualResp, actualErr := s.SubscribeForDispatch(tt.args.ctx, tt.args.req)
 
-			assert.Equal(t, tt.want, got)
-			if tt.wantErr != nil {
-				assert.ErrorIs(t, err, tt.wantErr)
+			assert.Equal(t, tt.expectedResponse, actualResp)
+			if tt.expectedErr != nil {
+				assert.ErrorIs(t, actualErr, tt.expectedErr)
 
 				return
 			}
-			assert.Nil(t, err)
+			assert.Nil(t, actualErr)
+		})
+	}
+}
+
+func Test_DispatchServiceServer_UnsubscribeFromDispatch(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		req *grpc_gen.UnsubscribeFromDispatchRequest
+	}
+	type mocked struct {
+		subscription   *entities.Subscription
+		unsubscribeErr error
+	}
+
+	dsMock := service_mock.NewDispatchService(t)
+	loggerMock := logger_mock.NewLogger()
+	setup := func(m *mocked, a *args) func() {
+		dsCall := dsMock.EXPECT().
+			UnsubscribeFromDispatch(a.ctx, a.req.Email, a.req.DispatchId).
+			Once().Return(m.subscription, m.unsubscribeErr)
+
+		return func() {
+			dsCall.Unset()
+		}
+	}
+
+	arguments := &args{
+		ctx: context.Background(),
+		req: &grpc_gen.UnsubscribeFromDispatchRequest{
+			Email:      "email",
+			DispatchId: "dispatch-id",
+		},
+	}
+
+	subscription := entities.Subscription{
+		Email:      arguments.req.Email,
+		DispatchID: arguments.req.DispatchId,
+		Status:     entities.SubscriptionStatusCancelled,
+		SendAt:     time.Now(),
+	}
+
+	tests := []struct {
+		name             string
+		args             *args
+		mockedValues     *mocked
+		expectedResponse *grpc_gen.UnsubscribeFromDispatchResponse
+		expectedErr      error
+	}{
+		{
+			name:         "failed: dispatch with such id does not exist",
+			args:         arguments,
+			mockedValues: &mocked{unsubscribeErr: service.ErrNotFound},
+			expectedErr:  status.Error(codes.NotFound, service.ErrNotFound.Error()),
+		},
+		{
+			name:         "failed: got unknown error from SubscribeForDispatch",
+			args:         arguments,
+			mockedValues: &mocked{unsubscribeErr: assert.AnError},
+			expectedErr:  status.Error(codes.Internal, assert.AnError.Error()),
+		},
+		{
+			name:         "success: cancelled subscription",
+			args:         arguments,
+			mockedValues: &mocked{subscription: &subscription},
+			expectedResponse: &grpc_gen.UnsubscribeFromDispatchResponse{
+				Subscription: subscriptionToProto(&subscription),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cleanup := setup(tt.mockedValues, tt.args)
+			defer cleanup()
+
+			s := &dispatchServiceServer{
+				service:                            dsMock,
+				logger:                             loggerMock,
+				UnimplementedDispatchServiceServer: grpc_gen.UnimplementedDispatchServiceServer{},
+			}
+			actualResp, actualErr := s.UnsubscribeFromDispatch(tt.args.ctx, tt.args.req)
+
+			assert.Equal(t, tt.expectedResponse, actualResp)
+			if tt.expectedErr != nil {
+				assert.ErrorIs(t, actualErr, tt.expectedErr)
+
+				return
+			}
+			assert.Nil(t, actualErr)
 		})
 	}
 }

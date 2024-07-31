@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package services;
+option go_package = "./";
+
+import "services/dispatch_service.proto";
+
+import "google/protobuf/empty.proto";
+
+service TransactionManager {
+  rpc SubscribeForDispatch(services.SubscribeForDispatchRequest) returns (google.protobuf.Empty) {}
+  rpc UnsubscribeFromDispatch(services.UnsubscribeFromDispatchRequest) returns (google.protobuf.Empty) {}
+}

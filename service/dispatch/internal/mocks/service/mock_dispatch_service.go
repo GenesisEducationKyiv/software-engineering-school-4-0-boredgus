@@ -5,6 +5,7 @@ package service_mock
 import (
 	context "context"
 
+	entities "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/entities"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -22,21 +23,33 @@ func (_m *DispatchService) EXPECT() *DispatchService_Expecter {
 }
 
 // SubscribeForDispatch provides a mock function with given fields: ctx, email, dispatch
-func (_m *DispatchService) SubscribeForDispatch(ctx context.Context, email string, dispatch string) error {
+func (_m *DispatchService) SubscribeForDispatch(ctx context.Context, email string, dispatch string) (*entities.Subscription, error) {
 	ret := _m.Called(ctx, email, dispatch)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SubscribeForDispatch")
 	}
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+	var r0 *entities.Subscription
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (*entities.Subscription, error)); ok {
+		return rf(ctx, email, dispatch)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) *entities.Subscription); ok {
 		r0 = rf(ctx, email, dispatch)
 	} else {
-		r0 = ret.Error(0)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*entities.Subscription)
+		}
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, email, dispatch)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // DispatchService_SubscribeForDispatch_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SubscribeForDispatch'
@@ -59,32 +72,44 @@ func (_c *DispatchService_SubscribeForDispatch_Call) Run(run func(ctx context.Co
 	return _c
 }
 
-func (_c *DispatchService_SubscribeForDispatch_Call) Return(_a0 error) *DispatchService_SubscribeForDispatch_Call {
-	_c.Call.Return(_a0)
+func (_c *DispatchService_SubscribeForDispatch_Call) Return(_a0 *entities.Subscription, _a1 error) *DispatchService_SubscribeForDispatch_Call {
+	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *DispatchService_SubscribeForDispatch_Call) RunAndReturn(run func(context.Context, string, string) error) *DispatchService_SubscribeForDispatch_Call {
+func (_c *DispatchService_SubscribeForDispatch_Call) RunAndReturn(run func(context.Context, string, string) (*entities.Subscription, error)) *DispatchService_SubscribeForDispatch_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // UnsubscribeFromDispatch provides a mock function with given fields: ctx, email, dispatch
-func (_m *DispatchService) UnsubscribeFromDispatch(ctx context.Context, email string, dispatch string) error {
+func (_m *DispatchService) UnsubscribeFromDispatch(ctx context.Context, email string, dispatch string) (*entities.Subscription, error) {
 	ret := _m.Called(ctx, email, dispatch)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UnsubscribeFromDispatch")
 	}
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+	var r0 *entities.Subscription
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (*entities.Subscription, error)); ok {
+		return rf(ctx, email, dispatch)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) *entities.Subscription); ok {
 		r0 = rf(ctx, email, dispatch)
 	} else {
-		r0 = ret.Error(0)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*entities.Subscription)
+		}
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, email, dispatch)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // DispatchService_UnsubscribeFromDispatch_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UnsubscribeFromDispatch'
@@ -107,12 +132,12 @@ func (_c *DispatchService_UnsubscribeFromDispatch_Call) Run(run func(ctx context
 	return _c
 }
 
-func (_c *DispatchService_UnsubscribeFromDispatch_Call) Return(_a0 error) *DispatchService_UnsubscribeFromDispatch_Call {
-	_c.Call.Return(_a0)
+func (_c *DispatchService_UnsubscribeFromDispatch_Call) Return(_a0 *entities.Subscription, _a1 error) *DispatchService_UnsubscribeFromDispatch_Call {
+	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *DispatchService_UnsubscribeFromDispatch_Call) RunAndReturn(run func(context.Context, string, string) error) *DispatchService_UnsubscribeFromDispatch_Call {
+func (_c *DispatchService_UnsubscribeFromDispatch_Call) RunAndReturn(run func(context.Context, string, string) (*entities.Subscription, error)) *DispatchService_UnsubscribeFromDispatch_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -7,20 +7,19 @@ import (
 	"testing"
 
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/db"
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/entities"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/repo"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/tests"
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/tests/stubs"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/tests/testdata"
 
-	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
 
 type (
 	DispatchService interface {
-		SubscribeForDispatch(ctx context.Context, email, dispatchId string) error
-		UnsubscribeFromDispatch(ctx context.Context, email, dispatchId string) error
+		SubscribeForDispatch(ctx context.Context, email, dispatchId string) (*entities.Subscription, error)
+		UnsubscribeFromDispatch(ctx context.Context, email, dispatchId string) (*entities.Subscription, error)
 	}
 
 	DispatchServiceSuite struct {
@@ -31,8 +30,6 @@ type (
 		pgContainer  *tests.PostgresContainer
 		dispatchRepo service.DispatchRepo
 		dbConnection *sql.DB
-
-		broker *stubs.BrokerStub
 	}
 )
 
@@ -51,13 +48,11 @@ func (s *DispatchServiceSuite) SetupSuite() {
 	s.dbConnection = dbConnection
 	storage := repo.NewStore(dbConnection, db.IsPqError)
 	s.dispatchRepo = repo.NewDispatchRepo(storage)
-	s.broker = stubs.NewBrokerStub()
 
 	s.dispatchService = service.NewDispatchService(
 		repo.NewUserRepo(storage),
 		repo.NewSubRepo(storage),
 		s.dispatchRepo,
-		s.broker,
 	)
 }
 
@@ -78,8 +73,8 @@ func (s *DispatchServiceSuite) Test_SubscribeForDispatch_SuccessfullyCreatedSubs
 	dispatchID := testdata.USD_UAH_DISPATCH_ID
 	ctx := context.Background()
 
-	s.broker.On("Publish", mock.Anything)
-	s.NoError(s.dispatchService.SubscribeForDispatch(ctx, emailToSubscribe, dispatchID))
+	_, err := s.dispatchService.SubscribeForDispatch(ctx, emailToSubscribe, dispatchID)
+	s.NoError(err)
 
 	subscribers, err := s.dispatchRepo.GetSubscribersOfDispatch(ctx, dispatchID)
 	s.NoError(err)
@@ -91,9 +86,9 @@ func (s *DispatchServiceSuite) Test_UnsubscribeFromDispatch_SuccessfullyCancelle
 	ctx := context.Background()
 
 	s.NoError(s.pgContainer.ExecuteSQLFiles(ctx, data.Filename))
-	s.broker.On("Publish", mock.Anything)
 
-	s.NoError(s.dispatchService.UnsubscribeFromDispatch(ctx, data.Email, data.DispatchID))
+	_, err := s.dispatchService.UnsubscribeFromDispatch(ctx, data.Email, data.DispatchID)
+	s.NoError(err)
 
 	subscribers, err := s.dispatchRepo.GetSubscribersOfDispatch(ctx, data.DispatchID)
 	s.NoError(err)

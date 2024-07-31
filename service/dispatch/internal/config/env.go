@@ -12,9 +12,7 @@ type envVars struct {
 	DispatchServiceAddress string `env:"DISPATCH_SERVICE_ADDRESS"`
 	DispatchServicePort    string `env:"DISPATCH_SERVICE_PORT"`
 
-	PostgreSQLConnString string `env:"POSTGRESQL_CONN_STRING"`
-
-	BrokerURL string `env:"NATS_URL"`
+	PostgreSQLConnString string `env:"SUBS_DB_CONN_STRING"`
 }
 
 func Env() (*envVars, error) {

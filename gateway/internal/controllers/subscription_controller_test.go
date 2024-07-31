@@ -60,7 +60,7 @@ func Test_Controller_SubscribeForDailyDispatch(t *testing.T) {
 		{
 			name: "failed: user already subsccribed for this dispatch",
 			mocked: &mocked{
-				expectedSubscribeErr:   dispatch.SubscriptionToDispatchAlreadyExistsErr,
+				expectedSubscribeErr:   dispatch.ErrSubscriptionToDispatchAlreadyExists,
 				expectedResponseStatus: http.StatusConflict,
 			},
 		},
@@ -136,7 +136,7 @@ func Test_Controller_UnsubscribeFromDailyDispatch(t *testing.T) {
 		{
 			name: "failed: subscription or dispatch is not found",
 			mocked: &mocked{
-				expectedUnsubscribeErr: dispatch.NotFoundErr,
+				expectedUnsubscribeErr: dispatch.ErrNotFound,
 				expectedResponseStatus: http.StatusNotFound,
 			},
 		},

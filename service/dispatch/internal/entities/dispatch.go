@@ -19,3 +19,14 @@ type Dispatch[T any] struct {
 }
 
 type CurrencyDispatch Dispatch[CurrencyDispatchDetails]
+
+func (d CurrencyDispatch) ToSubscription(email string, status SubscriptionStatus) *Subscription {
+	return &Subscription{
+		DispatchID:  d.ID,
+		Email:       email,
+		BaseCcy:     d.Details.BaseCurrency,
+		TargetCcies: d.Details.TargetCurrencies,
+		SendAt:      d.SendAt,
+		Status:      status,
+	}
+}

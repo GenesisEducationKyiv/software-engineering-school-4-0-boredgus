@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/broker"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/db"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service"
-	"github.com/nats-io/nats.go"
 
 	grpc_gen "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/grpc/gen"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/grpc/server"
@@ -39,22 +37,11 @@ func main() {
 
 	storage := repo.NewStore(postgresqlDB, db.IsPqError)
 
-	// connection to NATS broker
-	natsConnection, err := nats.Connect(
-		env.BrokerURL,
-		nats.Name("subscription-service"),
-	)
-	panicOnError(err, "failed to connect to broker")
-
-	natsBroker, err := broker.NewNatsBroker(natsConnection, logger)
-	panicOnError(err, "")
-
 	// initialization of dispatch service server
 	dispatchService := service.NewDispatchService(
 		repo.NewUserRepo(storage),
 		repo.NewSubRepo(storage),
 		repo.NewDispatchRepo(storage),
-		broker.NewEventBroker(natsBroker, logger),
 	)
 	dispatchServiceServer := server.NewDispatchServiceServer(dispatchService, logger)
 

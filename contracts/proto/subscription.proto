@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package main;
+option go_package = "./";
+
+import "google/protobuf/timestamp.proto";
+
+enum SubscriptionStatus {
+  CREATED = 0;
+  CANCELLED = 1;
+}
+
+message Subscription {
+  string dispatchID = 1;
+  string baseCcy = 2;
+  repeated string targetCcies = 3;
+  SubscriptionStatus status = 4;
+  string email = 5;
+  google.protobuf.Timestamp sendAt = 6;
+}
