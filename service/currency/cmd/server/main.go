@@ -67,20 +67,18 @@ func main() {
 	// expose metrics
 	promRegistry := prometheus.NewRegistry()
 	promRegistry.MustRegister(serverMetrics)
-	go func() {
-		panicOnError(
-			metrics.RunMetricsServer(":"+metricsPort, metricsPath, promRegistry),
-			"failed to expose metrics",
-		)
-	}()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go metrics.
+		NewMetricsServer(logger, ":"+metricsPort, metricsPath, promRegistry).
+		Run(ctx)
 
 	url := fmt.Sprintf("%s:%s", env.CurrencyServiceAddress, env.CurrencyServicePort)
 	lis, err := net.Listen("tcp", url)
 	panicOnError(err, fmt.Sprintf("failed to listen %s", url))
 
 	// scheduling of metrics push
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 	go metrics.NewMetricsPusher(logger).
 		Push(ctx, metrics.PushParams{
 			URLToFetchMetrics: fmt.Sprintf("http://localhost:%v%v", metricsPort, metricsPath),
