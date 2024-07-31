@@ -6,6 +6,7 @@ import (
 
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/customer/internal/service"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type (
@@ -15,14 +16,8 @@ type (
 		CreatedAt time.Time
 	}
 
-	DB interface {
-		Create(value interface{}) error
-		Delete(value interface{}) error
-		Where(query any, args ...any) DB
-	}
-
 	customerRepo struct {
-		db DB
+		db *gorm.DB
 	}
 )
 
@@ -32,7 +27,7 @@ const (
 	ErrUniqueViolation DBError = iota
 )
 
-func NewCustomerRepo(db DB) *customerRepo {
+func NewCustomerRepo(db *gorm.DB) *customerRepo {
 	return &customerRepo{
 		db: db,
 	}
@@ -43,7 +38,7 @@ func (r *customerRepo) CreateCustomer(email string) error {
 		ID:        uuid.NewString(),
 		Email:     email,
 		CreatedAt: time.Now().UTC(),
-	})
+	}).Error
 	if r.isErr(err, ErrUniqueViolation) {
 		return service.ErrAlreadyExists
 	}
@@ -52,7 +47,7 @@ func (r *customerRepo) CreateCustomer(email string) error {
 }
 
 func (r *customerRepo) DeleteCustomer(email string) error {
-	return r.db.Where("email = ?", email).Delete(&Customer{})
+	return r.db.Where("email = ?", email).Delete(&Customer{}).Error
 }
 
 var errorMatch = map[DBError]string{
