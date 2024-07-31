@@ -9,6 +9,10 @@ import (
 type envVars struct {
 	Mode Mode `env:"MODE"`
 
+	MicroserviceName string `env:"TRANSACTION_MANAGER_NAME"`
+	MetricsPort      string `env:"TRANSACTION_MANAGER_METRICS_PORT"`
+	MetricsRoute     string `env:"TRANSACTION_MANAGER_METRICS_ROUTE"`
+
 	TransactionManagerAddress string `env:"TRANSACTION_MANAGER_ADDRESS"`
 	TransactionManagerPort    string `env:"TRANSACTION_MANAGER_PORT"`
 

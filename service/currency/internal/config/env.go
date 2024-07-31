@@ -14,6 +14,10 @@ type envVars struct {
 	ExchangeCurrencyAPIKey string `env:"EXCHANGE_CURRENCY_API_KEY"`
 	CurrencyBeaconAPIKey   string `env:"CURRENCY_BEACON_API_KEY"`
 
+	MicroserviceName string `env:"CURRENCY_SERVICE_NAME"`
+	MetricsPort      string `env:"CURRENCY_SERVICE_METRICS_PORT"`
+	MetricsRoute     string `env:"CURRENCY_SERVICE_METRICS_ROUTE"`
+
 	MetricsGatewayURL string `env:"METRICS_GATEWAY_URL"`
 }
 

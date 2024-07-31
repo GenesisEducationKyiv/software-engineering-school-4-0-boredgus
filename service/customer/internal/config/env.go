@@ -9,6 +9,10 @@ import (
 type envVars struct {
 	Mode Mode `env:"MODE"`
 
+	MicroserviceName string `env:"CUSTOMER_SERVICE_NAME"`
+	MetricsPort      string `env:"CUSTOMER_SERVICE_METRICS_PORT"`
+	MetricsRoute     string `env:"CUSTOMER_SERVICE_METRICS_ROUTE"`
+
 	CustomerServiceAddress string `env:"CUSTOMER_SERVICE_ADDRESS"`
 	CustomerServicePort    string `env:"CUSTOMER_SERVICE_PORT"`
 

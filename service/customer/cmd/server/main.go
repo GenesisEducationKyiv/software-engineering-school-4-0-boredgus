@@ -17,17 +17,11 @@ import (
 	"google.golang.org/grpc"
 )
 
-const (
-	microserviceName string = "customer-service"
-	metricsPath      string = "/metrics"
-	metricsPort      string = "8012"
-)
-
 func main() {
 	env, err := config.GetEnv()
 	panicOnError(err, "failed to init environment variables")
 
-	logger := config.InitLogger(env.Mode, config.WithProcess(microserviceName))
+	logger := config.InitLogger(env.Mode, config.WithProcess(env.MicroserviceName))
 
 	database, err := db.NewDatabase(env.DatabaseURL, env.DatabaseSchema)
 	panicOnError(err, "failed to setup database")
@@ -38,7 +32,7 @@ func main() {
 	customerServer := server.NewCustomerServiceServer(customerService, logger)
 
 	// initialization of metrics interceptor
-	commonMetricLabels := prometheus.Labels{"service": microserviceName}
+	commonMetricLabels := prometheus.Labels{"service": env.MicroserviceName}
 	serverMetrics := grpcprom.NewServerMetrics(
 		grpcprom.WithServerCounterOptions(grpcprom.WithConstLabels(commonMetricLabels)),
 		grpcprom.WithServerHandlingTimeHistogram(grpcprom.WithHistogramConstLabels(commonMetricLabels)),
@@ -58,7 +52,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	go metrics.
-		NewMetricsServer(logger, ":"+metricsPort, metricsPath, promRegistry).
+		NewMetricsServer(logger, ":"+env.MetricsPort, env.MetricsRoute, promRegistry).
 		Run(ctx)
 	url := fmt.Sprintf("%s:%s", env.CustomerServiceAddress, env.CustomerServicePort)
 	lis, err := net.Listen("tcp", url)
@@ -66,12 +60,12 @@ func main() {
 
 	// schedulling of metrics push
 	go metrics.NewMetricsPusher(logger).Push(ctx, metrics.PushParams{
-		URLToFetchMetrics: fmt.Sprintf("http://localhost:%v%v", metricsPort, metricsPath),
+		URLToFetchMetrics: fmt.Sprintf("http://localhost:%v%v", env.MetricsPort, env.MetricsRoute),
 		URLToPushMetrics:  env.MetricsGatewayURL,
 		PushInterval:      metrics.DefaultMetricsPushInterval,
 	})
 
-	logger.Infof("%s started at %s", microserviceName, url)
+	logger.Infof("%s started at %s", env.MicroserviceName, url)
 	panicOnError(grpcServer.Serve(lis), "failed to serve")
 }
 

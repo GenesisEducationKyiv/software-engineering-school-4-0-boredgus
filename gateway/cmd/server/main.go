@@ -13,8 +13,6 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-const MicroserviceName string = "gateway"
-
 func panicOnError(err error, msg string) {
 	if err != nil {
 		panic(fmt.Sprintf("%s: %v", msg, err.Error()))
@@ -25,7 +23,7 @@ func main() {
 	env, err := config.Env()
 	panicOnError(err, "failed to get environment variables")
 
-	logger := logger.InitLogger(env.Mode, logger.WithProcess(MicroserviceName))
+	logger := logger.InitLogger(env.Mode, logger.WithProcess(env.MicroserviceName))
 	defer logger.Flush()
 
 	// initialization of service clients
@@ -58,10 +56,10 @@ func main() {
 		CurrencyService:  currency.NewCurrencyServiceClient(currencyServiceConn),
 		DispatchService:  dispatch.NewTransactionManagerClient(transactionManagerConn),
 		Logger:           logger,
-		MicroserviceName: MicroserviceName,
+		MicroserviceName: env.MicroserviceName,
 	})
 
-	logger.Infof("started %s at %v port", MicroserviceName, env.Port)
+	logger.Infof("started %s at %v port", env.MicroserviceName, env.Port)
 
 	panicOnError(router.Run(":"+env.Port), "failed to start server")
 }

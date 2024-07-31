@@ -9,6 +9,8 @@ import (
 type envVars struct {
 	Mode Mode `env:"MODE"`
 
+	MicroserviceName string `env:"NOTIFICATION_SERVICE_NAME"`
+
 	CurrencyServiceAddress string `env:"CURRENCY_SERVICE_ADDRESS"`
 	CurrencyServicePort    string `env:"CURRENCY_SERVICE_PORT"`
 

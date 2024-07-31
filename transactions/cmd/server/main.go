@@ -19,22 +19,16 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-const (
-	microserviceName string = "transaction-manager"
-	metricsPath      string = "/metrics"
-	metricsPort      string = "8012"
-)
-
 func main() {
 	env, err := config.Env()
 	panicOnError(err, "failed to init environment variables")
 
-	logger := config.InitLogger(env.Mode, config.WithProcess(microserviceName))
+	logger := config.InitLogger(env.Mode, config.WithProcess(env.MicroserviceName))
 
 	// connection to NATS broker
 	natsConnection, err := nats.Connect(
 		env.BrokerURL,
-		nats.Name(microserviceName),
+		nats.Name(env.MicroserviceName),
 	)
 	panicOnError(err, "failed to connect to broker")
 
@@ -71,7 +65,7 @@ func main() {
 	)
 
 	// initialization of metrics interceptor
-	commonMetricLabels := prometheus.Labels{"service": microserviceName}
+	commonMetricLabels := prometheus.Labels{"service": env.MicroserviceName}
 	serverMetrics := grpcprom.NewServerMetrics(
 		grpcprom.WithServerCounterOptions(grpcprom.WithConstLabels(commonMetricLabels)),
 		grpcprom.WithServerHandlingTimeHistogram(grpcprom.WithHistogramConstLabels(commonMetricLabels)),
@@ -92,7 +86,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	go metrics.
-		NewMetricsServer(logger, ":"+metricsPort, metricsPath, promRegistry).
+		NewMetricsServer(logger, ":"+env.MetricsPort, env.MetricsRoute, promRegistry).
 		Run(ctx)
 
 	lis, err := net.Listen("tcp", serverURL)
@@ -101,13 +95,13 @@ func main() {
 	// schedulling of metrics push
 	go metrics.NewMetricsPusher(logger).
 		Push(ctx, metrics.PushParams{
-			URLToFetchMetrics: fmt.Sprintf("http://localhost:%v%v", metricsPort, metricsPath),
+			URLToFetchMetrics: fmt.Sprintf("http://localhost:%v%v", env.MetricsPort, env.MetricsRoute),
 			URLToPushMetrics:  env.MetricsGatewayURL,
 			PushInterval:      metrics.DefaultMetricsPushInterval,
 		})
 
 	// start of the server
-	logger.Infof("%s started at %s", microserviceName, serverURL)
+	logger.Infof("%s started at %s", env.MicroserviceName, serverURL)
 	panicOnError(server.Serve(lis), "failed to serve")
 }
 

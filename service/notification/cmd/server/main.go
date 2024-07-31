@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"strings"
-	"time"
 
+	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/metrics"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/app"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/app/scheduler"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/notification/internal/broker"
@@ -22,16 +22,11 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-const (
-	microserviceName    string        = "notification-service"
-	metricsPushInterval time.Duration = 15 * time.Second
-)
-
 func main() {
 	env, err := config.GetEnv()
 	panicOnError(err, "failed to init environment variables")
 
-	logger := config.InitLogger(env.Mode, config.WithProcess(microserviceName))
+	logger := config.InitLogger(env.Mode, config.WithProcess(env.MicroserviceName))
 	defer logger.Flush()
 
 	// connection to gRPC server of currency service
@@ -100,11 +95,11 @@ func main() {
 	defer scheduler.Stop()
 
 	// initialization of metrics push
-	commonLabels := map[string]string{"service": microserviceName}
+	commonLabels := map[string]string{"service": env.MicroserviceName}
 	vm.ExposeMetadata(true)
 	err = vm.InitPush(
 		env.MetricsGatewayURL,
-		metricsPushInterval,
+		metrics.DefaultMetricsPushInterval,
 		parseMetricLabels(commonLabels),
 		true)
 	panicOnError(err, "failed to init metrics push")
