@@ -47,6 +47,7 @@ func (c *subscriptionController) SubscribeForDailyDispatch(ctx Context) {
 	}
 	if err != nil {
 		ctx.Status(http.StatusInternalServerError)
+		ctx.Logger().Error(err)
 
 		return
 	}
@@ -70,6 +71,7 @@ func (c *subscriptionController) UnsubscribeFromDailyDispatch(ctx Context) {
 	}
 	if err != nil {
 		ctx.Status(http.StatusInternalServerError)
+		ctx.Logger().Error(err)
 
 		return
 	}

@@ -9,11 +9,13 @@ import (
 
 type envVars struct {
 	Mode                      logger.Mode `env:"MODE"`
+	MicroserviceName          string      `env:"GATEWAY_NAME"`
 	Port                      string      `env:"API_PORT"`
 	CurrencyServiceAddress    string      `env:"CURRENCY_SERVICE_ADDRESS"`
 	CurrencyServicePort       string      `env:"CURRENCY_SERVICE_PORT"`
 	TransactionManagerAddress string      `env:"TRANSACTION_MANAGER_ADDRESS"`
 	TransactionManagerPort    string      `env:"TRANSACTION_MANAGER_PORT"`
+	MetricsGatewayURL         string      `env:"METRICS_GATEWAY_URL"`
 }
 
 func Env() (*envVars, error) {

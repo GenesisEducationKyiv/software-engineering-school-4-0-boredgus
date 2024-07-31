@@ -25,6 +25,7 @@ func (c *rateController) GetExchangeRate(ctx Context) {
 	from, to := "USD", "UAH"
 	res, err := c.service.Convert(ctx.Context(), from, []string{to})
 	if err != nil {
+		ctx.Logger().Error(err)
 		ctx.Status(http.StatusInternalServerError)
 
 		return

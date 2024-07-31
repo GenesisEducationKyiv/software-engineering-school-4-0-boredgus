@@ -6,6 +6,7 @@ import (
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/config/logger"
 	"github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/controllers"
 	"github.com/gin-gonic/gin"
+	ginprometheus "github.com/zsais/go-gin-prometheus"
 )
 
 type ctx struct {
@@ -34,15 +35,26 @@ func (c *ctx) Logger() logger.Logger {
 }
 
 type APIParams struct {
-	CurrencyService controllers.CurrencyService
-	DispatchService controllers.DispatchService
-	Logger          logger.Logger
+	CurrencyService  controllers.CurrencyService
+	DispatchService  controllers.DispatchService
+	Logger           logger.Logger
+	MicroserviceName string
 }
 
-func GetRouter(params *APIParams) *gin.Engine {
-	r := gin.Default()
+const MetricsURL string = "/metrics"
 
+func GetRouter(params *APIParams) *gin.Engine {
+	r := gin.New()
+
+	r.Use(gin.Recovery())
+	r.Use(gin.LoggerWithConfig(gin.LoggerConfig{
+		SkipPaths: []string{MetricsURL},
+	}))
 	r.Use(TimeoutMiddleware())
+
+	prom := ginprometheus.NewPrometheus(params.MicroserviceName)
+	prom.MetricsPath = MetricsURL
+	prom.Use(r)
 
 	newContext := func(ctx *gin.Context) controllers.Context {
 		return NewContext(ctx, context.Background(), params.Logger)

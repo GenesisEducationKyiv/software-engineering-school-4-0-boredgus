@@ -119,7 +119,16 @@ services:
       test: ["CMD", "wget", "http://localhost:${NATS_MONITORING_PORT}/healthz", "-q", "-S", "-O", "-"]
       interval: 2s
       timeout: 20s
+  
+  metrics:
+    container_name: ${METRICS_ADDRESS}
+    image: victoriametrics/victoria-metrics:v1.102.0
+    ports:
+      - ${METRICS_PORT}:8428
+    volumes:
+      - metrics-data:/victoria-metrics-data
 
 volumes:
   postgres-data:
   broker-data:
+  metrics-data:

@@ -9,10 +9,15 @@ import (
 type envVars struct {
 	Mode Mode `env:"MODE"`
 
+	MicroserviceName string `env:"DISPATCH_SERVICE_NAME"`
+	MetricsPort      string `env:"DISPATCH_SERVICE_METRICS_PORT"`
+	MetricsRoute     string `env:"DISPATCH_SERVICE_METRICS_ROUTE"`
+
 	DispatchServiceAddress string `env:"DISPATCH_SERVICE_ADDRESS"`
 	DispatchServicePort    string `env:"DISPATCH_SERVICE_PORT"`
 
 	PostgreSQLConnString string `env:"SUBS_DB_CONN_STRING"`
+	MetricsGatewayURL    string `env:"METRICS_GATEWAY_URL"`
 }
 
 func Env() (*envVars, error) {

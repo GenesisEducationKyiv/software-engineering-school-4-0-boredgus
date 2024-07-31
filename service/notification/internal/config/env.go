@@ -9,6 +9,8 @@ import (
 type envVars struct {
 	Mode Mode `env:"MODE"`
 
+	MicroserviceName string `env:"NOTIFICATION_SERVICE_NAME"`
+
 	CurrencyServiceAddress string `env:"CURRENCY_SERVICE_ADDRESS"`
 	CurrencyServicePort    string `env:"CURRENCY_SERVICE_PORT"`
 
@@ -19,6 +21,8 @@ type envVars struct {
 	SMTPPassword string `env:"SMTP_PASSWORD"`
 
 	BrokerURL string `env:"NATS_URL"`
+
+	MetricsGatewayURL string `env:"METRICS_GATEWAY_URL"`
 }
 
 func GetEnv() (*envVars, error) {

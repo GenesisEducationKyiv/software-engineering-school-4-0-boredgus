@@ -18,9 +18,6 @@ linters-settings:
     check-blank: true
   dupl:
     threshold: 100
-  mnd:
-    ignored-functions:
-      - 'timeout.WithTimeout'
 
 issues:
   max-same-issues: 50

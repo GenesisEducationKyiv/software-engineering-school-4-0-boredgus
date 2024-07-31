@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	context_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/mocks/context"
+	logger_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/mocks/logger"
 	service_mock "github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/gateway/internal/mocks/service"
 
 	"github.com/stretchr/testify/assert"
@@ -29,6 +30,8 @@ func Test_Controller_GetExchangeRate(t *testing.T) {
 			Context().Once().Return(m.ctx)
 		convertCall := csClientMock.EXPECT().
 			Convert(m.ctx, "USD", []string{"UAH"}).Once().NotBefore(contextCall).Return(m.expectedRates, m.expectedConvertErr)
+		loggerCall := contextMock.EXPECT().
+			Logger().Maybe().Return(logger_mock.NewLoggerMock())
 		statusCall := contextMock.EXPECT().
 			Status(m.expectedResponseStatus).NotBefore(convertCall).Maybe()
 		stringCall := contextMock.EXPECT().
@@ -37,6 +40,7 @@ func Test_Controller_GetExchangeRate(t *testing.T) {
 		return func() {
 			contextCall.Unset()
 			convertCall.Unset()
+			loggerCall.Unset()
 			statusCall.Unset()
 			stringCall.Unset()
 		}
