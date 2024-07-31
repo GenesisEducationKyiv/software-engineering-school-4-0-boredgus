@@ -1,0 +1,33 @@
+with-expecter: true
+outpkg: "{{.PackageName}}_mock"
+dir: "internal/mocks/{{.PackageName}}"
+mockname: "{{.InterfaceName}}"
+filename: "mock_{{ .InterfaceName | snakecase }}.go"
+
+packages:
+  github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/service:
+    interfaces:
+      UserRepo:
+        config:
+          dir: "internal/mocks/repo"
+          outpkg: "repo_mock"
+      SubRepo:
+        config:
+          dir: "internal/mocks/repo"
+          outpkg: "repo_mock"
+      DispatchRepo:
+        config:
+          dir: "internal/mocks/repo"
+          outpkg: "repo_mock"
+      Broker:
+        config:
+          dir: "internal/mocks/broker"
+          outpkg: "broker_mock"
+    
+  github.com/GenesisEducationKyiv/software-engineering-school-4-0-boredgus/service/dispatch/internal/grpc/server:
+    interfaces:
+      DispatchService:
+        config: 
+          dir: "internal/mocks/service"
+          outpkg: "service_mock"
+

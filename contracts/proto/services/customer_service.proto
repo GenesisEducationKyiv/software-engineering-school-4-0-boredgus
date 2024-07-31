@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package services;
+option go_package = "./";
+
+import "google/protobuf/empty.proto";
+
+service CustomerService {
+  rpc CreateCustomer(CreateCustomerRequest) returns (google.protobuf.Empty) {}
+  rpc CreateCustomerRevert(CreateCustomerRequest) returns (google.protobuf.Empty) {}
+}
+
+message CreateCustomerRequest {
+  string email = 1;
+}

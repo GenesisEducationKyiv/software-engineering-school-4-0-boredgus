@@ -1,0 +1,20 @@
+version: 1
+threshold:
+  compliance: 100
+  coverage: 30
+dependenciesRules:
+  - package: "**.internal/clients.*"
+    shouldOnlyDependsOn:
+      internal:
+        - "**.internal/clients.*.gen"
+      external:
+        - "google.golang.org/grpc"
+
+  - package: "**.internal/controllers.**"
+    shouldOnlyDependsOn:
+      internal:
+        - "**.internal/config.**"
+        - "**.internal/clients.**"
+    shouldNotDependsOn: 
+      external: 
+        - "google.golang.org/grpc"

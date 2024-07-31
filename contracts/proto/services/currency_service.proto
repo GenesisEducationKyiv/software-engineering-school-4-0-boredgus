@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package services;
+option go_package = "./";
+
+service CurrencyService {
+  rpc Convert(ConvertRequest) returns (ConvertResponse) {}
+}
+
+message ConvertRequest {
+  string baseCurrency = 1;
+  repeated string targetCurrencies = 2;
+}
+
+message ConvertResponse {
+  string baseCurrency = 1;
+  map<string,double> rates = 2;
+}

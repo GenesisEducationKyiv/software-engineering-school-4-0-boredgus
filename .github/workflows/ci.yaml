@@ -1,0 +1,58 @@
+name: CI
+run-name: CI workflow by ${{ github.actor }}
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  linter:
+    name: linter
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        modules: [
+          "gateway",
+          "service/dispatch",
+          "service/currency",
+          "service/notification",
+          "service/customer",
+          "transactions"
+        ]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "${{ matrix.modules }}/go.mod"
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.58
+          working-directory: ${{ matrix.modules }}
+          args: "--config .golangci.yaml"
+
+  tests:
+    name: tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        modules: ["gateway", "service/dispatch", "service/currency", "service/notification"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+      - name: Unit & integration tests
+        run: |
+          cd ${{ matrix.modules }}
+          go test ./... -coverprofile="test-coverage.txt" -covermode count
+          go tool cover -func="test-coverage.txt"
+      - name: Dependency tests
+        run: |
+          cd ${{ matrix.modules }}
+          go install -v github.com/fdaines/arch-go@latest
+          arch-go -v

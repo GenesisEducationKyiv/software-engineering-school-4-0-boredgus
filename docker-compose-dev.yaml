@@ -1,0 +1,122 @@
+name: subscription-api-dev
+
+services:
+  gateway:
+    container_name: ${API_ADDRESS}
+    image: golang:1.22-alpine
+    volumes:
+      - ./gateway:/app
+    command: sleep infinity
+    ports:
+      - ${API_PORT}:${API_PORT}
+    env_file:
+      - ${ENV_FILE}
+    depends_on:
+      currency-service:
+        condition: service_started
+      dispatch-service:
+        condition: service_started
+    
+  currency-service:
+    container_name: ${CURRENCY_SERVICE_ADDRESS}
+    image: golang:1.22-alpine
+    volumes:
+      - ./service/currency:/app
+    command: sleep infinity
+    ports:
+      - ${CURRENCY_SERVICE_PORT}:${CURRENCY_SERVICE_PORT}
+    env_file:
+      - ${ENV_FILE}
+
+  dispatch-service:
+    container_name: ${DISPATCH_SERVICE_ADDRESS}
+    image: golang:1.22-alpine
+    volumes:
+      - ./service/dispatch:/app
+    command: sleep infinity
+    ports:
+      - ${DISPATCH_SERVICE_PORT}:${DISPATCH_SERVICE_PORT}
+    env_file:
+      - ${ENV_FILE}
+    depends_on:
+      broker:
+        condition: service_healthy
+      database:
+        condition: service_healthy
+  
+  customer-service:
+    container_name: ${CUSTOMER_SERVICE_ADDRESS}
+    image: golang:1.22-alpine
+    volumes:
+      - ./service/customer:/app
+    command: sleep infinity
+    ports:
+      - ${CUSTOMER_SERVICE_PORT}:${CUSTOMER_SERVICE_PORT}
+    env_file:
+      - ${ENV_FILE}
+    depends_on:
+      database:
+        condition: service_healthy
+  
+  notification-service:
+    container_name: ${NOTIFICATION_SERVICE_ADDRESS}
+    image: golang:1.22-alpine
+    volumes:
+      - ./service/notification:/app
+    command: sleep infinity
+    env_file:
+      - ${ENV_FILE}
+  
+  transaction-manager:
+    container_name: ${TRANSACTION_MANAGER_ADDRESS}
+    image: golang:1.22-alpine
+    env_file:
+      - ${ENV_FILE}
+    depends_on:
+      dispatch-service:
+        condition: service_started
+      customer-service:
+        condition: service_started
+  
+  database:
+    container_name: ${POSTGRESQL_ADDRESS}
+    image: postgres:16.2-bullseye
+    ports:
+      - ${POSTGRESQL_PORT}:5432
+    environment:
+      - POSTGRES_DATABASES=${SUBS_DB},${CUSTOMERS_DB}
+      - POSTGRES_USER=${POSTGRESQL_USER}
+      - POSTGRES_PASSWORD=${POSTGRESQL_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres-entrypoint.sh:/docker-entrypoint-initdb.d/multiple-databases.sh
+  healthcheck:
+      test: ["CMD", "pg_isready", "-d", "subs", "-U", "postgres"]
+      interval: 5s
+      timeout: 20s
+  
+  broker:
+    container_name: ${NATS_ADDRESS}
+    image: nats:2.10-alpine
+    ports:
+      - ${NATS_MONITORING_PORT}:${NATS_MONITORING_PORT}
+      - ${NATS_CLUSTER_PORT}:${NATS_CLUSTER_PORT}
+    command: [
+      "--cluster_name", "subs",
+      "--user", "${NATS_USER}", 
+      "--pass", "${NATS_PASSWORD}", 
+      "--port", "${NATS_CLIENT_PORT}", 
+      "--http_port", "${NATS_MONITORING_PORT}",
+      "--jetstream",
+      "--store_dir", "/data"
+    ]
+    volumes:
+      - broker-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "http://localhost:${NATS_MONITORING_PORT}/healthz", "-q", "-S", "-O", "-"]
+      interval: 2s
+      timeout: 20s
+
+volumes:
+  postgres-data:
+  broker-data:

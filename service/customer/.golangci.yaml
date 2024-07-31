@@ -1,0 +1,30 @@
+
+linters:
+  disable-all: true   # resets all linters
+  enable:
+    - unused          # checks for unused constants, variables, functions and types
+    - asasalint       # checks for pass []any as any in variadic func(...any)
+    - copyloopvar     # detects places where loop variables are copied
+    - nlreturn        # checks for a new line before return and branch statements
+    - mnd             # detects magic numbers
+    - goimports       # checks import statements are formatted according to the 'goimport' command; reformats imports in autofix mode
+    - forbidigo       # forbids identifiers
+    - govet           # reports suspicious constructs (uses `go vet`)
+    - dupl            # detects code clone
+    - noctx           # finds sending http request without context.Context
+
+linters-settings:
+  errcheck:
+    check-blank: true
+  dupl:
+    threshold: 100
+  mnd:
+    ignored-functions:
+      - 'timeout.WithTimeout'
+
+issues:
+  max-same-issues: 50
+  exclude-rules:
+    - path: "_test.go"
+      linters:
+        - dupl

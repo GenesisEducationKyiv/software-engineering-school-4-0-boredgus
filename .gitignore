@@ -1,0 +1,6 @@
+# tests
+test-coverage.txt
+
+# env
+*.env*
+!.env.example

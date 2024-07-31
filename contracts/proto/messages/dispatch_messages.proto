@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package messages;
+option go_package = "./";
+
+import "google/protobuf/timestamp.proto";
+import "messages/event_type.proto";
+
+message Dispatch {
+  repeated string emails = 1;
+  string baseCcy = 2;
+  map<string,double> rates = 3;
+}
+
+message SendDispatchCommand {
+  messages.EventType eventType = 1;
+  google.protobuf.Timestamp timestamp = 3;
+  Dispatch payload = 4;
+}
